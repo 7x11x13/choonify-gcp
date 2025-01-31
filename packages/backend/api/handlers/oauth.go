@@ -1,0 +1,91 @@
+package handlers
+
+import (
+	"net/http"
+	"os"
+
+	"choonify.com/api/extensions"
+	"choonify.com/api/types"
+	"choonify.com/api/util"
+	"cloud.google.com/go/firestore"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
+	"google.golang.org/api/youtube/v3"
+)
+
+type oAuthBody struct {
+	Code string `json:"code"`
+}
+
+func AuthCallbackHandler(ctx *gin.Context) {
+
+	var body oAuthBody
+	err := ctx.BindJSON(&body)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, "Bad request")
+		return
+	}
+
+	// get youtube client
+	cfg := oauth2.Config{
+		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		Endpoint:     google.Endpoint,
+		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
+		Scopes:       []string{"https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/youtube.readonly"},
+	}
+	token, err := cfg.Exchange(ctx, body.Code)
+	if err != nil {
+		// log.Printf("failed to exchange code: %s", err)
+		ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	client := cfg.Client(ctx, token)
+	service, err := youtube.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		// log.Printf("Failed to make youtube client: %v", err)
+		ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	call := service.Channels.List([]string{"snippet"})
+	response, err := call.Mine(true).Do()
+	if err != nil {
+		// log.Printf("Failed to get user channels: %v", err)
+		ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, "Failed to get channels")
+		return
+	}
+	userId := util.GetUserId(ctx)
+	for _, channel := range response.Items {
+
+		_, err = extensions.Firestore.Collection("yt_channel_credentials").
+			Doc(channel.Id).
+			Set(ctx, types.YTChannelCreds{
+				UserId: userId,
+				Token:  *token,
+			})
+		if err != nil {
+			ctx.Error(err)
+		}
+		_, err = extensions.Firestore.Collection("users").
+			Doc(userId).
+			Update(ctx, []firestore.Update{
+				{
+					Path: "channels",
+					Value: firestore.ArrayUnion(types.YTChannelInfo{ // TODO: ensure no duplicates
+						ChannelId: channel.Id,
+						Picture:   channel.Snippet.Thumbnails.Default.Url,
+						Name:      channel.Snippet.Title,
+					}),
+				},
+			})
+		if err != nil {
+			ctx.Error(err)
+		}
+	}
+	ctx.JSON(http.StatusOK, nil)
+}

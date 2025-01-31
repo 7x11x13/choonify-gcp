@@ -1,0 +1,18 @@
+{
+    "targets": {
+        "my-production-project": {
+            "hosting": {
+                "prod": [
+                    "choonify-prod-site"
+                ]
+            }
+        },
+        "choonify-dev": {
+            "hosting": {
+                "dev": [
+                    "choonify-dev-site"
+                ]
+            }
+        }
+    }
+}
