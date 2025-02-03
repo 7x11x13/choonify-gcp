@@ -1,14 +1,14 @@
 import type { FileWithPath } from "@mantine/dropzone";
+import { randomId } from "@mantine/hooks";
 import { IAudioMetadata, parseBlob } from "music-metadata";
 import { ChoonifyUserInfo } from "../types/auth";
 import { FilterType, UploadItem } from "../types/upload";
-import { randomId } from "@mantine/hooks";
 
-import { render } from "squirrelly";
-import { apiGet, downloadFile, uploadFile } from "./aws";
 import { notifications } from "@mantine/notifications";
-import { defaultImageB64, defaultImageType } from "../types/default-image";
+import { render } from "squirrelly";
 import config from "../config";
+import { defaultImageB64, defaultImageType } from "../types/default-image";
+import { downloadFile, uploadFile } from "./aws";
 
 function b64toBlobParts(b64Data: string, sliceSize: number = 512) {
     const byteCharacters = atob(b64Data);
@@ -77,20 +77,12 @@ async function getFileMetadata(file: FileWithPath) {
     }
 }
 
-async function getUserDefault(): Promise<UploadItem | null> {
-    const data = await apiGet("/me");
-    if (data !== undefined) {
-        return (data as ChoonifyUserInfo).defaults;
-    }
-    return null;
-}
-
 function renderTemplateString(template: string, file: FileWithPath, metadata: IAudioMetadata): string {
     return render(template, { metadata: metadata.common, format: metadata.format, file: file });
 }
 
 
-export async function getUploadItemFromFile(file: FileWithPath, onProg: (percent: number) => void) {
+export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWithPath, onProg: (percent: number) => void) {
     const metadata = await getFileMetadata(file);
     if (!metadata) {
         return null;
@@ -111,7 +103,7 @@ export async function getUploadItemFromFile(file: FileWithPath, onProg: (percent
     }
     item.audioFileLength = metadata.format.duration;
 
-    const defaultItem = await getUserDefault();
+    const defaultItem = user.settings.defaults;
     item.metadata = {
         ...item.metadata, ...(defaultItem?.metadata || {})
     }

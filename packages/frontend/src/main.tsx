@@ -35,14 +35,12 @@ const theme = createTheme({
 });
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <MantineProvider theme={theme}>
-      <Notifications autoClose={5000} />
-      <Router>
-        <ProvideAuth>
-          <App />
-        </ProvideAuth>
-      </Router>
-    </MantineProvider>
-  </StrictMode>,
+  <MantineProvider theme={theme}>
+    <Notifications autoClose={5000} />
+    <Router>
+      <ProvideAuth>
+        <App />
+      </ProvideAuth>
+    </Router>
+  </MantineProvider>,
 )

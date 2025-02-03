@@ -38,7 +38,7 @@ export function Header() {
             <div className={classes.inner}>
                 <Modal opened={deleteModalOpened} onClose={deleteModalClose} title="Delete Account">
                     <Stack>
-                        <Text>Are you sure?</Text>
+                        <Text>Are you sure? You will not be able to login for 24 hours, and then your account will be deleted.</Text>
                         <Group justify='right'>
                             <Button onClick={deleteModalClose}>Go back</Button>
                             <Button onClick={() => deleteAccount()}>Delete my account</Button>

@@ -44,7 +44,7 @@ func setupRouter() *gin.Engine {
 	// cors
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
-		AllowHeaders:    []string{"authorization", "x-requested-with"},
+		AllowHeaders:    []string{"authorization", "x-requested-with", "content-type"},
 	}))
 
 	// auth

@@ -16,8 +16,10 @@ import { formatBytes, formatDuration } from "../util/format";
 import { getUploadItemFromFile } from "../util/metadata";
 import { validateItem } from "../util/validate";
 import classes from './Upload.module.css';
+import { useAuth } from "../components/Auth";
 
 export default function Upload() {
+    const { userInfo } = useAuth();
     const [isVideoUploading, setVideoUploading] = useState(false);
     const [uploadQueue, handlers] = useListState<UploadItem>([]);
     const [selectedIndex, setSelectedIndex] = useState<null | number>(null);
@@ -153,7 +155,7 @@ export default function Upload() {
                 setUploadProgress(i / files.length * 100 + percent / files.length);
             }
 
-            const uploadItem = await getUploadItemFromFile(file, onProg);
+            const uploadItem = await getUploadItemFromFile(userInfo!, file, onProg);
             if (uploadItem) {
                 handlers.append(uploadItem);
             }

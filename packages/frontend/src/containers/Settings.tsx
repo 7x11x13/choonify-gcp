@@ -1,20 +1,24 @@
 import { Center, Container, Loader } from "@mantine/core";
-import UploadForm from "../components/UploadForm";
-import { useEffect, useState } from "react";
-import { ChoonifyUserInfo } from "../types/auth";
-import { UploadItem } from "../types/upload";
-import { apiGet, apiPost, downloadFile } from "../util/aws";
 import { notifications } from "@mantine/notifications";
-import { getDefaultImageFile } from "../util/metadata";
+import { useEffect, useState } from "react";
+import { useAuth } from "../components/Auth";
+import UploadForm from "../components/UploadForm";
 import config from "../config";
+import { UserSettings } from "../types/auth";
+import { UploadItem } from "../types/upload";
+import { apiPost, downloadFile } from "../util/aws";
+import { getDefaultImageFile } from "../util/metadata";
 
 export default function Settings() {
-    const [info, setInfo] = useState<ChoonifyUserInfo | null>(null);
+    const { userInfo, refreshUserInfo } = useAuth();
     const [sending, setSending] = useState(false);
 
-    async function updateSettings(settings: UploadItem) {
+    async function updateSettings(settings: UserSettings) {
         setSending(true);
-        if (await apiPost("/settings", settings) !== undefined) {
+        const { imageFileBlob: _, ...defaultsWithoutBlob } = settings.defaults;
+        const settingsWithoutBlob = { ...settings, defaults: defaultsWithoutBlob };
+        if (await apiPost("/settings", settingsWithoutBlob) !== undefined) {
+            await refreshUserInfo();
             notifications.show(
                 {
                     title: "Success",
@@ -25,19 +29,23 @@ export default function Settings() {
         setSending(false);
     }
 
+    async function updateDefaults(defaults: UploadItem) {
+        const settings = { ...userInfo!.settings, defaults };
+        await updateSettings(settings);
+    }
+
     async function loadUser() {
-        const data = await apiGet("/me");
-        if (data !== undefined) {
-            // download default image if needed
-            const userInfo = data as ChoonifyUserInfo;
-            if (userInfo.defaults.imageFile === config.settings.DEFAULT_COVER_IMAGE || !userInfo.defaults.imageFile) {
-                userInfo.defaults.imageFile = config.settings.DEFAULT_COVER_IMAGE;
-                userInfo.defaults.imageFileBlob = getDefaultImageFile();
-            } else {
-                // fetch from s3
-                userInfo.defaults.imageFileBlob = await downloadFile(userInfo.defaults.imageFile, () => { });
-            }
-            setInfo(userInfo);
+        if (!userInfo) {
+            return;
+        }
+        const defaults = userInfo.settings.defaults;
+        // download default image if needed
+        if (defaults.imageFile === config.settings.DEFAULT_COVER_IMAGE || !defaults.imageFile) {
+            defaults.imageFile = config.settings.DEFAULT_COVER_IMAGE;
+            defaults.imageFileBlob = getDefaultImageFile();
+        } else {
+            // fetch from s3
+            defaults.imageFileBlob = await downloadFile(defaults.imageFile, () => { });
         }
     }
 
@@ -45,7 +53,7 @@ export default function Settings() {
         loadUser();
     }, []);
 
-    if (!info) {
+    if (!userInfo) {
         return (
             <Center>
                 <Loader role="status">
@@ -57,7 +65,7 @@ export default function Settings() {
     // TODO: display user upload stats
     return (
         <Container title="User settings">
-            <UploadForm settingsMode="defaults" disabled={sending} initialItemData={info.defaults} formCallback={updateSettings} />
+            <UploadForm settingsMode="defaults" disabled={sending} initialItemData={userInfo.settings.defaults} formCallback={updateDefaults} />
         </Container>
     );
 }

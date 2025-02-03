@@ -1,26 +1,16 @@
 import { Avatar, Combobox, InputBase, useCombobox, Text, Loader, Input, Group, Button } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import { YouTubeChannel } from '../types/auth';
+import { YTChannel } from '../types/auth';
 import { useAuth, useGSI } from './Auth';
-import { apiGet, apiPost } from '../util/aws';
+import { apiPost } from '../util/aws';
 import config from '../config';
 
 
-async function getAuthorizedChannels(): Promise<YouTubeChannel[]> {
-    const data = await apiGet("/channels") as any[];
-    return data.map((channel) => ({
-        id: channel.channelId,
-        imageUrl: channel.info.picture,
-        name: channel.info.name,
-    }));
-}
-
-
 export function ChannelSelector({ selectedChannelId, refreshState }: { selectedChannelId: React.RefObject<string | null>, refreshState: any }) {
-    const { user } = useAuth();
+    const { user, userInfo, refreshUserInfo } = useAuth();
     const [selectedValue, setSelectedValue] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [data, setData] = useState<YouTubeChannel[]>([]);
+    const [data, setData] = useState<YTChannel[]>([]);
     const combobox = useCombobox({
         onDropdownClose: () => combobox.resetSelectedOption(),
     });
@@ -32,17 +22,18 @@ export function ChannelSelector({ selectedChannelId, refreshState }: { selectedC
     }
 
     function getSelectedItem() {
-        const item = data.find((info) => info.id === selectedValue);
+        const item = data.find((info) => info.channelId === selectedValue);
         return item
     }
 
     async function reload() {
         setLoading(true);
         try {
-            const channels = await getAuthorizedChannels();
+            await refreshUserInfo();
+            const channels = userInfo?.channels ?? [];
             setData(channels);
             if (!selectedValue && channels.length > 0) {
-                setSelected(channels[0].id);
+                setSelected(channels[0].channelId);
             }
         } catch (err) {
             console.error("Error loading authorized channels:", err);
@@ -81,9 +72,9 @@ export function ChannelSelector({ selectedChannelId, refreshState }: { selectedC
     }, [refreshState]);
 
     const options = data.map((item) => (
-        <Combobox.Option value={item.id} key={item.id}>
+        <Combobox.Option value={item.channelId} key={item.channelId}>
             <Group>
-                <Avatar src={item.imageUrl} alt={item.name} radius="xl" size={30} /><Text>{item.name}</Text>
+                <Avatar src={item.picture} alt={item.name} radius="xl" size={30} /><Text>{item.name}</Text>
             </Group>
         </Combobox.Option>
     ));
@@ -109,7 +100,7 @@ export function ChannelSelector({ selectedChannelId, refreshState }: { selectedC
                         style={{ flexGrow: 1 }}
                     >
                         {selectedValue && <Group>
-                            <Avatar src={getSelectedItem()!.imageUrl} alt={getSelectedItem()!.name} radius="xl" size={24} />
+                            <Avatar src={getSelectedItem()!.picture} alt={getSelectedItem()!.name} radius="xl" size={24} />
                             <Text>{getSelectedItem()!.name}</Text>
                         </Group>}
                         {!selectedValue && <Input.Placeholder>No channel selected</Input.Placeholder>}

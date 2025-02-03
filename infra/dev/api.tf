@@ -72,6 +72,10 @@ resource "google_cloud_run_v2_service" "dev" {
         name  = "RENDER_JOB_NAME"
         value = format("projects/%s/locations/%s/jobs/%s", google_firebase_project.dev.project, var.region, google_cloud_run_v2_job.dev.name)
       }
+      env {
+        name  = "FIREBASE_CONFIG"
+        value = var.firebase_config
+      }
     }
   }
 

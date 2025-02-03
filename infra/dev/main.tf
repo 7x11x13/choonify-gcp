@@ -8,6 +8,10 @@ terraform {
       source  = "ko-build/ko"
       version = "0.0.16"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "2.7.0"
+    }
   }
 }
 
@@ -45,6 +49,10 @@ resource "google_project_service" "dev-init" {
     "identitytoolkit.googleapis.com",
     "artifactregistry.googleapis.com",
     "run.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "youtube.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "eventarc.googleapis.com",
   ])
   service = each.key
 

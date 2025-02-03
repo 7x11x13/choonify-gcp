@@ -31,21 +31,6 @@ function getAPIBase() {
     return config.api.LOCAL === "1" ? "http://localhost:8080" : "/api";
 }
 
-export async function apiGet(path: string) {
-    try {
-        const response = await axios.get(`${getAPIBase()}${path}`, {
-            headers: {
-                "x-requested-with": "XMLHttpRequest",
-                Authorization: `Bearer ${await getToken()}`
-            }
-        });
-        return response.data;
-    } catch (err) {
-        displayError(err);
-        return undefined;
-    }
-}
-
 export async function apiPost(path: string, body: any) {
     try {
         const response = await axios.post(`${getAPIBase()}${path}`, {
