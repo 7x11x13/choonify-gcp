@@ -11,6 +11,7 @@ import (
 	"choonify.com/backend/types"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -19,7 +20,8 @@ func getUploadQuota(subscription int) int {
 }
 
 type uploadRequestResponse struct {
-	Uploading int `json:"uploading"`
+	Uploading int    `json:"uploading"`
+	TaskId    string `json:"taskId"`
 }
 
 func UploadRequestHandler(ctx *gin.Context) {
@@ -49,6 +51,7 @@ func UploadRequestHandler(ctx *gin.Context) {
 
 	if len(body.Videos) > 0 {
 		// send to render job
+		body.TaskId = uuid.NewString()
 		raw, err := json.Marshal(body)
 		if err != nil {
 			ctx.Error(err)
@@ -81,5 +84,6 @@ func UploadRequestHandler(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, uploadRequestResponse{
 		Uploading: len(body.Videos),
+		TaskId:    body.TaskId,
 	})
 }

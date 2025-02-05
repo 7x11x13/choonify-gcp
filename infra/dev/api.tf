@@ -92,9 +92,9 @@ data "archive_file" "render_source" {
 
 resource "google_storage_bucket_object" "render_source" {
   provider = google-beta
-  name     = "render-${data.archive_file.delete_source.output_md5}.zip"
+  name     = "render-${data.archive_file.render_source.output_md5}.zip"
   bucket   = google_storage_bucket.gcf_source.name
-  source   = data.archive_file.delete_source.output_path
+  source   = data.archive_file.render_source.output_path
 }
 
 resource "google_cloudfunctions2_function" "render" {
@@ -176,6 +176,7 @@ resource "google_cloud_tasks_queue" "dev" {
   provider = google-beta
   project  = google_firebase_project.dev.project
   location = var.region
+  name     = "api-tasks"
 
   retry_config {
     max_attempts = 1
@@ -186,6 +187,8 @@ resource "google_cloud_tasks_queue" "dev" {
       service_account_email = google_service_account.backend_admin.email
     }
   }
+
+  depends_on = [google_project_service.dev-init]
 }
 
 data "google_iam_policy" "noauth" {
