@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"choonify.com/functions/signin/types"
+	"choonify.com/backend/types"
 	firebase "firebase.google.com/go"
 )
 

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"choonify.com/api/types"
+	"choonify.com/backend/types"
 )
 
 var visibilities = []string{"private", "unlisted", "public"}

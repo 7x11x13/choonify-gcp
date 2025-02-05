@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"os"
 
-	"choonify.com/api/extensions"
-	"choonify.com/api/types"
-	"choonify.com/api/util"
+	"choonify.com/backend/api/extensions"
+	"choonify.com/backend/api/util"
+	"choonify.com/backend/types"
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"

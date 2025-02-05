@@ -11,5 +11,8 @@ func init() {
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
-	
+	// delete cloud storage for user
+	// remove user from firestore
+	// remove channel creds from firestore
+	// remove from idp/firebase auth
 }

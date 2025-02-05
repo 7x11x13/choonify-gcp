@@ -3,8 +3,8 @@ package extensions
 import (
 	"context"
 
+	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
 	"cloud.google.com/go/firestore"
-	run "cloud.google.com/go/run/apiv2"
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
@@ -16,7 +16,7 @@ var Firebase *firebase.App
 var Storage *fstorage.Client
 var Bucket *storage.BucketHandle
 var Auth *auth.Client
-var Jobs *run.JobsClient
+var Tasks *cloudtasks.Client
 
 func InitFirebase() {
 	var err error
@@ -41,7 +41,7 @@ func InitFirebase() {
 	if err != nil {
 		panic(err)
 	}
-	Jobs, err = run.NewJobsClient(ctx)
+	Tasks, err = cloudtasks.NewClient(ctx)
 	if err != nil {
 		panic(err)
 	}

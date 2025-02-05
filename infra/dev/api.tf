@@ -32,7 +32,7 @@ provider "ko" {
 resource "ko_build" "api" {
   provider    = ko
   working_dir = "${path.module}/../../packages/backend/api"
-  importpath  = "choonify.com/api"
+  importpath  = "choonify.com/backend/api"
 }
 
 resource "google_cloud_run_v2_service" "dev" {
@@ -177,6 +177,10 @@ resource "google_cloud_tasks_queue" "dev" {
   project  = google_firebase_project.dev.project
   location = var.region
 
+  retry_config {
+    max_attempts = 1
+  }
+
   http_target {
     oidc_token {
       service_account_email = google_service_account.backend_admin.email
@@ -201,10 +205,14 @@ resource "google_cloud_run_service_iam_policy" "noauth" {
   policy_data = data.google_iam_policy.noauth.policy_data
 }
 
-output "urls" {
-  value = google_cloud_run_v2_service.dev.urls
+output "task_queue_name" {
+  value = google_cloud_tasks_queue.dev.id
 }
 
-output "service_name" {
-  value = google_cloud_run_v2_service.dev.name
+output "render_function_url" {
+  value = google_cloudfunctions2_function.render.url
+}
+
+output "delete_function_url" {
+  value = google_cloudfunctions2_function.delete.url
 }

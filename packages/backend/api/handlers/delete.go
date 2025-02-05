@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"net/http"
 	"os"
 	"time"
 
+	"choonify.com/backend/api/extensions"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -11,14 +13,8 @@ import (
 
 func DeleteAccountHandler(ctx *gin.Context) {
 	// TODO
-	// schedule user for deletion in 24h (create delayed cloud task)
 	// disable account login
-	var d time.Duration = 24 * time.Hour
-	ts := &timestamppb.Timestamp{
-		Seconds: time.Now().Add(d).Unix(),
-	}
-
-	req := &cloudtaskspb.CreateTaskRequest{
+	_, err := extensions.Tasks.CreateTask(ctx, &cloudtaskspb.CreateTaskRequest{
 		Parent: os.Getenv("TASK_QUEUE_NAME"),
 		Task: &cloudtaskspb.Task{
 			MessageType: &cloudtaskspb.Task_HttpRequest{
@@ -27,13 +23,15 @@ func DeleteAccountHandler(ctx *gin.Context) {
 					Url:        os.Getenv("DELETE_FUNCTION_URL"),
 				},
 			},
-			ScheduleTime: ts,
+			ScheduleTime: &timestamppb.Timestamp{
+				Seconds: time.Now().Add(24 * time.Hour).Unix(),
+			},
 		},
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, nil)
+		return
 	}
-
-	// on deletion (cloud run function triggered by task queue):
-	// delete cloud storage for user
-	// remove user from firestore
-	// remove channel creds from firestore
-	// remove from idp/firebase auth
+	ctx.JSON(http.StatusOK, nil)
 }

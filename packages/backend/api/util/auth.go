@@ -3,8 +3,8 @@ package util
 import (
 	"net/http"
 
-	"choonify.com/api/extensions"
-	"choonify.com/api/types"
+	"choonify.com/backend/api/extensions"
+	"choonify.com/backend/types"
 	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
 )

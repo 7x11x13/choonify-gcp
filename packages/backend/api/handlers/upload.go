@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"time"
 
-	"choonify.com/api/extensions"
-	"choonify.com/api/types"
-	"choonify.com/api/util"
-	"cloud.google.com/go/run/apiv2/runpb"
+	"choonify.com/backend/api/extensions"
+	"choonify.com/backend/api/util"
+	"choonify.com/backend/types"
+	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func getUploadQuota(subscription int) int {
@@ -53,23 +55,29 @@ func UploadRequestHandler(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, nil)
 			return
 		}
-		extensions.Jobs.RunJob(ctx, &runpb.RunJobRequest{
-			Name: os.Getenv("RENDER_JOB_NAME"),
-			Overrides: &runpb.RunJobRequest_Overrides{
-				ContainerOverrides: []*runpb.RunJobRequest_Overrides_ContainerOverride{
-					{
-						Env: []*runpb.EnvVar{
-							{
-								Name: "RENDER_PARAMS_JSON",
-								Values: &runpb.EnvVar_Value{
-									Value: string(raw),
-								},
-							},
+		_, err = extensions.Tasks.CreateTask(ctx, &cloudtaskspb.CreateTaskRequest{
+			Parent: os.Getenv("TASK_QUEUE_NAME"),
+			Task: &cloudtaskspb.Task{
+				MessageType: &cloudtaskspb.Task_HttpRequest{
+					HttpRequest: &cloudtaskspb.HttpRequest{
+						HttpMethod: cloudtaskspb.HttpMethod_POST,
+						Url:        os.Getenv("RENDER_FUNCTION_URL"),
+						Body:       raw,
+						Headers: map[string]string{
+							"Content-Type": "application/json",
 						},
 					},
 				},
+				ScheduleTime: &timestamppb.Timestamp{
+					Seconds: time.Now().Add(24 * time.Hour).Unix(),
+				},
 			},
 		})
+		if err != nil {
+			ctx.Error(err)
+			ctx.JSON(http.StatusInternalServerError, nil)
+			return
+		}
 	}
 	ctx.JSON(http.StatusOK, uploadRequestResponse{
 		Uploading: len(body.Videos),

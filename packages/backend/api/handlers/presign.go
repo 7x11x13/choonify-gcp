@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"choonify.com/api/extensions"
-	"choonify.com/api/util"
+	"choonify.com/backend/api/extensions"
+	"choonify.com/backend/api/util"
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

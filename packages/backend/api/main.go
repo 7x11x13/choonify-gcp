@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"choonify.com/api/extensions"
-	"choonify.com/api/handlers"
+	"choonify.com/backend/api/extensions"
+	"choonify.com/backend/api/handlers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
