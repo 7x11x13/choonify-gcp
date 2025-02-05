@@ -13,22 +13,8 @@ import { ProvideAuth } from './components/Auth';
 import { Notifications } from '@mantine/notifications';
 import { createTheme, MantineProvider } from '@mantine/core';
 
-let firebaseConfig = {}
-if (import.meta.env.PROD) {
-  // TODO
-} else {
-  firebaseConfig = {
-    apiKey: "AIzaSyAgPQwmtTFVItJdhCTV1DR-rQrfFXGF3cA",
-    authDomain: "choonify-dev.firebaseapp.com",
-    projectId: "choonify-dev",
-    storageBucket: "choonify-dev.firebasestorage.app",
-    messagingSenderId: "795250601392",
-    appId: "1:795250601392:web:27e2bd8e81b82d0a30fa75"
-  };
-}
-
-const app = initializeApp(firebaseConfig);
-getAuth(app);
+const firebaseConfig = import.meta.env.FIREBASE_CONFIG;
+initializeApp(firebaseConfig);
 
 const theme = createTheme({
   /** Put your mantine theme override here */

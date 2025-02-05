@@ -26,23 +26,15 @@ resource "google_artifact_registry_repository" "dev" {
 }
 
 provider "ko" {
-  #   repo       = "us-west1-docker.pkg.dev/choonify-dev/choonify"
   repo = format("%s-docker.pkg.dev/%s/%s", google_artifact_registry_repository.dev.location, google_artifact_registry_repository.dev.project, google_artifact_registry_repository.dev.repository_id)
 }
 
 resource "ko_build" "api" {
   provider    = ko
-  working_dir = "../../packages/backend/api"
+  working_dir = "${path.module}/../../packages/backend/api"
   importpath  = "choonify.com/api"
 }
 
-resource "ko_build" "render" {
-  provider    = ko
-  working_dir = "../../packages/backend/render"
-  importpath  = "choonify.com/render"
-}
-
-// TODO: permissions for cloud storage, firestore, cloud run jobs
 resource "google_cloud_run_v2_service" "dev" {
   provider = google-beta
   project  = google_firebase_project.dev.project
@@ -50,6 +42,7 @@ resource "google_cloud_run_v2_service" "dev" {
   location = var.region
 
   template {
+    service_account = google_service_account.backend_admin.email
     containers {
       image = ko_build.api.image_ref
       env {
@@ -69,8 +62,16 @@ resource "google_cloud_run_v2_service" "dev" {
         value = google_firebase_hosting_site.dev.default_url
       }
       env {
-        name  = "RENDER_JOB_NAME"
-        value = format("projects/%s/locations/%s/jobs/%s", google_firebase_project.dev.project, var.region, google_cloud_run_v2_job.dev.name)
+        name  = "TASK_QUEUE_NAME"
+        value = google_cloud_tasks_queue.dev.id
+      }
+      env {
+        name  = "RENDER_FUNCTION_URL"
+        value = google_cloudfunctions2_function.render.url
+      }
+      env {
+        name  = "DELETE_FUNCTION_URL"
+        value = google_cloudfunctions2_function.delete.url
       }
       env {
         name  = "FIREBASE_CONFIG"
@@ -79,38 +80,108 @@ resource "google_cloud_run_v2_service" "dev" {
     }
   }
 
-  depends_on = [google_project_service.dev-init, google_firebase_hosting_site.dev, google_cloud_run_v2_job.dev]
+  depends_on = [google_project_service.dev-init]
 }
 
-// TODO: permissions for cloud storage bucket and firestore
-resource "google_cloud_run_v2_job" "dev" {
+data "archive_file" "render_source" {
+  type             = "zip"
+  source_dir       = "${path.module}/../../packages/backend/functions/render"
+  output_file_mode = "0666"
+  output_path      = "${path.module}/../../packages/backend/functions/dist/render.zip"
+}
+
+resource "google_storage_bucket_object" "render_source" {
   provider = google-beta
-  project  = google_firebase_project.dev.project
-  name     = "render"
-  location = var.region
+  name     = "render-${data.archive_file.delete_source.output_md5}.zip"
+  bucket   = google_storage_bucket.gcf_source.name
+  source   = data.archive_file.delete_source.output_path
+}
 
-  template {
-    template {
-      containers {
-        image = ko_build.render.image_ref
+resource "google_cloudfunctions2_function" "render" {
+  provider    = google-beta
+  project     = google_firebase_project.dev.project
+  location    = var.region
+  name        = "render"
+  description = "Render and upload function"
 
-        env {
-          name  = "GOOGLE_CLIENT_ID"
-          value = var.google_client_id
-        }
-        env {
-          name  = "GOOGLE_CLIENT_SECRET"
-          value = var.google_client_secret
-        }
-        env {
-          name  = "GOOGLE_REDIRECT_URL"
-          value = google_firebase_hosting_site.dev.default_url
-        }
+  build_config {
+    runtime     = "go123"
+    entry_point = "Render"
+
+    source {
+      storage_source {
+        bucket = google_storage_bucket_object.render_source.bucket
+        object = google_storage_bucket_object.render_source.name
       }
     }
   }
 
-  depends_on = [google_project_service.dev-init, google_firebase_hosting_site.dev]
+  service_config {
+    service_account_email = google_service_account.backend_admin.email
+    available_memory      = "4096M"
+    timeout_seconds       = 1800
+
+    environment_variables = {
+      FIREBASE_CONFIG = var.firebase_config
+    }
+  }
+}
+
+data "archive_file" "delete_source" {
+  type             = "zip"
+  source_dir       = "${path.module}/../../packages/backend/functions/delete"
+  output_file_mode = "0666"
+  output_path      = "${path.module}/../../packages/backend/functions/dist/delete.zip"
+}
+
+resource "google_storage_bucket_object" "delete_source" {
+  provider = google-beta
+  name     = "delete-${data.archive_file.delete_source.output_md5}.zip"
+  bucket   = google_storage_bucket.gcf_source.name
+  source   = data.archive_file.delete_source.output_path
+}
+
+resource "google_cloudfunctions2_function" "delete" {
+  provider    = google-beta
+  project     = google_firebase_project.dev.project
+  location    = var.region
+  name        = "delete"
+  description = "User deletion function"
+
+  build_config {
+    runtime     = "go123"
+    entry_point = "Delete"
+
+    source {
+      storage_source {
+        bucket = google_storage_bucket_object.delete_source.bucket
+        object = google_storage_bucket_object.delete_source.name
+      }
+    }
+  }
+
+  service_config {
+    service_account_email = google_service_account.backend_admin.email
+    max_instance_count    = 1
+    available_memory      = "256M"
+    timeout_seconds       = 60
+
+    environment_variables = {
+      FIREBASE_CONFIG = var.firebase_config
+    }
+  }
+}
+
+resource "google_cloud_tasks_queue" "dev" {
+  provider = google-beta
+  project  = google_firebase_project.dev.project
+  location = var.region
+
+  http_target {
+    oidc_token {
+      service_account_email = google_service_account.backend_admin.email
+    }
+  }
 }
 
 data "google_iam_policy" "noauth" {

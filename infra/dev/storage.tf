@@ -50,3 +50,11 @@ resource "google_firebaserules_release" "dev" {
   ruleset_name = google_firebaserules_ruleset.dev.name
   project      = google_firebase_project.dev.project
 }
+
+resource "google_storage_bucket" "gcf_source" {
+  provider                    = google-beta
+  project                     = google_firebase_project.dev.project
+  name                        = "${google_firebase_project.dev.project}-gcf-source"
+  location                    = var.region
+  uniform_bucket_level_access = true
+}

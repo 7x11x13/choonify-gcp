@@ -53,6 +53,7 @@ resource "google_project_service" "dev-init" {
     "youtube.googleapis.com",
     "cloudbuild.googleapis.com",
     "eventarc.googleapis.com",
+    "cloudtasks.googleapis.com",
   ])
   service = each.key
 

@@ -6,6 +6,12 @@ resource "google_identity_platform_config" "dev" {
     anonymous {
       enabled = true
     }
+    email {
+      enabled = false
+    }
+    phone_number {
+      enabled = false
+    }
   }
   depends_on = [google_firebase_project.dev]
 }
@@ -17,15 +23,6 @@ resource "google_identity_platform_default_supported_idp_config" "dev" {
   idp_id        = "google.com"
   client_id     = var.google_client_id
   client_secret = var.google_client_secret
-}
-
-
-resource "google_storage_bucket" "gcf_source" {
-  provider                    = google-beta
-  project                     = google_firebase_project.dev.project
-  name                        = "choonify-dev-gcf-source"
-  location                    = var.region
-  uniform_bucket_level_access = true
 }
 
 data "archive_file" "sign_in_source" {
@@ -43,11 +40,12 @@ resource "google_storage_bucket_object" "sign_in_source" {
 }
 
 resource "google_cloudfunctions_function" "sign_in" {
-  provider    = google-beta
-  project     = google_firebase_project.dev.project
-  region      = var.region
-  name        = "sign-in"
-  description = "Firebase auth sign in function"
+  provider              = google-beta
+  project               = google_firebase_project.dev.project
+  region                = var.region
+  name                  = "sign-in"
+  description           = "Firebase auth sign in function"
+  service_account_email = google_service_account.backend_admin.email
 
   event_trigger {
     event_type = "providers/firebase.auth/eventTypes/user.create"
