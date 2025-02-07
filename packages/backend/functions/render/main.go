@@ -48,7 +48,7 @@ func InitFirebase() {
 	if err != nil {
 		panic(err)
 	}
-	Bucket, err = Storage.DefaultBucket()
+	Bucket, err = Storage.Bucket(os.Getenv("FIREBASE_STORAGE_BUCKET"))
 	if err != nil {
 		panic(err)
 	}

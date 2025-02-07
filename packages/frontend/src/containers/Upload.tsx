@@ -83,6 +83,13 @@ export default function Upload() {
                         setVideoUploadProgress(0);
                         break;
                 }
+            }, (err) => {
+                console.error(err);
+                notifications.show({
+                    title: 'Error',
+                    message: err.message,
+                    color: "red",
+                });
             });
         }
     }, [user]);

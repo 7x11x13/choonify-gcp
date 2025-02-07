@@ -81,6 +81,10 @@ resource "google_cloud_run_v2_service" "dev" {
         name  = "FIREBASE_STORAGE_BUCKET"
         value = google_storage_bucket.dev.name
       }
+      env {
+        name  = "SERVICE_ACCOUNT_EMAIL"
+        value = google_service_account.backend_admin.email
+      }
     }
   }
 
@@ -126,8 +130,12 @@ resource "google_cloudfunctions2_function" "render" {
     timeout_seconds       = 1800
 
     environment_variables = {
-      FIREBASE_CONFIG       = var.firebase_config,
-      SERVICE_ACCOUNT_EMAIL = google_service_account.backend_admin.email
+      FIREBASE_CONFIG         = var.firebase_config
+      SERVICE_ACCOUNT_EMAIL   = google_service_account.backend_admin.email
+      FIREBASE_STORAGE_BUCKET = google_storage_bucket.dev.name
+      GOOGLE_CLIENT_ID        = var.google_client_id
+      GOOGLE_CLIENT_SECRET    = var.google_client_secret
+      GOOGLE_REDIRECT_URL     = google_firebase_hosting_site.dev.default_url
     }
   }
 }
