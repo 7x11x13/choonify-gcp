@@ -19,7 +19,6 @@ require (
 	github.com/bytedance/sonic v1.12.6 // indirect
 	github.com/bytedance/sonic/loader v0.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.15.2 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20240905190251-b4127c9b8d78 // indirect
@@ -46,11 +45,7 @@ require (
 	go.opentelemetry.io/contrib/detectors/gcp v1.32.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.32.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.32.0 // indirect
-	go.uber.org/atomic v1.4.0 // indirect
-	go.uber.org/multierr v1.1.0 // indirect
-	go.uber.org/zap v1.10.0 // indirect
 	golang.org/x/arch v0.12.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/appengine/v2 v2.0.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
@@ -62,9 +57,7 @@ require (
 	cloud.google.com/go/firestore v1.18.0
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/storage v1.50.0
-	firebase.google.com/go v3.13.0+incompatible
 	firebase.google.com/go/v4 v4.15.1
-	github.com/GoogleCloudPlatform/functions-framework-go v1.9.1
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-gonic/gin v1.10.0

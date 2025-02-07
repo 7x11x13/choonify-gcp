@@ -5,12 +5,14 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { ChoonifyUserInfo } from "../types/auth";
 
 const AuthContext = createContext<{
+    loading: boolean;
     user: User | null;
     signIn: () => Promise<void>;
     signOut: () => Promise<void>;
     userInfo: ChoonifyUserInfo | null;
     refreshUserInfo: () => Promise<void>;
 }>({
+    loading: true,
     user: null,
     signIn: async () => { },
     signOut: async () => { },
@@ -30,6 +32,7 @@ function useProvideAuth() {
     auth.useDeviceLanguage();
     const [user, setUser] = useState<User | null>(auth.currentUser);
     const [userInfo, setUserInfo] = useState<ChoonifyUserInfo | null>(null);
+    const [loading, setLoading] = useState(true);
 
     // async function handleRedirectResult() {
     //     const creds = await getRedirectResult(auth);
@@ -43,10 +46,15 @@ function useProvideAuth() {
     useEffect(() => {
         // handleRedirectResult();
         onAuthStateChanged(auth, async (newUser) => {
+            console.log(newUser);
             setUser(newUser);
-            await refreshUserInfo();
         });
     }, []);
+
+    useEffect(() => {
+        setLoading(true);
+        refreshUserInfo();
+    }, [user]);
 
     async function signIn() {
         const provider = new GoogleAuthProvider();
@@ -64,6 +72,7 @@ function useProvideAuth() {
         console.log(user);
         if (!user) {
             setUserInfo(null);
+            setLoading(false);
             return;
         }
         const db = getFirestore();
@@ -72,8 +81,6 @@ function useProvideAuth() {
 
         if (docSnap.exists()) {
             setUserInfo(docSnap.data() as ChoonifyUserInfo);
-            console.log(docSnap.data());
-            console.log(userInfo);
         } else {
             notifications.show({
                 title: 'Error',
@@ -81,9 +88,11 @@ function useProvideAuth() {
                 color: 'red',
             });
         }
+        setLoading(false);
     }
 
     return {
+        loading,
         user,
         signIn,
         signOut: realSignOut,

@@ -43,8 +43,9 @@ func setupRouter() *gin.Engine {
 
 	// cors
 	r.Use(cors.New(cors.Config{
-		AllowAllOrigins: true,
-		AllowHeaders:    []string{"authorization", "x-requested-with", "content-type"},
+		AllowAllOrigins:  true,
+		AllowHeaders:     []string{"authorization", "x-requested-with", "content-type"},
+		AllowCredentials: true,
 	}))
 
 	// auth
@@ -60,8 +61,11 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-func main() {
+func init() {
 	extensions.InitFirebase()
+}
+
+func main() {
 	r := setupRouter()
 	port := os.Getenv("PORT")
 	if port == "" {

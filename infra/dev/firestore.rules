@@ -3,7 +3,19 @@ service cloud.firestore {
         match /users/{userId} {
             allow read: if request.auth != null && request.auth.uid == userId
         }
+        match /task_messages/{userId} {
+            allow read: if request.auth != null && request.auth.uid == userId
+        }
     }
 }
 
-// TODO: bucket rules
+service firebase.storage {
+    match /b/{bucket}/o {
+        match /default/{userId}/default {
+            allow read: if request.auth != null && request.auth.uid == userId
+        }
+        match /public/{all=**} {
+            allow read: if true
+        }
+    }
+}

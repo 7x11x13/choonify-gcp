@@ -6,20 +6,21 @@ import { Dropzone, type FileWithPath } from '@mantine/dropzone';
 import { useListState } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import cx from 'clsx';
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LuAudioLines } from "react-icons/lu";
 import { ChannelSelector } from "../components/YoutubeChannelSelector";
 import type { UploadItem, UploadRequest } from "../types/upload";
-import type { WSBaseMessage, WSErrorMessage, WSRenderProgressMessage, WSRenderSuccessMessage } from "../types/websocket";
+import type { BaseMessage, ErrorMessage, RenderProgressMessage, RenderSuccessMessage } from "../types/messages";
 import { apiPost } from "../util/aws";
 import { formatBytes, formatDuration } from "../util/format";
 import { getUploadItemFromFile } from "../util/metadata";
 import { validateItem } from "../util/validate";
 import classes from './Upload.module.css';
 import { useAuth } from "../components/Auth";
+import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 
 export default function Upload() {
-    const { userInfo } = useAuth();
+    const { user, userInfo } = useAuth();
     const [isVideoUploading, setVideoUploading] = useState(false);
     const [uploadQueue, handlers] = useListState<UploadItem>([]);
     const [selectedIndex, setSelectedIndex] = useState<null | number>(null);
@@ -32,36 +33,78 @@ export default function Upload() {
     const totalVideoUpload = useRef(1);
     const uploadedIds = useRef(new Set());
 
-    const ws = useRef<WebSocket | null>(null);
-
-    function closeWebSocket() {
-        if (!ws.current) {
-            return;
+    useEffect(() => {
+        if (user) {
+            onSnapshot(doc(getFirestore(), "task_messages", user?.uid), (doc) => {
+                const message = doc.data() as BaseMessage | undefined;
+                if (!message || message.timestamp < (Date.now() - 5 * 60 * 1000)) { // 5 minute timeout
+                    return;
+                }
+                switch (message.type) {
+                    case "error":
+                        const errorMsg = message as ErrorMessage;
+                        console.error(errorMsg.message);
+                        notifications.show({
+                            title: 'Error',
+                            message: errorMsg.message,
+                            color: "red",
+                        });
+                        if (errorMsg.reloadUsers) {
+                            refreshChannels({});
+                        }
+                        setVideoUploading(false);
+                        break;
+                    case "progress":
+                        const progressMsg = message as RenderProgressMessage;
+                        if (!uploadedIds.current.has(progressMsg.itemId)) {
+                            setVideoUploadProgress(progressMsg.percent);
+                        }
+                        break;
+                    case "success":
+                        const successMsg = message as RenderSuccessMessage;
+                        notifications.show({
+                            title: 'Success',
+                            message: <Text><Anchor href={successMsg.videoUrl}>Upload</Anchor> took {successMsg.elapsed.toFixed(2)}s</Text>
+                        });
+                        const i = uploadQueue.findIndex((item) => item.id === successMsg.itemId);
+                        if (i !== -1) {
+                            uploadedIds.current.add(successMsg.itemId);
+                            currentVideoUpload.current += 1;
+                            uploadQueue.splice(i, 1);
+                            handlers.remove(i);
+                            if (selectedIndex !== null && selectedIndex >= uploadQueue.length) {
+                                setSelectedIndex(null);
+                            }
+                            if (uploadQueue.length === 0) {
+                                setVideoUploading(false);
+                            }
+                        }
+                        setUploadingStatus(`Uploading video ${currentVideoUpload.current} of ${totalVideoUpload.current}`);
+                        setVideoUploadProgress(0);
+                        break;
+                }
+            });
         }
-        ws.current.close();
-        ws.current = null;
-    }
+    }, [user]);
 
     async function uploadVideos() {
         setUploadingStatus("Sending upload info...");
         const request: UploadRequest = { channelId: selectedChannelId.current!, videos: uploadQueue.map(({ imageFileBlob, ...rest }) => rest) }
         const response = await apiPost("/upload", request);
         if (response !== undefined) {
-            const { uploaded } = response as { uploaded: number };
-            if (uploaded < uploadQueue.length) {
+            const { uploading } = response as { uploading: number };
+            if (uploading < uploadQueue.length) {
                 notifications.show({
                     title: 'Warning',
-                    message: `Upload quota hit! Only uploading ${uploaded} of ${uploadQueue.length} videos. Upgrade your plan to increase the quota`,
+                    message: `Upload quota hit! Only uploading ${uploading} of ${uploadQueue.length} videos. Upgrade your plan to increase the quota`,
                 })
             }
-            totalVideoUpload.current = uploaded;
+            totalVideoUpload.current = uploading;
             setUploadingStatus(`Uploading video ${currentVideoUpload.current} of ${totalVideoUpload.current}`);
-            if (uploaded === 0) {
-                closeWebSocket();
+            if (uploading === 0) {
                 setVideoUploading(false);
             }
         } else {
-            closeWebSocket();
             setVideoUploading(false);
         }
     }
@@ -81,70 +124,9 @@ export default function Upload() {
         currentVideoUpload.current = 1;
         uploadedIds.current = new Set();
         setVideoUploading(true);
-        setUploadingStatus("Initializing connection...");
+        setUploadingStatus("Initializing...");
         setVideoUploadProgress(0);
-        ws.current = new WebSocket(``);
-        ws.current.onmessage = (event) => {
-            const message: WSBaseMessage = JSON.parse(event.data);
-            switch (message.type) {
-                case "error":
-                    const errorMsg = message as WSErrorMessage;
-                    console.error(errorMsg.message);
-                    notifications.show({
-                        title: 'Error',
-                        message: errorMsg.message,
-                        color: "red",
-                    });
-                    if (errorMsg.reloadUsers) {
-                        refreshChannels({});
-                    }
-                    setVideoUploading(false);
-                    break;
-                case "progress":
-                    const progressMsg = message as WSRenderProgressMessage;
-                    if (!uploadedIds.current.has(progressMsg.itemId)) {
-                        setVideoUploadProgress(progressMsg.percent);
-                    }
-                    break;
-                case "success":
-                    const successMsg = message as WSRenderSuccessMessage;
-                    notifications.show({
-                        title: 'Success',
-                        message: <Text><Anchor href={successMsg.videoUrl}>Upload</Anchor> took {successMsg.elapsed.toFixed(2)}s</Text>
-                    });
-                    const i = uploadQueue.findIndex((item) => item.id === successMsg.itemId);
-                    if (i !== -1) {
-                        uploadedIds.current.add(successMsg.itemId);
-                        currentVideoUpload.current += 1;
-                        uploadQueue.splice(i, 1);
-                        handlers.remove(i);
-                        if (selectedIndex !== null && selectedIndex >= uploadQueue.length) {
-                            setSelectedIndex(null);
-                        }
-                        if (uploadQueue.length === 0) {
-                            setVideoUploading(false);
-                        }
-                    }
-                    setUploadingStatus(`Uploading video ${currentVideoUpload.current} of ${totalVideoUpload.current}`);
-                    setVideoUploadProgress(0);
-                    break;
-            }
-        };
-        ws.current.onerror = (event) => {
-            console.error(event);
-            notifications.show({
-                title: 'Error',
-                message: event.toString(),
-            });
-            setVideoUploading(false);
-            closeWebSocket();
-        }
-        ws.current.onopen = () => {
-            uploadVideos();
-        };
-        ws.current.onclose = () => {
-            setVideoUploading(false);
-        }
+        uploadVideos();
     }
 
     async function onFilesDropped(files: FileWithPath[]) {

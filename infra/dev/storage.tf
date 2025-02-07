@@ -19,6 +19,23 @@ resource "google_storage_bucket" "dev" {
   uniform_bucket_level_access = true
 
   depends_on = [google_project_service.dev-init]
+
+  lifecycle_rule {
+    condition {
+      age            = 1
+      matches_prefix = ["private/"]
+    }
+    action {
+      type = "Delete"
+    }
+  }
+
+  cors {
+    origin          = ["*"]
+    method          = ["GET", "PUT", "DELETE", "OPTIONS"]
+    response_header = ["Content-Type"]
+    max_age_seconds = 3600
+  }
 }
 
 resource "google_firebase_storage_bucket" "dev" {
@@ -41,6 +58,7 @@ resource "google_firebaserules_ruleset" "dev" {
 
   depends_on = [
     google_firestore_database.dev,
+    google_firebase_storage_bucket.dev,
   ]
 }
 
@@ -57,4 +75,8 @@ resource "google_storage_bucket" "gcf_source" {
   name                        = "${google_firebase_project.dev.project}-gcf-source"
   location                    = var.region
   uniform_bucket_level_access = true
+}
+
+output "firebase_bucket_name" {
+  value = google_firebase_storage_bucket.dev.id
 }

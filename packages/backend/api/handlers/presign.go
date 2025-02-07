@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"choonify.com/backend/api/extensions"
@@ -65,9 +66,10 @@ func PresignUploadHandler(ctx *gin.Context) {
 	if body.IsDefaultCover {
 		key := fmt.Sprintf("default/%s/default", userId)
 		url, err := extensions.Bucket.SignedURL(key, &storage.SignedURLOptions{
-			Method:      "PUT",
-			Expires:     time.Now().Add(time.Hour),
-			ContentType: body.ContentType,
+			GoogleAccessID: os.Getenv("SERVICE_ACCOUNT_EMAIL"),
+			Method:         "PUT",
+			Expires:        time.Now().Add(time.Hour),
+			ContentType:    body.ContentType,
 			Headers: []string{
 				fmt.Sprintf("content-length:%d", body.Size),
 			},
@@ -109,9 +111,10 @@ func PresignUploadHandler(ctx *gin.Context) {
 
 	key := fmt.Sprintf("private/%s/%s-%s", userId, uuid.New().String(), body.Name)
 	url, err := extensions.Bucket.SignedURL(key, &storage.SignedURLOptions{
-		Method:      "PUT",
-		Expires:     time.Now().Add(time.Hour),
-		ContentType: body.ContentType,
+		GoogleAccessID: os.Getenv("SERVICE_ACCOUNT_EMAIL"),
+		Method:         "PUT",
+		Expires:        time.Now().Add(time.Hour),
+		ContentType:    body.ContentType,
 		Headers: []string{
 			fmt.Sprintf("content-length:%d", body.Size),
 		},

@@ -39,7 +39,7 @@ type UserInfo struct {
 func (info *UserInfo) RealUploadedToday() (int, int64) {
 	now := time.Now().UTC()
 	y, m, d := now.Date()
-	today := time.Date(y, m, d, 0, 0, 0, 0, time.UTC).Unix()
+	today := time.Date(y, m, d, 0, 0, 0, 0, time.UTC).UnixMilli()
 	if info.LastUploaded < today {
 		return 0, 0
 	} else {

@@ -77,6 +77,10 @@ resource "google_cloud_run_v2_service" "dev" {
         name  = "FIREBASE_CONFIG"
         value = var.firebase_config
       }
+      env {
+        name  = "FIREBASE_STORAGE_BUCKET"
+        value = google_storage_bucket.dev.name
+      }
     }
   }
 
@@ -122,7 +126,8 @@ resource "google_cloudfunctions2_function" "render" {
     timeout_seconds       = 1800
 
     environment_variables = {
-      FIREBASE_CONFIG = var.firebase_config
+      FIREBASE_CONFIG       = var.firebase_config,
+      SERVICE_ACCOUNT_EMAIL = google_service_account.backend_admin.email
     }
   }
 }

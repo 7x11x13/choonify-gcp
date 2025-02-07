@@ -48,5 +48,4 @@ type UploadBatchRequest struct {
 	ChannelId string              `json:"channelId"`
 	UserId    string              `json:"userId"`
 	Videos    []UploadRequestData `json:"videos"`
-	TaskId    string              `json:"taskId"`
 }

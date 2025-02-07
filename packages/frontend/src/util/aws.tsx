@@ -33,12 +33,11 @@ function getAPIBase() {
 
 export async function apiPost(path: string, body: any) {
     try {
-        const response = await axios.post(`${getAPIBase()}${path}`, {
+        const response = await axios.post(`${getAPIBase()}${path}`, body, {
             headers: {
                 "x-requested-with": "XMLHttpRequest",
                 Authorization: `Bearer ${await getToken()}`
             },
-            body
         });
         return response.data;
     } catch (err) {

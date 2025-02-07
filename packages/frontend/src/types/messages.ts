@@ -1,20 +1,21 @@
-export type WSBaseMessage = {
+export type BaseMessage = {
     type: "error" | "progress" | "success";
     itemId: string;
+    timestamp: number;
 }
 
-export type WSErrorMessage = WSBaseMessage & {
+export type ErrorMessage = BaseMessage & {
     type: "error";
     message: string;
     reloadUsers: boolean;
 }
 
-export type WSRenderProgressMessage = WSBaseMessage & {
+export type RenderProgressMessage = BaseMessage & {
     type: "progress";
     percent: number;
 }
 
-export type WSRenderSuccessMessage = WSBaseMessage & {
+export type RenderSuccessMessage = BaseMessage & {
     type: "success";
     videoUrl: string;
     elapsed: number;

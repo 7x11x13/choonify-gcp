@@ -13,7 +13,7 @@ import { ProvideAuth } from './components/Auth';
 import { Notifications } from '@mantine/notifications';
 import { createTheme, MantineProvider } from '@mantine/core';
 
-const firebaseConfig = import.meta.env.FIREBASE_CONFIG;
+const firebaseConfig = JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG);
 initializeApp(firebaseConfig);
 
 const theme = createTheme({

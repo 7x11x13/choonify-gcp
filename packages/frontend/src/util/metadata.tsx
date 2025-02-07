@@ -121,6 +121,9 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
         }
         const picture = metadata.common.picture[0];
         const imagePath = await uploadFile(picture.data, picture.format, picture.data.byteLength, picture.name ?? `cover.${picture.format.split("/").at(-1)}`, onImageProg);
+        if (imagePath === null) {
+            return null;
+        }
         item.imageFile = imagePath;
         item.imageFileBlob = new File([picture.data], item.imageFile.split("/").at(-1)!, { type: picture.format });
     }

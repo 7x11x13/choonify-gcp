@@ -4,15 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"time"
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
 	"choonify.com/backend/types"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func getUploadQuota(subscription int) int {
@@ -20,8 +17,7 @@ func getUploadQuota(subscription int) int {
 }
 
 type uploadRequestResponse struct {
-	Uploading int    `json:"uploading"`
-	TaskId    string `json:"taskId"`
+	Uploading int `json:"uploading"`
 }
 
 func UploadRequestHandler(ctx *gin.Context) {
@@ -38,6 +34,7 @@ func UploadRequestHandler(ctx *gin.Context) {
 		return
 	}
 
+	// TODO: verify channelid
 	// TODO: change to bytes quota
 	uploadedToday, _ := user.RealUploadedToday()
 	uploadCount := min(max(0, getUploadQuota(user.Subscription)-uploadedToday), len(body.Videos))
@@ -51,7 +48,7 @@ func UploadRequestHandler(ctx *gin.Context) {
 
 	if len(body.Videos) > 0 {
 		// send to render job
-		body.TaskId = uuid.NewString()
+		body.UserId = userId
 		raw, err := json.Marshal(body)
 		if err != nil {
 			ctx.Error(err)
@@ -71,9 +68,6 @@ func UploadRequestHandler(ctx *gin.Context) {
 						},
 					},
 				},
-				ScheduleTime: &timestamppb.Timestamp{
-					Seconds: time.Now().Add(24 * time.Hour).Unix(),
-				},
 			},
 		})
 		if err != nil {
@@ -84,6 +78,5 @@ func UploadRequestHandler(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, uploadRequestResponse{
 		Uploading: len(body.Videos),
-		TaskId:    body.TaskId,
 	})
 }

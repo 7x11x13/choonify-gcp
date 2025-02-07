@@ -16,6 +16,14 @@ export function ChannelSelector({ selectedChannelId, refreshState }: { selectedC
     });
     const gsiLoaded = useGSI();
 
+    useEffect(() => {
+        const channels = userInfo?.channels ?? [];
+        setData(channels);
+        if (!selectedValue && channels.length > 0) {
+            setSelected(channels[0].channelId);
+        }
+    }, [userInfo?.channels]);
+
     function setSelected(value: string | null) {
         setSelectedValue(value);
         selectedChannelId.current = value;
@@ -30,11 +38,6 @@ export function ChannelSelector({ selectedChannelId, refreshState }: { selectedC
         setLoading(true);
         try {
             await refreshUserInfo();
-            const channels = userInfo?.channels ?? [];
-            setData(channels);
-            if (!selectedValue && channels.length > 0) {
-                setSelected(channels[0].channelId);
-            }
         } catch (err) {
             console.error("Error loading authorized channels:", err);
         }

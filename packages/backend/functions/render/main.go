@@ -124,6 +124,7 @@ func getYouTubeClient(ctx context.Context, channelId string) (*youtube.Service, 
 		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
 		Scopes:       []string{"https://www.googleapis.com/auth/youtube.upload"},
 	}
+	// TODO: store token after if refreshed
 	token := item.Token
 	client := cfg.Client(ctx, &token)
 	service, err := youtube.NewService(ctx, option.WithHTTPClient(client))
@@ -168,7 +169,7 @@ func updateUserTable(ctx context.Context, userId string, uploadedBytes int64) er
 			},
 			{
 				Path:  "lastUploaded",
-				Value: time.Now().Unix(),
+				Value: time.Now().UnixMilli(),
 			},
 		})
 	})
@@ -214,8 +215,9 @@ func deleteYTChannelInfo(ctx context.Context, userId string, channelId string) {
 
 func presignGet(ctx context.Context, key string) (*string, *int64, error) {
 	url, err := Bucket.SignedURL(key, &storage.SignedURLOptions{
-		Method:  "GET",
-		Expires: time.Now().Add(time.Hour),
+		GoogleAccessID: os.Getenv("SERVICE_ACCOUNT_EMAIL"),
+		Method:         "GET",
+		Expires:        time.Now().Add(time.Hour),
 	})
 	if err != nil {
 		return nil, nil, err
@@ -227,8 +229,8 @@ func presignGet(ctx context.Context, key string) (*string, *int64, error) {
 	return &url, &attrs.Size, nil
 }
 
-func sendMessage(ctx context.Context, taskId string, msg any) {
-	_, err := Firestore.Collection("task_messages").Doc(taskId).Set(ctx, msg)
+func sendMessage(ctx context.Context, userId string, msg any) {
+	_, err := Firestore.Collection("task_messages").Doc(userId).Set(ctx, msg)
 	if err != nil {
 		log.Printf("Error sending message: %s", err)
 	}
@@ -251,10 +253,11 @@ func Render(w http.ResponseWriter, r *http.Request) {
 			deleteYTChannelInfo(ctx, request.UserId, request.ChannelId)
 			reloadUsers = true
 		}
-		sendMessage(ctx, request.TaskId, &types.ErrorMessage{
+		sendMessage(ctx, request.UserId, &types.ErrorMessage{
 			BaseMessage: types.BaseMessage{
-				Type:   "error",
-				ItemId: request.Videos[0].Id,
+				Type:      "error",
+				ItemId:    request.Videos[0].Id,
+				Timestamp: time.Now().UnixMilli(),
 			},
 			Message:     msg,
 			ReloadUsers: reloadUsers,
@@ -263,7 +266,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, req := range request.Videos {
-		err, errMessage := handleRequest(ctx, youtube, req, request.UserId, request.TaskId)
+		err, errMessage := handleRequest(ctx, youtube, req, request.UserId)
 		if err == nil {
 			continue
 		}
@@ -276,10 +279,11 @@ func Render(w http.ResponseWriter, r *http.Request) {
 				reloadUser = true
 			}
 		}
-		sendMessage(ctx, request.TaskId, &types.ErrorMessage{
+		sendMessage(ctx, request.UserId, &types.ErrorMessage{
 			BaseMessage: types.BaseMessage{
-				Type:   "error",
-				ItemId: req.Id,
+				Type:      "error",
+				ItemId:    req.Id,
+				Timestamp: time.Now().UnixMilli(),
 			},
 			Message:     errMessage,
 			ReloadUsers: reloadUser,
@@ -322,19 +326,20 @@ func (pr *ProgressPipeReader) CloseWithError(err error) error {
 	return pr.PipeReader.CloseWithError(err)
 }
 
-func relayProgress(ctx context.Context, itemId string, taskId string, progressChannel chan float32) {
+func relayProgress(ctx context.Context, itemId string, userId string, progressChannel chan float32) {
 	for prog := range progressChannel {
-		sendMessage(ctx, taskId, &types.RenderProgressMessage{
+		sendMessage(ctx, userId, &types.RenderProgressMessage{
 			BaseMessage: types.BaseMessage{
-				Type:   "progress",
-				ItemId: itemId,
+				Type:      "progress",
+				ItemId:    itemId,
+				Timestamp: time.Now().UnixMilli(),
 			},
 			Percent: min(prog*100, 100),
 		})
 	}
 }
 
-func handleRequest(ctx context.Context, yt *youtube.Service, request types.UploadRequestData, userId string, taskId string) (error, string) {
+func handleRequest(ctx context.Context, yt *youtube.Service, request types.UploadRequestData, userId string) (error, string) {
 	startTime := time.Now()
 	upload := &youtube.Video{
 		Snippet: &youtube.VideoSnippet{
@@ -364,7 +369,7 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 
 	progressChannel := make(chan float32, 64)
 	progReader := &ProgressPipeReader{pr, 0, *audioSize + *imageSize, 0, progressChannel}
-	go relayProgress(ctx, request.Id, taskId, progressChannel)
+	go relayProgress(ctx, request.Id, userId, progressChannel)
 
 	response, err := call.Media(progReader).Do()
 	if err != nil {
@@ -385,10 +390,11 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 		if err != nil {
 			log.Printf("Error deleting audio: %s", err)
 		}
-		sendMessage(ctx, taskId, types.RenderSuccessMessage{
+		sendMessage(ctx, userId, types.RenderSuccessMessage{
 			BaseMessage: types.BaseMessage{
-				Type:   "success",
-				ItemId: request.Id,
+				Type:      "success",
+				ItemId:    request.Id,
+				Timestamp: time.Now().UnixMilli(),
 			},
 			VideoUrl: fmt.Sprintf("https://youtube.com/watch?v=%s", response.Id),
 			Elapsed:  time.Since(startTime).Seconds(),

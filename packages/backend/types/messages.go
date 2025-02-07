@@ -1,8 +1,9 @@
 package types
 
 type BaseMessage struct {
-	Type   string `json:"type"`
-	ItemId string `json:"itemId"`
+	Type      string `json:"type"`
+	ItemId    string `json:"itemId"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 type ErrorMessage struct {

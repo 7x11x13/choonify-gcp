@@ -82,10 +82,18 @@ resource "google_firebase_hosting_site" "dev" {
   app_id   = google_firebase_web_app.dev.app_id
 }
 
+data "google_firebase_web_app_config" "dev" {
+  provider   = google-beta
+  project    = google_firebase_project.dev.project
+  web_app_id = google_firebase_web_app.dev.app_id
+
+  depends_on = [google_firebase_web_app.dev]
+}
+
 output "firebase_site" {
   value = google_firebase_hosting_site.dev.site_id
 }
 
-output "firebase_api_key" {
-  value = google_firebase_web_app.dev.api_key_id
+output "firebase_config" {
+  value = data.google_firebase_web_app_config.dev
 }
