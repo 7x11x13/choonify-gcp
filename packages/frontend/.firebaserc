@@ -1,6 +1,6 @@
 {
     "targets": {
-        "my-production-project": {
+        "choonify": {
             "hosting": {
                 "prod": [
                     "choonify-prod"

@@ -31,13 +31,15 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 		return
 	}
 
-	validChannelId := slices.ContainsFunc(user.Channels, func(channel types.YTChannelInfo) bool {
-		return channel.ChannelId == body.DefaultChannelId
-	})
+	if body.DefaultChannelId != "" {
+		validChannelId := slices.ContainsFunc(user.Channels, func(channel types.YTChannelInfo) bool {
+			return channel.ChannelId == body.DefaultChannelId
+		})
 
-	if !validChannelId {
-		ctx.JSON(http.StatusBadRequest, "Default channel not found")
-		return
+		if !validChannelId {
+			ctx.JSON(http.StatusBadRequest, "Default channel not found")
+			return
+		}
 	}
 
 	_, err = extensions.Firestore.Collection("users").Doc(userId).Update(

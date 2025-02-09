@@ -3,6 +3,9 @@ import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signO
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { ChoonifyUserInfo } from "../types/auth";
+import config from "../config";
+import { getDefaultImageFile } from "../util/metadata";
+import { downloadFile } from "../util/aws";
 
 const AuthContext = createContext<{
     loading: boolean;
@@ -78,7 +81,16 @@ function useProvideAuth() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-            setUserInfo(docSnap.data() as ChoonifyUserInfo);
+            const info = docSnap.data() as ChoonifyUserInfo;
+            const defaults = info.settings.defaults;
+            if (defaults.imageFile === config.settings.DEFAULT_COVER_IMAGE || !defaults.imageFile) {
+                defaults.imageFile = config.settings.DEFAULT_COVER_IMAGE;
+                defaults.imageFileBlob = getDefaultImageFile();
+            } else {
+                // fetch from s3
+                defaults.imageFileBlob = await downloadFile(defaults.imageFile, () => { });
+            }
+            setUserInfo(info);
         } else {
             notifications.show({
                 title: 'Error',

@@ -54,7 +54,6 @@ func AuthCallbackHandler(ctx *gin.Context) {
 	call := service.Channels.List([]string{"snippet"})
 	response, err := call.Mine(true).Do()
 	if err != nil {
-		// log.Printf("Failed to get user channels: %v", err)
 		ctx.Error(err)
 		ctx.JSON(http.StatusInternalServerError, "Failed to get channels")
 		return
@@ -71,6 +70,7 @@ func AuthCallbackHandler(ctx *gin.Context) {
 		if err != nil {
 			ctx.Error(err)
 		}
+		// TODO: update settings.defaultchannelid if its empty
 		_, err = extensions.Firestore.Collection("users").
 			Doc(userId).
 			Update(ctx, []firestore.Update{

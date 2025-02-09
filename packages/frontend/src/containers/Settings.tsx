@@ -1,13 +1,10 @@
 import { Center, Container, Loader } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../components/Auth";
 import UploadForm from "../components/UploadForm";
-import config from "../config";
 import { UserSettings } from "../types/auth";
-import { UploadItem } from "../types/upload";
-import { apiPost, downloadFile } from "../util/aws";
-import { getDefaultImageFile } from "../util/metadata";
+import { apiPost } from "../util/aws";
 
 export default function Settings() {
     const { userInfo, refreshUserInfo } = useAuth();
@@ -29,30 +26,6 @@ export default function Settings() {
         setSending(false);
     }
 
-    async function updateDefaults(defaults: UploadItem) {
-        const settings = { ...userInfo!.settings, defaults };
-        await updateSettings(settings);
-    }
-
-    async function loadUser() {
-        if (!userInfo) {
-            return;
-        }
-        const defaults = userInfo.settings.defaults;
-        // download default image if needed
-        if (defaults.imageFile === config.settings.DEFAULT_COVER_IMAGE || !defaults.imageFile) {
-            defaults.imageFile = config.settings.DEFAULT_COVER_IMAGE;
-            defaults.imageFileBlob = getDefaultImageFile();
-        } else {
-            // fetch from s3
-            defaults.imageFileBlob = await downloadFile(defaults.imageFile, () => { });
-        }
-    }
-
-    useEffect(() => {
-        loadUser();
-    }, []);
-
     if (!userInfo) {
         return (
             <Center>
@@ -65,7 +38,7 @@ export default function Settings() {
     // TODO: display user upload stats
     return (
         <Container title="User settings">
-            <UploadForm settingsMode="defaults" disabled={sending} initialItemData={userInfo.settings.defaults} formCallback={updateDefaults} />
+            <UploadForm settingsMode="defaults" disabled={sending} initialItemData={userInfo.settings} formCallback={updateSettings} />
         </Container>
     );
 }

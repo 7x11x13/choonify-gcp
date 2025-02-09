@@ -12,4 +12,4 @@ terraform apply -auto-approve &&
 cd ../../packages/frontend &&
 npm run build --mode=${mode} &&
 firebase use choonify-${stage} &&
-firebase deploy --only hosting:${stage}
+firebase deploy --only hosting:${stage},firestore:rules,storage

@@ -18,14 +18,14 @@ import { validateItem } from "../util/validate";
 import classes from './Upload.module.css';
 import { useAuth } from "../components/Auth";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
+import { UserSettings } from "../types/auth";
 
 export default function Upload() {
-    const { user, userInfo } = useAuth();
+    const { user, userInfo, refreshUserInfo } = useAuth();
     const [isVideoUploading, setVideoUploading] = useState(false);
     const [uploadQueue, handlers] = useListState<UploadItem>([]);
     const [selectedIndex, setSelectedIndex] = useState<null | number>(null);
-    const selectedChannelId = useRef<null | string>(null);
-    const [refreshChannelState, refreshChannels] = useState({});
+    const [selectedChannelId, setSelectedChannelId] = useState<string>(userInfo!.settings.defaultChannelId);
     const [uploadProgress, setUploadProgress] = useState(100);
     const [videoUploadProgress, setVideoUploadProgress] = useState(0);
     const [uploadingStatus, setUploadingStatus] = useState("");
@@ -35,7 +35,7 @@ export default function Upload() {
 
     useEffect(() => {
         if (user) {
-            onSnapshot(doc(getFirestore(), "task_messages", user?.uid), (doc) => {
+            onSnapshot(doc(getFirestore(), "task_messages", user?.uid), async (doc) => {
                 const message = doc.data() as BaseMessage | undefined;
                 if (!message || message.timestamp < (Date.now() - 5 * 60 * 1000)) { // 5 minute timeout
                     return;
@@ -50,7 +50,7 @@ export default function Upload() {
                             color: "red",
                         });
                         if (errorMsg.reloadUsers) {
-                            refreshChannels({});
+                            await refreshUserInfo();
                         }
                         setVideoUploading(false);
                         break;
@@ -96,7 +96,7 @@ export default function Upload() {
 
     async function uploadVideos() {
         setUploadingStatus("Sending upload info...");
-        const request: UploadRequest = { channelId: selectedChannelId.current!, videos: uploadQueue.map(({ imageFileBlob, ...rest }) => rest) }
+        const request: UploadRequest = { channelId: selectedChannelId, videos: uploadQueue.map(({ imageFileBlob, ...rest }) => rest) }
         const response = await apiPost("/upload", request);
         if (response !== undefined) {
             const { uploading } = response as { uploading: number };
@@ -153,9 +153,9 @@ export default function Upload() {
         setUploadProgress(100);
     }
 
-    async function formCallback(item: UploadItem) {
+    async function formCallback(item: UserSettings) {
         if (selectedIndex !== null) {
-            handlers.setItem(selectedIndex, item);
+            handlers.setItem(selectedIndex, item.defaults);
         }
     }
 
@@ -184,8 +184,8 @@ export default function Upload() {
         <Grid>
             <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
                 <Stack gap="0">
-                    <ChannelSelector refreshState={refreshChannelState} selectedChannelId={selectedChannelId}></ChannelSelector>
-                    {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId.current === null}>Upload to YouTube!</Button>}
+                    <ChannelSelector onChange={setSelectedChannelId} value={selectedChannelId}></ChannelSelector>
+                    {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === ""}>Upload to YouTube!</Button>}
                     {isVideoUploading && <Stack mt="sm" gap="0"><Progress value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
                     <ScrollArea.Autosize w="100%" maw="100%" mah="50vh" type="auto" scrollbars="y">
                         <DragDropContext
@@ -220,7 +220,7 @@ export default function Upload() {
                 </Stack>
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6, md: 8 }}>
-                {selectedIndex !== null && <UploadForm settingsMode="regular" disabled={isVideoUploading} initialItemData={uploadQueue[selectedIndex]} formCallback={formCallback}>
+                {selectedIndex !== null && <UploadForm settingsMode="regular" disabled={isVideoUploading} initialItemData={{ ...userInfo!.settings, defaults: uploadQueue[selectedIndex] }} formCallback={formCallback}>
                 </UploadForm>}
                 {selectedIndex === null && <Text ta="center">No track selected</Text>}
             </Grid.Col>

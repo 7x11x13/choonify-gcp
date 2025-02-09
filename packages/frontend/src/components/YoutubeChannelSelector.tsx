@@ -1,14 +1,25 @@
-import { Avatar, Combobox, InputBase, useCombobox, Text, Loader, Input, Group, Button } from '@mantine/core';
+import { Avatar, Button, Combobox, Group, Input, InputBase, Loader, Text, useCombobox } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import { YTChannel } from '../types/auth';
-import { useAuth, useGSI } from './Auth';
-import { apiPost } from '../util/aws';
 import config from '../config';
+import { YTChannel } from '../types/auth';
+import { apiPost } from '../util/aws';
+import { useAuth, useGSI } from './Auth';
+import { useUncontrolled } from '@mantine/hooks';
 
+interface ChannelSelectorProps {
+    value?: string;
+    defaultValue?: string;
+    onChange: (value: string) => void;
+}
 
-export function ChannelSelector({ selectedChannelId, refreshState }: { selectedChannelId: React.RefObject<string | null>, refreshState: any }) {
+export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelectorProps) {
     const { user, userInfo, refreshUserInfo } = useAuth();
-    const [selectedValue, setSelectedValue] = useState<string | null>(null);
+    const [_value, setValue] = useUncontrolled({
+        value,
+        defaultValue,
+        finalValue: '',
+        onChange,
+    });
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<YTChannel[]>([]);
     const combobox = useCombobox({
@@ -19,29 +30,23 @@ export function ChannelSelector({ selectedChannelId, refreshState }: { selectedC
     useEffect(() => {
         const channels = userInfo?.channels ?? [];
         setData(channels);
-        if (!selectedValue && channels.length > 0) {
-            setSelected(channels[0].channelId);
+        if (!_value && channels.length > 0) {
+            if (userInfo?.settings.defaultChannelId) {
+                setSelected(userInfo.settings.defaultChannelId);
+            } else {
+                setSelected(channels[0].channelId);
+            }
         }
     }, [userInfo?.channels]);
 
     function setSelected(value: string | null) {
-        setSelectedValue(value);
-        selectedChannelId.current = value;
+        setValue(value ?? "");
+        onChange(value ?? "");
     }
 
     function getSelectedItem() {
-        const item = data.find((info) => info.channelId === selectedValue);
+        const item = data.find((info) => info.channelId === _value);
         return item
-    }
-
-    async function reload() {
-        setLoading(true);
-        try {
-            await refreshUserInfo();
-        } catch (err) {
-            console.error("Error loading authorized channels:", err);
-        }
-        setLoading(false);
     }
 
     async function authNewChannel() {
@@ -58,21 +63,13 @@ export function ChannelSelector({ selectedChannelId, refreshState }: { selectedC
             callback: async (response) => {
                 const r = await apiPost("/oauth", { code: response.code });
                 if (r !== undefined) {
-                    await reload();
-                } else {
-                    setLoading(false);
+                    await refreshUserInfo();
                 }
+                setLoading(false);
             },
         });
         client.requestCode();
     }
-
-    useEffect(() => {
-        setSelected(null);
-        if (user) {
-            reload();
-        }
-    }, [refreshState]);
 
     const options = data.map((item) => (
         <Combobox.Option value={item.channelId} key={item.channelId}>
@@ -102,11 +99,11 @@ export function ChannelSelector({ selectedChannelId, refreshState }: { selectedC
                         rightSectionPointerEvents="none"
                         style={{ flexGrow: 1 }}
                     >
-                        {selectedValue && <Group>
-                            <Avatar src={getSelectedItem()!.picture} alt={getSelectedItem()!.name} radius="xl" size={24} />
-                            <Text>{getSelectedItem()!.name}</Text>
+                        {_value && <Group>
+                            <Avatar src={getSelectedItem()?.picture} alt={getSelectedItem()?.name} radius="xl" size={24} />
+                            <Text>{getSelectedItem()?.name}</Text>
                         </Group>}
-                        {!selectedValue && <Input.Placeholder>No channel selected</Input.Placeholder>}
+                        {!_value && <Input.Placeholder>No channel selected</Input.Placeholder>}
                     </InputBase>
                 </Combobox.Target>
 

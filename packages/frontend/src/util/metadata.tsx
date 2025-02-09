@@ -1,14 +1,14 @@
 import type { FileWithPath } from "@mantine/dropzone";
 import { randomId } from "@mantine/hooks";
 import { IAudioMetadata, parseBlob } from "music-metadata";
-import { ChoonifyUserInfo } from "../types/auth";
+import { ChoonifyUserInfo, UserSettings } from "../types/auth";
 import { FilterType, UploadItem } from "../types/upload";
 
 import { notifications } from "@mantine/notifications";
 import { render } from "squirrelly";
 import config from "../config";
 import { defaultImageB64, defaultImageType } from "../types/default-image";
-import { downloadFile, uploadFile } from "./aws";
+import { uploadFile } from "./aws";
 
 function b64toBlobParts(b64Data: string, sliceSize: number = 512) {
     const byteCharacters = atob(b64Data);
@@ -61,6 +61,13 @@ export function getDefaultUploadItem(): UploadItem {
     }
 }
 
+export function getDefaultUserSettings(): UserSettings {
+    return {
+        defaults: getDefaultUploadItem(),
+        defaultChannelId: "",
+    }
+}
+
 async function getFileMetadata(file: FileWithPath) {
     try {
         const metadata = await parseBlob(file, {
@@ -104,11 +111,13 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
     item.audioFileLength = metadata.format.duration;
 
     const defaultItem = user.settings.defaults;
+    item.imageFile = defaultItem.imageFile;
+    item.imageFileBlob = defaultItem.imageFileBlob;
     item.metadata = {
-        ...item.metadata, ...(defaultItem?.metadata || {})
+        ...item.metadata, ...(defaultItem.metadata)
     }
     item.settings = {
-        ...item.settings, ...(defaultItem?.settings || {})
+        ...item.settings, ...(defaultItem.settings)
     }
     item.metadata.title = renderTemplateString(item.metadata.title, file, metadata);
     item.metadata.description = renderTemplateString(item.metadata.description, file, metadata);
@@ -126,18 +135,6 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
         }
         item.imageFile = imagePath;
         item.imageFileBlob = new File([picture.data], item.imageFile.split("/").at(-1)!, { type: picture.format });
-    }
-    if (item.imageFile === "") {
-        if (defaultItem?.imageFile === config.settings.DEFAULT_COVER_IMAGE || !defaultItem) {
-            item.imageFile = config.settings.DEFAULT_COVER_IMAGE;
-            item.imageFileBlob = getDefaultImageFile();
-        } else {
-            // fetch from s3
-            item.imageFile = defaultItem?.imageFile;
-            item.imageFileBlob = await downloadFile(item.imageFile, (percent) => {
-                onProg(percent / 2);
-            });
-        }
     }
     onProg(50);
     // Upload audio file to s3

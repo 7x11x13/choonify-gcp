@@ -17,7 +17,7 @@ const links = [
 export function Header() {
     const [opened, { toggle }] = useDisclosure(false);
     const [userMenuOpened, setUserMenuOpened] = useState(false);
-    const { user, signOut } = useAuth();
+    const { user, loading, signOut } = useAuth();
     const [deleteModalOpened, { open: deleteModalOpen, close: deleteModalClose }] = useDisclosure(false);
 
     let navigate = useNavigate();
@@ -32,6 +32,10 @@ export function Header() {
             {link.label}
         </a>
     ));
+
+    if (loading) {
+        return;
+    }
 
     return (
         <header className={classes.header}>

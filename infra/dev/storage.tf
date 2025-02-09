@@ -46,29 +46,6 @@ resource "google_firebase_storage_bucket" "dev" {
   depends_on = [google_storage_bucket.dev]
 }
 
-resource "google_firebaserules_ruleset" "dev" {
-  provider = google-beta
-  project  = google_firebase_project.dev.project
-  source {
-    files {
-      name    = "firestore.rules"
-      content = file("firestore.rules")
-    }
-  }
-
-  depends_on = [
-    google_firestore_database.dev,
-    google_firebase_storage_bucket.dev,
-  ]
-}
-
-resource "google_firebaserules_release" "dev" {
-  provider     = google-beta
-  name         = "cloud.firestore"
-  ruleset_name = google_firebaserules_ruleset.dev.name
-  project      = google_firebase_project.dev.project
-}
-
 resource "google_storage_bucket" "gcf_source" {
   provider                    = google-beta
   project                     = google_firebase_project.dev.project

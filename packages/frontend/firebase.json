@@ -22,5 +22,14 @@
                 }
             ]
         }
+    ],
+    "firestore": {
+        "rules": "firestore.rules"
+    },
+    "storage": [
+        {
+            "rules": "storage.rules",
+            "bucket": "ffmpeg-input"
+        }
     ]
 }
