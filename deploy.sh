@@ -1,5 +1,15 @@
-# 0. source infra/{stage}/.env
-# 1. terraform apply in infra/{stage}
-# 2. npm run build --mode={stage} with NODE_ENV={stage}
-# 3. firebase use choonify-{stage}
-# 4. firebase deploy --only hosting:{stage}
+if [ "$1" == prod ]; then
+    stage=prod
+    mode=production
+else
+    stage=dev
+    mode=development
+fi
+
+source .env.${stage} &&
+cd infra/${stage} &&
+terraform apply -auto-approve &&
+cd ../../packages/frontend &&
+npm run build --mode=${mode} &&
+firebase use choonify-${stage} &&
+firebase deploy --only hosting:${stage}

@@ -3,14 +3,14 @@
         "my-production-project": {
             "hosting": {
                 "prod": [
-                    "choonify-prod-site"
+                    "choonify-prod"
                 ]
             }
         },
         "choonify-dev": {
             "hosting": {
                 "dev": [
-                    "choonify-dev-site"
+                    "choonify-dev"
                 ]
             }
         }

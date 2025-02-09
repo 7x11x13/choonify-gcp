@@ -24,3 +24,7 @@ resource "google_project_iam_member" "signer_binding" {
   role     = "roles/iam.serviceAccountTokenCreator"
   member   = "serviceAccount:${google_service_account.backend_admin.email}"
 }
+
+output "service_account_email" {
+  value = google_service_account.backend_admin.email
+}

@@ -328,6 +328,7 @@ func (pr *ProgressPipeReader) CloseWithError(err error) error {
 
 func relayProgress(ctx context.Context, itemId string, userId string, progressChannel chan float32) {
 	for prog := range progressChannel {
+		// TODO: don't send unless enough time has elapsed since last write
 		sendMessage(ctx, userId, &types.RenderProgressMessage{
 			BaseMessage: types.BaseMessage{
 				Type:      "progress",

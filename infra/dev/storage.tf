@@ -77,6 +77,6 @@ resource "google_storage_bucket" "gcf_source" {
   uniform_bucket_level_access = true
 }
 
-output "firebase_bucket_name" {
+output "firebase_storage_bucket" {
   value = google_firebase_storage_bucket.dev.id
 }

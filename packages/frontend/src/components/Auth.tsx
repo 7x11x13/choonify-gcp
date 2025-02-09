@@ -1,5 +1,5 @@
 import { notifications } from "@mantine/notifications";
-import { getAuth, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut, User } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { ChoonifyUserInfo } from "../types/auth";

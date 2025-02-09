@@ -15,6 +15,10 @@
                         "serviceId": "api",
                         "region": "us-west1"
                     }
+                },
+                {
+                    "source": "**",
+                    "destination": "/index.html"
                 }
             ]
         }

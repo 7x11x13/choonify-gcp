@@ -1,1 +1,0 @@
-source .env.dev && cd infra/dev && terraform apply
