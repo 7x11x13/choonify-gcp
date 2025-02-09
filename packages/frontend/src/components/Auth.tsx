@@ -10,14 +10,14 @@ const AuthContext = createContext<{
     signIn: () => Promise<void>;
     signOut: () => Promise<void>;
     userInfo: ChoonifyUserInfo | null;
-    refreshUserInfo: () => Promise<void>;
+    refreshUserInfo: (user?: User | null) => Promise<void>;
 }>({
     loading: true,
     user: null,
     signIn: async () => { },
     signOut: async () => { },
     userInfo: null,
-    refreshUserInfo: async () => { },
+    refreshUserInfo: async (_?: User | null) => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -46,15 +46,12 @@ function useProvideAuth() {
     useEffect(() => {
         // handleRedirectResult();
         onAuthStateChanged(auth, async (newUser) => {
-            console.log(newUser);
+            setLoading(true);
             setUser(newUser);
+            await refreshUserInfo(newUser);
+            setLoading(false);
         });
     }, []);
-
-    useEffect(() => {
-        setLoading(true);
-        refreshUserInfo();
-    }, [user]);
 
     async function signIn() {
         const provider = new GoogleAuthProvider();
@@ -68,15 +65,16 @@ function useProvideAuth() {
         await signOut(auth);
     }
 
-    async function refreshUserInfo() {
-        console.log(user);
-        if (!user) {
+    async function refreshUserInfo(newUser?: User | null) {
+        if (newUser === undefined) {
+            newUser = user;
+        }
+        if (!newUser) {
             setUserInfo(null);
-            setLoading(false);
             return;
         }
         const db = getFirestore();
-        const docRef = doc(db, "users", user.uid);
+        const docRef = doc(db, "users", newUser.uid);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -88,7 +86,6 @@ function useProvideAuth() {
                 color: 'red',
             });
         }
-        setLoading(false);
     }
 
     return {
