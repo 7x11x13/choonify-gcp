@@ -1,4 +1,4 @@
-import { ActionIcon, Avatar, Combobox, Group, Input, InputBase, Loader, Text, Tooltip, useCombobox } from '@mantine/core';
+import { ActionIcon, Avatar, Combobox, Group, Input, InputBase, InputLabel, InputWrapper, Loader, Text, Tooltip, useCombobox } from '@mantine/core';
 import { useUncontrolled } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 import { BsDash, BsPlus } from 'react-icons/bs';
@@ -36,16 +36,16 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
     useEffect(() => {
         const channels = userInfo?.channels ?? [];
         setData(channels);
-        if (!_value && channels.length > 0) {
-            if (userInfo?.settings.defaultChannelId) {
-                setSelected(userInfo.settings.defaultChannelId);
-            } else {
-                setSelected(channels[0].channelId);
-            }
+        if (userInfo?.settings.defaultChannelId) {
+            setSelected(userInfo.settings.defaultChannelId);
+            return;
+        }
+        if (!_value || !channels.find((channel) => channel.channelId === _value)) {
+            setSelected(channels[0]?.channelId);
         }
     }, [userInfo?.channels]);
 
-    function setSelected(value: string | null) {
+    function setSelected(value: string | null | undefined) {
         setValue(value ?? "");
         onChange(value ?? "");
     }
@@ -56,7 +56,15 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
     }
 
     async function removeChannel() {
-        // TODO
+        if (!_value) {
+            return;
+        }
+        setLoading(true);
+        await apiPost("/remove_channel", {
+            channelId: _value
+        });
+        await refreshUserInfo();
+        setLoading(false);
     }
 
     async function authNewChannel() {
@@ -95,52 +103,54 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
     ));
 
     const isFull = userInfo!.channels.length >= maxChannels(userInfo!.subscription);
-    const isEmpty = userInfo!.channels.length === 0;
 
     return (
-        <Group gap="xs">
-            <Combobox
-                store={combobox}
-                withinPortal={false}
-                onOptionSubmit={(val) => {
-                    setSelected(val);
-                    combobox.closeDropdown();
-                }}
-            >
-                <Combobox.Target>
-                    <InputBase
-                        component="button"
-                        type="button"
-                        pointer
-                        rightSection={loading ? <Loader size={18} /> : <Combobox.Chevron />}
-                        onClick={() => combobox.toggleDropdown()}
-                        rightSectionPointerEvents="none"
-                        style={{ flexGrow: 1 }}
-                    >
-                        {_value && <Group>
-                            <Avatar src={getSelectedItem()?.picture} alt={getSelectedItem()?.name} radius="xl" size={24} />
-                            <Text>{getSelectedItem()?.name}</Text>
-                        </Group>}
-                        {!_value && <Input.Placeholder>No channel selected</Input.Placeholder>}
-                    </InputBase>
-                </Combobox.Target>
+        <InputWrapper>
+            <InputLabel>YouTube Channel</InputLabel>
+            <Group gap="xs">
+                <Combobox
+                    store={combobox}
+                    withinPortal={false}
+                    onOptionSubmit={(val) => {
+                        setSelected(val);
+                        combobox.closeDropdown();
+                    }}
+                >
+                    <Combobox.Target>
+                        <InputBase
+                            component="button"
+                            type="button"
+                            pointer
+                            rightSection={loading ? <Loader size={18} /> : <Combobox.Chevron />}
+                            onClick={() => combobox.toggleDropdown()}
+                            rightSectionPointerEvents="none"
+                            style={{ flexGrow: 1 }}
+                        >
+                            {_value && <Group>
+                                <Avatar src={getSelectedItem()?.picture} alt={getSelectedItem()?.name} radius="xl" size={24} />
+                                <Text>{getSelectedItem()?.name}</Text>
+                            </Group>}
+                            {!_value && <Input.Placeholder>No channel selected</Input.Placeholder>}
+                        </InputBase>
+                    </Combobox.Target>
 
-                <Combobox.Dropdown>
-                    <Combobox.Options>
-                        {loading ? <Combobox.Empty>Loading....</Combobox.Empty> : options}
-                    </Combobox.Options>
-                </Combobox.Dropdown>
-            </Combobox>
-            <Tooltip label={"Link channel"}>
-                <ActionIcon size="lg" color="green" onClick={authNewChannel} disabled={isFull}>
-                    <BsPlus size="lg"></BsPlus>
-                </ActionIcon>
-            </Tooltip>
-            <Tooltip label={"Unlink channel"}>
-                <ActionIcon size="lg" color="red" onClick={removeChannel} disabled={isEmpty}>
-                    <BsDash size="lg"></BsDash>
-                </ActionIcon>
-            </Tooltip>
-        </Group>
+                    <Combobox.Dropdown>
+                        <Combobox.Options>
+                            {loading ? <Combobox.Empty>Loading....</Combobox.Empty> : options}
+                        </Combobox.Options>
+                    </Combobox.Dropdown>
+                </Combobox>
+                <Tooltip label={"Link channel"}>
+                    <ActionIcon size="lg" color="green" onClick={authNewChannel} disabled={isFull}>
+                        <BsPlus size="lg"></BsPlus>
+                    </ActionIcon>
+                </Tooltip>
+                <Tooltip label={"Unlink channel"}>
+                    <ActionIcon size="lg" color="red" onClick={removeChannel} disabled={!_value}>
+                        <BsDash size="lg"></BsDash>
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+        </InputWrapper>
     );
 }

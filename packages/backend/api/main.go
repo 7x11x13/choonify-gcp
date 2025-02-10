@@ -59,6 +59,7 @@ func setupRouter() *gin.Engine {
 		api.POST("/presign-url", handlers.PresignUploadHandler)
 		api.POST("/settings", handlers.UpdateUserSettingsHandler)
 		api.POST("/upload", handlers.UploadRequestHandler)
+		api.POST("/remove_channel", handlers.RemoveChannelHandler)
 	}
 
 	return r
