@@ -1,15 +1,21 @@
-import { Avatar, Button, Combobox, Group, Input, InputBase, Loader, Text, useCombobox } from '@mantine/core';
+import { ActionIcon, Avatar, Combobox, Group, Input, InputBase, Loader, Text, Tooltip, useCombobox } from '@mantine/core';
+import { useUncontrolled } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
+import { BsDash, BsPlus } from 'react-icons/bs';
 import config from '../config';
 import { YTChannel } from '../types/auth';
 import { apiPost } from '../util/aws';
+import { displayError } from '../util/log';
 import { useAuth, useGSI } from './Auth';
-import { useUncontrolled } from '@mantine/hooks';
 
 interface ChannelSelectorProps {
     value?: string;
     defaultValue?: string;
     onChange: (value: string) => void;
+}
+
+function maxChannels(subscription: number) {
+    return (subscription === 0) ? 1 : 10;
 }
 
 export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelectorProps) {
@@ -49,6 +55,10 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
         return item
     }
 
+    async function removeChannel() {
+        // TODO
+    }
+
     async function authNewChannel() {
         if (!user || !gsiLoaded) {
             console.error("user not logged in or gsi not loaded");
@@ -67,6 +77,11 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
                 }
                 setLoading(false);
             },
+            error_callback: (err) => {
+                console.error(err);
+                displayError(err.message)
+                setLoading(false);
+            },
         });
         client.requestCode();
     }
@@ -79,8 +94,11 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
         </Combobox.Option>
     ));
 
+    const isFull = userInfo!.channels.length >= maxChannels(userInfo!.subscription);
+    const isEmpty = userInfo!.channels.length === 0;
+
     return (
-        <Group>
+        <Group gap="xs">
             <Combobox
                 store={combobox}
                 withinPortal={false}
@@ -113,7 +131,16 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
                     </Combobox.Options>
                 </Combobox.Dropdown>
             </Combobox>
-            <Button onClick={authNewChannel}>Add channel</Button>
+            <Tooltip label={"Link channel"}>
+                <ActionIcon size="lg" color="green" onClick={authNewChannel} disabled={isFull}>
+                    <BsPlus size="lg"></BsPlus>
+                </ActionIcon>
+            </Tooltip>
+            <Tooltip label={"Unlink channel"}>
+                <ActionIcon size="lg" color="red" onClick={removeChannel} disabled={isEmpty}>
+                    <BsDash size="lg"></BsDash>
+                </ActionIcon>
+            </Tooltip>
         </Group>
     );
 }

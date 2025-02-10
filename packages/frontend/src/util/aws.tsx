@@ -1,10 +1,10 @@
-import { notifications } from "@mantine/notifications";
-import { getAuth } from "firebase/auth"
-import { getDownloadURL, getStorage, ref } from "firebase/storage";
 import axios from "axios"; // TODO: remove axios dep
+import { getAuth } from "firebase/auth";
+import { getDownloadURL, getStorage, ref } from "firebase/storage";
 import config from "../config";
+import { displayError } from "./log";
 
-function displayError(err: any) {
+function handleError(err: any) {
     let message;
     if (axios.isAxiosError(err)) {
         message = `(${err.status}) ${err.response?.data || "Unknown"}`;
@@ -12,11 +12,7 @@ function displayError(err: any) {
         console.error(err);
         message = err.toString();
     }
-    notifications.show({
-        title: 'Error',
-        message: message,
-        color: 'red',
-    });
+    displayError(message);
 }
 
 async function getToken() {
@@ -41,7 +37,7 @@ export async function apiPost(path: string, body: any) {
         });
         return response.data;
     } catch (err) {
-        displayError(err);
+        handleError(err);
         return undefined;
     }
 }
@@ -57,7 +53,7 @@ export async function deleteAccount() {
             await user.delete();
         }
     } catch (err) {
-        displayError(err);
+        handleError(err);
         return null;
     }
 }
@@ -91,7 +87,7 @@ export async function uploadFile(data: Blob | ArrayBuffer, type: string, size: n
         onProg(100);
         return path;
     } catch (err) {
-        displayError(err);
+        handleError(err);
         return null;
     }
 }

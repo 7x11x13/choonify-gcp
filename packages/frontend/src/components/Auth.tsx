@@ -93,11 +93,6 @@ function useProvideAuth() {
         } else {
             console.warn("User info not found, falling back to defaults");
             setUserInfo(getDefaultUserInfo());
-            // notifications.show({
-            //     title: 'Error',
-            //     message: 'Could not refresh user info',
-            //     color: 'red',
-            // });
         }
     }
 

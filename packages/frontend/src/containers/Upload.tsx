@@ -6,19 +6,20 @@ import { Dropzone, type FileWithPath } from '@mantine/dropzone';
 import { useListState } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import cx from 'clsx';
+import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import { LuAudioLines } from "react-icons/lu";
+import { useAuth } from "../components/Auth";
 import { ChannelSelector } from "../components/YoutubeChannelSelector";
-import type { UploadItem, UploadRequest } from "../types/upload";
+import { UserSettings } from "../types/auth";
 import type { BaseMessage, ErrorMessage, RenderProgressMessage, RenderSuccessMessage } from "../types/messages";
+import type { UploadItem, UploadRequest } from "../types/upload";
 import { apiPost } from "../util/aws";
 import { formatBytes, formatDuration } from "../util/format";
+import { displayError } from "../util/log";
 import { getUploadItemFromFile } from "../util/metadata";
 import { validateItem } from "../util/validate";
 import classes from './Upload.module.css';
-import { useAuth } from "../components/Auth";
-import { doc, getFirestore, onSnapshot } from "firebase/firestore";
-import { UserSettings } from "../types/auth";
 
 export default function Upload() {
     const { user, userInfo, refreshUserInfo } = useAuth();
@@ -44,11 +45,7 @@ export default function Upload() {
                     case "error":
                         const errorMsg = message as ErrorMessage;
                         console.error(errorMsg.message);
-                        notifications.show({
-                            title: 'Error',
-                            message: errorMsg.message,
-                            color: "red",
-                        });
+                        displayError(errorMsg.message);
                         if (errorMsg.reloadUsers) {
                             await refreshUserInfo();
                         }
@@ -85,11 +82,7 @@ export default function Upload() {
                 }
             }, (err) => {
                 console.error(err);
-                notifications.show({
-                    title: 'Error',
-                    message: err.message,
-                    color: "red",
-                });
+                displayError(err.message);
             });
         }
     }, [user]);
@@ -104,6 +97,7 @@ export default function Upload() {
                 notifications.show({
                     title: 'Warning',
                     message: `Upload quota hit! Only uploading ${uploading} of ${uploadQueue.length} videos. Upgrade your plan to increase the quota`,
+                    color: "orange",
                 })
             }
             totalVideoUpload.current = uploading;
@@ -120,11 +114,7 @@ export default function Upload() {
         for (const [i, item] of uploadQueue.entries()) {
             const reason = validateItem(item, false);
             if (reason !== null) {
-                notifications.show({
-                    title: 'Error',
-                    message: `Upload item ${i + 1} is invalid: ${reason}`,
-                    color: "red",
-                });
+                displayError(`Upload item ${i + 1} is invalid: ${reason}`);
                 return;
             }
         }

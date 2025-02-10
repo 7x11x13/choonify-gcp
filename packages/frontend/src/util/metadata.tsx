@@ -3,10 +3,10 @@ import { randomId } from "@mantine/hooks";
 import { IAudioMetadata, parseBlob } from "music-metadata";
 import { ChoonifyUserInfo } from "../types/auth";
 
-import { notifications } from "@mantine/notifications";
 import { render } from "squirrelly";
-import { uploadFile } from "./aws";
 import { getDefaultUploadItem } from "../types/defaults";
+import { uploadFile } from "./aws";
+import { displayError } from "./log";
 
 async function getFileMetadata(file: FileWithPath) {
     try {
@@ -16,10 +16,7 @@ async function getFileMetadata(file: FileWithPath) {
         return metadata;
     } catch (err: any) {
         console.error(err);
-        notifications.show({
-            title: 'Error',
-            message: err.toString(),
-        });
+        displayError(err.toString());
         return null;
     }
 }
@@ -41,11 +38,7 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
 
     if (metadata.format.duration === undefined) {
         console.error(`Could not determine length of file: ${file}`);
-        notifications.show({
-            title: "Error",
-            message: `Could not determine length of file: ${file.name}`,
-            color: "red",
-        })
+        displayError(`Could not determine length of file: ${file.name}`);
         return null;
     }
     item.audioFileLength = metadata.format.duration;
