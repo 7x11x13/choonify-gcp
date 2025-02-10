@@ -33,8 +33,7 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 		return
 	}
 
-	userId := util.GetUserId(ctx)
-	user, err := util.GetUser(ctx, userId)
+	userId, user, err := util.GetUser(ctx)
 	if err != nil {
 		return
 	}

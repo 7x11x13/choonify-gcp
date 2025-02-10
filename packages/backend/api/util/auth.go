@@ -7,20 +7,58 @@ import (
 	"choonify.com/backend/types"
 	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-func GetUserId(ctx *gin.Context) string {
-	return ctx.MustGet("token").(*auth.Token).UID
-}
-
-func GetUser(ctx *gin.Context, userId string) (*types.UserInfo, error) {
-	userData, err := extensions.Firestore.Collection("users").Doc(userId).Get(ctx)
-	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
-		return nil, err
-	}
+func GetUser(ctx *gin.Context) (string, *types.UserInfo, error) {
+	userId := ctx.MustGet("token").(*auth.Token).UID
 	var user types.UserInfo
-	userData.DataTo(&user)
-	return &user, nil
+	userData, err := extensions.Firestore.Collection("users").Doc(userId).Get(ctx)
+	if status.Code(err) == codes.NotFound {
+		// insert default user data
+		user = types.UserInfo{
+			Subscription:         0,
+			UploadedToday:        0,
+			UploadedBytesToday:   0,
+			UploadedAllTime:      0,
+			UploadedBytesAllTime: 0,
+			LastUploaded:         0,
+			Channels:             []types.YTChannelInfo{},
+			Settings: types.UserSettings{
+				Defaults: types.UploadRequestData{
+					ImageKey: "public/default-image",
+					Metadata: types.YTMetadata{
+						Title:             "{{@if(it.metadata.title && it.metadata.artist)}}\n    {{_ it.metadata.artist}} - {{it.metadata.title}}\n{{ #else }}\n    {{_ it.file.name}}\n{{/if}}",
+						Description:       "Uploaded with https://choonify.com",
+						CategoryId:        "10",
+						MadeForKids:       false,
+						Visibility:        "public",
+						NotifySubscribers: true,
+						Tags:              []string{"choonify"},
+					},
+					Settings: types.RenderSettings{
+						FilterType:      types.FilterTypeSolidBlack,
+						Watermark:       true,
+						BackgroundColor: "#000000",
+					},
+				},
+				DefaultChannelId: "",
+			},
+		}
+		_, err = extensions.Firestore.Collection("users").Doc(userId).Set(ctx, user)
+		if err != nil {
+			ctx.Error(err)
+			ctx.JSON(http.StatusInternalServerError, nil)
+			return userId, nil, err
+		}
+	} else {
+		if err != nil {
+			ctx.Error(err)
+			ctx.JSON(http.StatusInternalServerError, nil)
+			return userId, nil, err
+		}
+		userData.DataTo(&user)
+	}
+	return userId, &user, nil
 }

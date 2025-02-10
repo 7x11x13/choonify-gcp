@@ -1,7 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { getAuth } from "firebase/auth"
 import { getDownloadURL, getStorage, ref } from "firebase/storage";
-import axios from "axios";
+import axios from "axios"; // TODO: remove axios dep
 import config from "../config";
 
 function displayError(err: any) {
@@ -28,7 +28,7 @@ async function getToken() {
 }
 
 function getAPIBase() {
-    return config.api.LOCAL === "1" ? "http://localhost:8080" : "/api";
+    return config.api.LOCAL === "1" ? "http://localhost:8080/api" : "/api";
 }
 
 export async function apiPost(path: string, body: any) {

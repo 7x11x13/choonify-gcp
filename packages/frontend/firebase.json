@@ -29,7 +29,7 @@
     "storage": [
         {
             "rules": "storage.rules",
-            "bucket": "ffmpeg-input"
+            "bucket": "choonify-dev-ffmpeg-input"
         }
     ]
 }

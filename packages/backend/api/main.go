@@ -51,12 +51,15 @@ func setupRouter() *gin.Engine {
 	// auth
 	r.Use(auth())
 
-	// routes
-	r.POST("/delete", handlers.DeleteAccountHandler)
-	r.POST("/oauth", handlers.AuthCallbackHandler)
-	r.POST("/presign-url", handlers.PresignUploadHandler)
-	r.POST("/settings", handlers.UpdateUserSettingsHandler)
-	r.POST("/upload", handlers.UploadRequestHandler)
+	api := r.Group("/api")
+	{
+		// routes
+		api.POST("/delete", handlers.DeleteAccountHandler)
+		api.POST("/oauth", handlers.AuthCallbackHandler)
+		api.POST("/presign-url", handlers.PresignUploadHandler)
+		api.POST("/settings", handlers.UpdateUserSettingsHandler)
+		api.POST("/upload", handlers.UploadRequestHandler)
+	}
 
 	return r
 }

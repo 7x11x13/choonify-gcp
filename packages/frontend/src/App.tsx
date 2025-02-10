@@ -2,7 +2,6 @@
 import { AppShell } from "@mantine/core";
 import Routes from "./Routes.tsx";
 
-import "./App.css";
 import { Header } from "./components/Header.tsx";
 
 function App() {

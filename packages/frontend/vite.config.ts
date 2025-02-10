@@ -5,11 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    // NOTE: Needed when deploying
-    chunkSizeWarningLimit: 800,
     commonjsOptions: {
       transformMixedEsModules: true
-    }
+    },
+    minify: 'esbuild',
   },
   server: {
     port: 3000,

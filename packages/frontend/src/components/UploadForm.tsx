@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { UserSettings } from "../types/auth";
 import { categoryIds } from "../types/category-ids";
 import { FilterType } from "../types/upload";
-import { getDefaultUserSettings } from "../util/metadata";
+import { getDefaultUserSettings } from "../types/defaults";
 import { validateDescription, validateTags, validateTitle } from "../util/validate";
 import { useAuth } from "./Auth";
 import { CoverArtInput } from "./CoverImageInput";
@@ -94,7 +94,6 @@ export default function UploadForm({
                         <VideoPreview coverImage={form.getValues().defaults.imageFileBlob!} settings={form.getValues().defaults.settings} />
                         <CoverArtInput
                             form={form}
-                            isDefault={settingsMode === "defaults"}
                         />
                         <Select
                             label="Render type"

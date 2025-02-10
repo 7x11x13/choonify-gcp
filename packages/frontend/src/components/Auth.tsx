@@ -1,10 +1,9 @@
-import { notifications } from "@mantine/notifications";
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { ChoonifyUserInfo } from "../types/auth";
 import config from "../config";
-import { getDefaultImageFile } from "../util/metadata";
+import { ChoonifyUserInfo } from "../types/auth";
+import { getDefaultImageFile, getDefaultUserInfo } from "../types/defaults";
 import { downloadFile } from "../util/aws";
 
 const AuthContext = createContext<{
@@ -92,11 +91,13 @@ function useProvideAuth() {
             }
             setUserInfo(info);
         } else {
-            notifications.show({
-                title: 'Error',
-                message: 'Could not refresh user info',
-                color: 'red',
-            });
+            console.warn("User info not found, falling back to defaults");
+            setUserInfo(getDefaultUserInfo());
+            // notifications.show({
+            //     title: 'Error',
+            //     message: 'Could not refresh user info',
+            //     color: 'red',
+            // });
         }
     }
 

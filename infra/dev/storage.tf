@@ -14,7 +14,7 @@ resource "google_firestore_database" "dev" {
 resource "google_storage_bucket" "dev" {
   provider                    = google-beta
   project                     = google_firebase_project.dev.project
-  name                        = "ffmpeg-input"
+  name                        = "${google_firebase_project.dev.project}-ffmpeg-input"
   location                    = var.region
   uniform_bucket_level_access = true
 

@@ -78,7 +78,7 @@ resource "google_firebase_web_app" "dev" {
 resource "google_firebase_hosting_site" "dev" {
   provider = google-beta
   project  = google_firebase_project.dev.project
-  site_id  = "choonify-dev-site"
+  site_id  = google_firebase_project.dev.project
   app_id   = google_firebase_web_app.dev.app_id
 }
 
