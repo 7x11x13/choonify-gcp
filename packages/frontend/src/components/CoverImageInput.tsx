@@ -4,15 +4,15 @@ import { useState } from 'react';
 import { UserSettings } from '../types/auth';
 import { uploadFile } from '../util/aws';
 
-export function CoverArtInput({ form, isDefault, ...others }: {
-    form: UseFormReturnType<UserSettings, (values: UserSettings) => UserSettings>, isDefault: boolean
+export function CoverArtInput({ form, ...others }: {
+    form: UseFormReturnType<UserSettings, (values: UserSettings) => UserSettings>
 }) {
     const [uploadProgress, setUploadProgress] = useState(100);
 
     async function onFileChange(file: File | File[] | null) {
         setUploadProgress(0);
         const image = file as File;
-        const imagePath = await uploadFile(image, image.type, image.size, image.name, setUploadProgress, isDefault);
+        const imagePath = await uploadFile(image, image.type, image.size, image.name, setUploadProgress);
         form.getInputProps("defaults.imageFileBlob").onChange(image);
         form.getInputProps("defaults.imageFile").onChange(imagePath);
     }

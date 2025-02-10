@@ -38,10 +38,9 @@ func canUploadFile(subscription int, fileSize int64, totalBytes int64) *string {
 }
 
 type presignRequestBody struct {
-	Size           int64  `json:"size"`
-	Name           string `json:"name"`
-	ContentType    string `json:"contentType"`
-	IsDefaultCover bool   `json:"default"`
+	Size        int64  `json:"size"`
+	Name        string `json:"name"`
+	ContentType string `json:"contentType"`
 }
 
 type presignRequestResponse struct {
@@ -60,27 +59,6 @@ func PresignUploadHandler(ctx *gin.Context) {
 	userId := util.GetUserId(ctx)
 	user, err := util.GetUser(ctx, userId)
 	if err != nil {
-		return
-	}
-
-	if body.IsDefaultCover {
-		key := fmt.Sprintf("default/%s/default", userId)
-		url, err := extensions.Bucket.SignedURL(key, &storage.SignedURLOptions{
-			GoogleAccessID: os.Getenv("SERVICE_ACCOUNT_EMAIL"),
-			Method:         "PUT",
-			Expires:        time.Now().Add(time.Hour),
-			ContentType:    body.ContentType,
-			Headers: []string{
-				fmt.Sprintf("content-length:%d", body.Size),
-			},
-		})
-		if err != nil {
-			ctx.Error(err)
-			ctx.JSON(http.StatusInternalServerError, nil)
-			return
-		}
-		res := presignRequestResponse{URL: url, Path: key}
-		ctx.JSON(http.StatusOK, res)
 		return
 	}
 

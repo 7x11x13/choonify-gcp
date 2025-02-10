@@ -74,6 +74,16 @@ func ValidateRequest(item types.UploadRequestData, subscription int, allowTempla
 	return ""
 }
 
+func ValidateFilePath(fileKey string, userId string) bool {
+	prefix := fmt.Sprintf("private/%s/", userId)
+	prefix2 := fmt.Sprintf("default/%s/", userId)
+	prefix3 := "public/"
+	if !strings.HasPrefix(fileKey, prefix) && !strings.HasPrefix(fileKey, prefix2) && !strings.HasPrefix(fileKey, prefix3) {
+		return false
+	}
+	return true
+}
+
 func ValidateBatchRequest(request *types.UploadBatchRequest, userId string, user *types.UserInfo) string {
 	validChannelId := slices.ContainsFunc(user.Channels, func(channel types.YTChannelInfo) bool {
 		return channel.ChannelId == request.ChannelId
@@ -90,13 +100,7 @@ func ValidateBatchRequest(request *types.UploadBatchRequest, userId string, user
 		}
 
 		// check that user has access to audio and image specified
-		prefix := fmt.Sprintf("private/%s/", userId)
-		if !strings.HasPrefix(item.AudioKey, prefix) {
-			return "User has insufficient access"
-		}
-		prefix2 := fmt.Sprintf("default/%s/", userId)
-		prefix3 := "public/"
-		if !strings.HasPrefix(item.ImageKey, prefix) && !strings.HasPrefix(item.ImageKey, prefix2) && !strings.HasPrefix(item.ImageKey, prefix3) {
+		if !ValidateFilePath(item.AudioKey, userId) || !ValidateFilePath(item.ImageKey, userId) {
 			return "User has insufficient access"
 		}
 	}

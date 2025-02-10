@@ -62,12 +62,11 @@ export async function deleteAccount() {
     }
 }
 
-export async function uploadFile(data: Blob | ArrayBuffer, type: string, size: number, name: string, onProg: (percent: number) => void, isDefault: boolean = false) {
+export async function uploadFile(data: Blob | ArrayBuffer, type: string, size: number, name: string, onProg: (percent: number) => void) {
     try {
         const response = await apiPost("/presign-url", {
             size: size,
             name: name,
-            default: isDefault,
             contentType: type,
         });
         if (response === undefined) {
