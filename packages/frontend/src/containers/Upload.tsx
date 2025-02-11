@@ -6,7 +6,7 @@ import { Dropzone, type FileWithPath } from '@mantine/dropzone';
 import { useListState } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import cx from 'clsx';
-import { doc, getFirestore, onSnapshot } from "firebase/firestore";
+import { doc, getFirestore, onSnapshot, Unsubscribe } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import { LuAudioLines } from "react-icons/lu";
 import { useAuth } from "../components/Auth";
@@ -29,13 +29,17 @@ export default function Upload() {
     const [uploadProgress, setUploadProgress] = useState(100);
     const [videoUploadProgress, setVideoUploadProgress] = useState(0);
     const [uploadingStatus, setUploadingStatus] = useState("");
+    const snapshotHandle = useRef<Unsubscribe | null>(null);
     const currentVideoUpload = useRef(1);
     const totalVideoUpload = useRef(1);
     const uploadedIds = useRef(new Set());
 
     useEffect(() => {
+        if (!user && snapshotHandle.current) {
+            snapshotHandle.current();
+        }
         if (user) {
-            onSnapshot(doc(getFirestore(), "task_messages", user?.uid), async (doc) => {
+            snapshotHandle.current = onSnapshot(doc(getFirestore(), "task_messages", user?.uid), async (doc) => {
                 const message = doc.data() as BaseMessage | undefined;
                 if (!message || message.timestamp < (Date.now() - 5 * 60 * 1000)) { // 5 minute timeout
                     return;
@@ -81,7 +85,9 @@ export default function Upload() {
                 }
             }, (err) => {
                 console.error(err);
-                displayError(err.message);
+                if (err.code !== "permission-denied") {
+                    displayError(err.message);
+                }
             });
         }
     }, [user]);
