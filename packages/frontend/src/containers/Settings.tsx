@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuth } from "../components/Auth";
 import UploadForm from "../components/UploadForm";
 import { UserSettings } from "../types/auth";
-import { apiPost } from "../util/aws";
+import { apiPost } from "../util/api";
 
 export default function Settings() {
     const { userInfo, refreshUserInfo } = useAuth();

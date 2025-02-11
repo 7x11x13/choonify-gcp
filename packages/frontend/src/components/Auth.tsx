@@ -1,10 +1,7 @@
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
-import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import config from "../config";
 import { ChoonifyUserInfo } from "../types/auth";
-import { getDefaultImageFile, getDefaultUserInfo } from "../types/defaults";
-import { downloadFile } from "../util/aws";
 
 const AuthContext = createContext<{
     loading: boolean;
@@ -75,9 +72,12 @@ function useProvideAuth() {
             setUserInfo(null);
             return;
         }
+        const { doc, getDoc, getFirestore } = await import("firebase/firestore");
         const db = getFirestore();
         const docRef = doc(db, "users", newUser.uid);
         const docSnap = await getDoc(docRef);
+
+        const { getDefaultImageFile, getDefaultUserInfo } = await import("../types/defaults");
 
         if (docSnap.exists()) {
             const info = docSnap.data() as ChoonifyUserInfo;
@@ -87,6 +87,7 @@ function useProvideAuth() {
                 defaults.imageFileBlob = getDefaultImageFile();
             } else {
                 // fetch from s3
+                const { downloadFile } = await import('../util/api');
                 defaults.imageFileBlob = await downloadFile(defaults.imageFile, () => { });
             }
             setUserInfo(info);

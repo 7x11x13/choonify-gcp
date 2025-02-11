@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { BsDash, BsPlus } from 'react-icons/bs';
 import config from '../config';
 import { YTChannel } from '../types/auth';
-import { apiPost } from '../util/aws';
+import { apiPost } from '../util/api';
 import { displayError } from '../util/log';
 import { useAuth, useGSI } from './Auth';
 

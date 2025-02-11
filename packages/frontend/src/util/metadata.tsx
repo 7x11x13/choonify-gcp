@@ -3,9 +3,8 @@ import { randomId } from "@mantine/hooks";
 import { IAudioMetadata, parseBlob } from "music-metadata";
 import { ChoonifyUserInfo } from "../types/auth";
 
-import { render } from "squirrelly";
 import { getDefaultUploadItem } from "../types/defaults";
-import { uploadFile } from "./aws";
+import { uploadFile } from "./api";
 import { displayError } from "./log";
 
 async function getFileMetadata(file: FileWithPath) {
@@ -21,8 +20,9 @@ async function getFileMetadata(file: FileWithPath) {
     }
 }
 
-function renderTemplateString(template: string, file: FileWithPath, metadata: IAudioMetadata): string {
-    return render(template, { metadata: metadata.common, format: metadata.format, file: file });
+async function renderTemplateString(template: string, file: FileWithPath, metadata: IAudioMetadata): Promise<string> {
+    const sqrl = await import('squirrelly');
+    return sqrl.render(template, { metadata: metadata.common, format: metadata.format, file: file });
 }
 
 
@@ -52,8 +52,8 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
     item.settings = {
         ...item.settings, ...(defaultItem.settings)
     }
-    item.metadata.title = renderTemplateString(item.metadata.title, file, metadata);
-    item.metadata.description = renderTemplateString(item.metadata.description, file, metadata);
+    item.metadata.title = await renderTemplateString(item.metadata.title, file, metadata);
+    item.metadata.description = await renderTemplateString(item.metadata.description, file, metadata);
     item.metadata.tags.push(...(metadata.common.genre ?? []));
 
     // Use embedded cover art as image

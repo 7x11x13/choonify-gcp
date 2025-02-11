@@ -14,10 +14,9 @@ import { ChannelSelector } from "../components/YoutubeChannelSelector";
 import { UserSettings } from "../types/auth";
 import type { BaseMessage, ErrorMessage, RenderProgressMessage, RenderSuccessMessage } from "../types/messages";
 import type { UploadItem, UploadRequest } from "../types/upload";
-import { apiPost } from "../util/aws";
+import { apiPost } from "../util/api";
 import { formatBytes, formatDuration } from "../util/format";
 import { displayError } from "../util/log";
-import { getUploadItemFromFile } from "../util/metadata";
 import { validateItem } from "../util/validate";
 import classes from './Upload.module.css';
 
@@ -134,6 +133,7 @@ export default function Upload() {
                 setUploadProgress(i / files.length * 100 + percent / files.length);
             }
 
+            const { getUploadItemFromFile } = await import("../util/metadata");
             const uploadItem = await getUploadItemFromFile(userInfo!, file, onProg);
             if (uploadItem) {
                 handlers.append(uploadItem);

@@ -42,7 +42,8 @@ resource "google_cloud_run_v2_service" "dev" {
   location = var.region
 
   template {
-    service_account = google_service_account.backend_admin.email
+    service_account                  = google_service_account.backend_admin.email
+    max_instance_request_concurrency = 500
     containers {
       image = ko_build.api.image_ref
       env {

@@ -7,7 +7,6 @@ import { useAuth } from './Auth';
 import cx from 'clsx';
 import GoogleLoginButton from './GoogleLoginButton';
 import { Link, useNavigate } from 'react-router-dom';
-import { deleteAccount } from '../util/aws';
 
 const links = [
     { link: '/about', label: 'Features' },
@@ -37,6 +36,10 @@ export function Header() {
         return;
     }
 
+    async function deleteUserAccount() {
+        await (await import('../util/api')).deleteAccount();
+    }
+
     return (
         <header className={classes.header}>
             <div className={classes.inner}>
@@ -45,7 +48,7 @@ export function Header() {
                         <Text>Are you sure? You will not be able to login for 24 hours, and then your account will be deleted.</Text>
                         <Group justify='right'>
                             <Button onClick={deleteModalClose}>Go back</Button>
-                            <Button onClick={() => deleteAccount()}>Delete my account</Button>
+                            <Button onClick={deleteUserAccount}>Delete my account</Button>
                         </Group>
                     </Stack>
                 </Modal>

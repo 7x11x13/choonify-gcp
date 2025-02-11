@@ -2,7 +2,7 @@ import { FileInput, Progress } from '@mantine/core';
 import { UseFormReturnType } from '@mantine/form';
 import { useState } from 'react';
 import { UserSettings } from '../types/auth';
-import { uploadFile } from '../util/aws';
+import { uploadFile } from '../util/api';
 
 export function CoverArtInput({ form, ...others }: {
     form: UseFormReturnType<UserSettings, (values: UserSettings) => UserSettings>

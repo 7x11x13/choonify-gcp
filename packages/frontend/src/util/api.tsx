@@ -1,6 +1,5 @@
 import axios from "axios"; // TODO: remove axios dep
 import { getAuth } from "firebase/auth";
-import { getDownloadURL, getStorage, ref } from "firebase/storage";
 import config from "../config";
 import { displayError } from "./log";
 
@@ -93,6 +92,7 @@ export async function uploadFile(data: Blob | ArrayBuffer, type: string, size: n
 }
 
 export async function downloadFile(path: string, onProg: (percent: number) => void) {
+    const { getStorage, getDownloadURL, ref } = await import("firebase/storage");
     const storage = getStorage();
     const url = await getDownloadURL(ref(storage, path));
     const response = await axios.get(url, {

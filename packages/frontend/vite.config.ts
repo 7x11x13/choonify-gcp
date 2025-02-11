@@ -8,7 +8,7 @@ export default defineConfig({
     commonjsOptions: {
       transformMixedEsModules: true
     },
-    minify: 'esbuild',
+    minify: 'terser',
   },
   server: {
     port: 3000,
