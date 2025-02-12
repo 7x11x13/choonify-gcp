@@ -21,3 +21,12 @@
     font-weight: 700;
     width: 60px;
 }
+
+:global .mantine-ScrollArea-viewport>div {
+    display: block !important;
+    width: 100% !important;
+}
+
+:global div:has(> .mantine-ScrollArea-root) {
+    width: 100% !important;
+}

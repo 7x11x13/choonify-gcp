@@ -240,22 +240,22 @@ export default function Upload() {
                         <>
                             {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === ""}>Upload to YouTube!</Button>}
                             {isVideoUploading && <Stack mt="sm" gap="0"><Progress value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
-                            <ScrollArea.Autosize w="100%" maw="100%" mah="50vh" type="auto" scrollbars="y">
-                                <DragDropContext
-                                    onDragEnd={({ destination, source }) =>
-                                        queueHandlers.reorder({ from: source.index, to: destination?.index || 0 })
-                                    }
-                                >
+                            <DragDropContext
+                                onDragEnd={({ destination, source }) =>
+                                    queueHandlers.reorder({ from: source.index, to: destination?.index || 0 })
+                                }
+                            >
+                                <ScrollArea.Autosize w="100%" maw="100%" mah="50vh" type="auto" scrollbars="y">
                                     <Droppable droppableId="dnd-list" direction="vertical">
                                         {(provided) => (
-                                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                            <div style={{}} {...provided.droppableProps} ref={provided.innerRef}>
                                                 {items}
                                                 {provided.placeholder}
                                             </div>
                                         )}
                                     </Droppable>
-                                </DragDropContext>
-                            </ScrollArea.Autosize>
+                                </ScrollArea.Autosize>
+                            </DragDropContext>
                             {uploadProgress === 100 && <Dropzone
                                 accept={{
                                     'audio/*': [],
@@ -278,6 +278,6 @@ export default function Upload() {
                 </UploadForm>}
                 {selectedIndex === null && <Text ta="center">No track selected</Text>}
             </Grid.Col>
-        </Grid>
+        </Grid >
     );
 }
