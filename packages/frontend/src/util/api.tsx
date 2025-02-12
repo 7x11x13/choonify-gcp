@@ -92,6 +92,7 @@ export async function uploadFile(data: Blob | ArrayBuffer, type: string, size: n
 }
 
 export async function downloadFile(path: string, onProg: (percent: number) => void) {
+    // TODO: image caching? (esp. default?)
     const { getStorage, getDownloadURL, ref } = await import("firebase/storage");
     const storage = getStorage();
     const url = await getDownloadURL(ref(storage, path));

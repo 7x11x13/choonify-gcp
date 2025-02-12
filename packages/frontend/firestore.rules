@@ -6,5 +6,8 @@ service cloud.firestore {
         match /task_messages/{userId} {
             allow read: if request.auth != null && request.auth.uid == userId
         }
+        match /sessions/{userId} {
+            allow read, write: if request.auth != null && request.auth.uid == userId
+        }
     }
 }

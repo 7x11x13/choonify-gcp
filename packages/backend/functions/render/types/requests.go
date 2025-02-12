@@ -35,6 +35,7 @@ type RenderSettings struct {
 
 type UploadRequestData struct {
 	Id                    string         `json:"id" firestore:"id"`
+	CreatedAt             int64          `json:"createdAt" firestore:"createdAt"`
 	OriginalAudioFileName string         `json:"originalAudioFileName" firestore:"originalAudioFileName"`
 	AudioKey              string         `json:"audioFile" firestore:"audioFile"`
 	AudioLength           float32        `json:"audioFileLength" firestore:"audioFileLength"`

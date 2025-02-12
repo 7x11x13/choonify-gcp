@@ -33,6 +33,7 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
     }
     const item = getDefaultUploadItem();
     item.id = randomId();
+    item.createdAt = Date.now();
     item.originalAudioFileName = file.name;
     item.audioFileSize = file.size;
 

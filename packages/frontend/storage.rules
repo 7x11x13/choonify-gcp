@@ -3,6 +3,9 @@ service firebase.storage {
         match /default/{userId}/default {
             allow read: if request.auth != null && request.auth.uid == userId
         }
+        match /private/{userId}/{all=**} {
+            allow read: if request.auth != null && request.auth.uid == userId
+        }
         match /public/{all=**} {
             allow read: if true
         }

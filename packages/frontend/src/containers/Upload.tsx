@@ -1,29 +1,30 @@
 import UploadForm from "../components/UploadForm";
 
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { Anchor, Button, Center, Grid, Progress, ScrollArea, Space, Stack, Text } from '@mantine/core';
+import { Anchor, Button, Center, Grid, Progress, RingProgress, ScrollArea, Space, Stack, Text } from '@mantine/core';
 import { Dropzone, type FileWithPath } from '@mantine/dropzone';
 import { useListState } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import cx from 'clsx';
-import { doc, getFirestore, onSnapshot, Unsubscribe } from "firebase/firestore";
+import { doc, getDoc, getFirestore, onSnapshot, setDoc, Unsubscribe } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import { LuAudioLines } from "react-icons/lu";
 import { useAuth } from "../components/Auth";
 import { ChannelSelector } from "../components/YoutubeChannelSelector";
 import { UserSettings } from "../types/auth";
 import type { BaseMessage, ErrorMessage, RenderProgressMessage, RenderSuccessMessage } from "../types/messages";
-import type { UploadItem, UploadRequest } from "../types/upload";
-import { apiPost } from "../util/api";
+import type { UploadItem, UploadRequest, UploadSession } from "../types/upload";
+import { apiPost, downloadFile } from "../util/api";
 import { formatBytes, formatDuration } from "../util/format";
 import { displayError } from "../util/log";
-import { validateItem } from "../util/validate";
+import { validateItem, validateSession } from "../util/validate";
 import classes from './Upload.module.css';
 
 export default function Upload() {
     const { user, userInfo, refreshUserInfo } = useAuth();
+    const [sessionLoadProgress, setSessionLoadProgress] = useState(0);
     const [isVideoUploading, setVideoUploading] = useState(false);
-    const [uploadQueue, handlers] = useListState<UploadItem>([]);
+    const [uploadQueue, queueHandlers] = useListState<UploadItem>([]);
     const [selectedIndex, setSelectedIndex] = useState<null | number>(null);
     const [selectedChannelId, setSelectedChannelId] = useState<string>(userInfo!.settings.defaultChannelId);
     const [uploadProgress, setUploadProgress] = useState(100);
@@ -34,12 +35,61 @@ export default function Upload() {
     const totalVideoUpload = useRef(1);
     const uploadedIds = useRef(new Set());
 
+    async function loadSession(userId: string) {
+        setSessionLoadProgress(0);
+        try {
+            const snapshot = await getDoc(doc(getFirestore(), "sessions", userId));
+            const session = snapshot.data() as UploadSession | undefined;
+            if (session) {
+                const err = validateSession(session);
+                if (err) {
+                    throw new Error(err);
+                }
+                // restore session
+                const sessionWithBlobs: UploadItem[] = [];
+                for (const [i, item] of session.items.entries()) {
+                    const imageBlob = await downloadFile(item.imageFile, (prog) => setSessionLoadProgress((i + prog / 100) / session.items.length * 100));
+                    sessionWithBlobs.push({
+                        ...item,
+                        imageFileBlob: imageBlob,
+                    });
+                }
+                queueHandlers.setState(sessionWithBlobs);
+            }
+        } catch (err) {
+            console.error(`Error loading session: ${err}`);
+            saveSession();
+        } finally {
+            setSessionLoadProgress(100);
+        }
+    }
+
+    async function saveSession() {
+        if (!user || sessionLoadProgress < 100) {
+            return;
+        }
+        const session: UploadSession = {
+            items: uploadQueue.map((item) => {
+                const { imageFileBlob, ...rest } = item;
+                return rest;
+            })
+        };
+        await setDoc(doc(getFirestore(), "sessions", user.uid), session);
+    }
+
+    useEffect(() => {
+        saveSession();
+    }, [uploadQueue]);
+
     useEffect(() => {
         if (!user && snapshotHandle.current) {
             snapshotHandle.current();
         }
         if (user) {
-            snapshotHandle.current = onSnapshot(doc(getFirestore(), "task_messages", user?.uid), async (doc) => {
+            // check for existing session
+            loadSession(user.uid);
+            // handle progress messages
+            snapshotHandle.current = onSnapshot(doc(getFirestore(), "task_messages", user.uid), async (doc) => {
                 const message = doc.data() as BaseMessage | undefined;
                 if (!message || message.timestamp < (Date.now() - 5 * 60 * 1000)) { // 5 minute timeout
                     return;
@@ -71,7 +121,7 @@ export default function Upload() {
                             uploadedIds.current.add(successMsg.itemId);
                             currentVideoUpload.current += 1;
                             uploadQueue.splice(i, 1);
-                            handlers.remove(i);
+                            queueHandlers.remove(i);
                             if (selectedIndex !== null && selectedIndex >= uploadQueue.length) {
                                 setSelectedIndex(null);
                             }
@@ -85,6 +135,7 @@ export default function Upload() {
                 }
             }, (err) => {
                 console.error(err);
+                // TODO: better solution than this
                 if (err.code !== "permission-denied") {
                     displayError(err.message);
                 }
@@ -142,7 +193,7 @@ export default function Upload() {
             const { getUploadItemFromFile } = await import("../util/metadata");
             const uploadItem = await getUploadItemFromFile(userInfo!, file, onProg);
             if (uploadItem) {
-                handlers.append(uploadItem);
+                queueHandlers.append(uploadItem);
             }
             setUploadProgress((i + 1) / files.length * 100);
         }
@@ -151,7 +202,7 @@ export default function Upload() {
 
     async function formCallback(item: UserSettings) {
         if (selectedIndex !== null) {
-            handlers.setItem(selectedIndex, item.defaults);
+            queueHandlers.setItem(selectedIndex, item.defaults);
         }
     }
 
@@ -181,38 +232,45 @@ export default function Upload() {
             <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
                 <Stack gap="0">
                     <ChannelSelector onChange={setSelectedChannelId} value={selectedChannelId}></ChannelSelector>
-                    {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === ""}>Upload to YouTube!</Button>}
-                    {isVideoUploading && <Stack mt="sm" gap="0"><Progress value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
-                    <ScrollArea.Autosize w="100%" maw="100%" mah="50vh" type="auto" scrollbars="y">
-                        <DragDropContext
-                            onDragEnd={({ destination, source }) =>
-                                handlers.reorder({ from: source.index, to: destination?.index || 0 })
-                            }
-                        >
-                            <Droppable droppableId="dnd-list" direction="vertical">
-                                {(provided) => (
-                                    <div {...provided.droppableProps} ref={provided.innerRef}>
-                                        {items}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
-                    </ScrollArea.Autosize>
-                    {uploadProgress === 100 && <Dropzone
-                        accept={{
-                            'audio/*': [],
-                        }}
-                        onDrop={onFilesDropped}
-                        disabled={isVideoUploading}
-                    >
-                        <Center>
-                            <LuAudioLines></LuAudioLines>
-                            <Space w="sm" />
-                            <Text>Drag songs here or click to select files</Text>
-                        </Center>
-                    </Dropzone>}
-                    {uploadProgress < 100 && <Progress value={uploadProgress} size="lg" transitionDuration={200} />}
+                    {sessionLoadProgress < 100 && <>
+                        <Center><RingProgress transitionDuration={200} label={<Text ta="center">{`${sessionLoadProgress.toFixed(1)}%`}</Text>} sections={[{ value: sessionLoadProgress, color: 'blue' }]}></RingProgress></Center>
+                        <Center><Text c="dimmed" size="sm">Loading session</Text></Center>
+                    </>}
+                    {sessionLoadProgress === 100 &&
+                        <>
+                            {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === ""}>Upload to YouTube!</Button>}
+                            {isVideoUploading && <Stack mt="sm" gap="0"><Progress value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
+                            <ScrollArea.Autosize w="100%" maw="100%" mah="50vh" type="auto" scrollbars="y">
+                                <DragDropContext
+                                    onDragEnd={({ destination, source }) =>
+                                        queueHandlers.reorder({ from: source.index, to: destination?.index || 0 })
+                                    }
+                                >
+                                    <Droppable droppableId="dnd-list" direction="vertical">
+                                        {(provided) => (
+                                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                {items}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                            </ScrollArea.Autosize>
+                            {uploadProgress === 100 && <Dropzone
+                                accept={{
+                                    'audio/*': [],
+                                }}
+                                onDrop={onFilesDropped}
+                                disabled={isVideoUploading}
+                            >
+                                <Center>
+                                    <LuAudioLines></LuAudioLines>
+                                    <Space w="sm" />
+                                    <Text>Drag songs here or click to select files</Text>
+                                </Center>
+                            </Dropzone>}
+                            {uploadProgress < 100 && <Progress value={uploadProgress} size="lg" transitionDuration={200} />}
+                        </>}
                 </Stack>
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6, md: 8 }}>

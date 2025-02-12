@@ -14,27 +14,24 @@ export type RenderSettings = {
     backgroundColor: string
 }
 
-export type UploadItem = {
+export type UploadItemWithoutBlob = {
     id: string,
+    createdAt: number,
     originalAudioFileName: string,
     audioFile: string,
     audioFileLength: number,
     audioFileSize: number,
     imageFile: string,
-    imageFileBlob: File | null,
     metadata: YTMetadata,
     settings: RenderSettings
 }
 
-export type UploadItemWithoutBlob = {
-    id: string,
-    originalAudioFileName: string,
-    audioFile: string,
-    audioFileLength: number,
-    audioFileSize: number,
-    imageFile: string,
-    metadata: YTMetadata,
-    settings: RenderSettings
+export type UploadItem = UploadItemWithoutBlob & {
+    imageFileBlob: File | null,
+}
+
+export type UploadSession = {
+    items: UploadItemWithoutBlob[]
 }
 
 export type UploadRequest = {

@@ -33,7 +33,6 @@ func UploadRequestHandler(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: verify channelid
 	// TODO: change to bytes quota
 	uploadedToday, _ := user.RealUploadedToday()
 	uploadCount := min(max(0, getUploadQuota(user.Subscription)-uploadedToday), len(body.Videos))

@@ -1,4 +1,4 @@
-import { UploadItem } from "../types/upload";
+import { UploadItem, UploadItemWithoutBlob, UploadSession } from "../types/upload";
 
 export function validateTitle(value: string, allowTemplates: boolean): string | null {
     if (value.length === 0) {
@@ -32,6 +32,19 @@ export function validateTags(value: string[]): string | null {
     return null;
 }
 
-export function validateItem(item: UploadItem, allowTemplates: boolean): string | null {
+export function validateItem(item: UploadItem | UploadItemWithoutBlob, allowTemplates: boolean): string | null {
     return validateTitle(item.metadata.title, allowTemplates) || validateDescription(item.metadata.description, allowTemplates) || validateTags(item.metadata.tags);
+}
+
+export function validateSession(session: UploadSession): string | null {
+    for (const item of session.items) {
+        const err = validateItem(item, false);
+        if (err) {
+            return err;
+        }
+        if (item.createdAt < Date.now() - 12 * 3600 * 1000) { // 12 hours ago = stale
+            return "stale session";
+        }
+    }
+    return null;
 }

@@ -95,5 +95,5 @@ output "firebase_site" {
 }
 
 output "firebase_config" {
-  value = data.google_firebase_web_app_config.dev
+  value = replace(jsonencode(data.google_firebase_web_app_config.dev), data.google_firebase_web_app_config.dev.storage_bucket, google_storage_bucket.dev.name)
 }

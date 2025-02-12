@@ -32,6 +32,7 @@ export function getDefaultImageFile(): File {
 export function getDefaultUploadItem(): UploadItem {
     return {
         id: randomId(),
+        createdAt: 0,
         originalAudioFileName: "",
         audioFile: "",
         audioFileLength: 0,
