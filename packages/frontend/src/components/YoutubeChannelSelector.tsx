@@ -142,12 +142,12 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
                 </Combobox>
                 <Tooltip label={"Link channel"}>
                     <ActionIcon size="lg" color="green" onClick={authNewChannel} disabled={isFull}>
-                        <BsPlus size="lg"></BsPlus>
+                        <BsPlus size="2rem"></BsPlus>
                     </ActionIcon>
                 </Tooltip>
                 <Tooltip label={"Unlink channel"}>
                     <ActionIcon size="lg" color="red" onClick={removeChannel} disabled={!_value}>
-                        <BsDash size="lg"></BsDash>
+                        <BsDash size="2rem"></BsDash>
                     </ActionIcon>
                 </Tooltip>
             </Group>

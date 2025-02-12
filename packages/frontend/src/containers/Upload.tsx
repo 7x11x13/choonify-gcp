@@ -1,7 +1,7 @@
 import UploadForm from "../components/UploadForm";
 
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { Anchor, Button, Center, Grid, Progress, RingProgress, ScrollArea, Space, Stack, Text } from '@mantine/core';
+import { ActionIcon, Anchor, Button, Center, Grid, Group, Progress, RingProgress, ScrollArea, Space, Stack, Text, UnstyledButton } from '@mantine/core';
 import { Dropzone, type FileWithPath } from '@mantine/dropzone';
 import { useListState } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -19,6 +19,7 @@ import { formatBytes, formatDuration } from "../util/format";
 import { displayError } from "../util/log";
 import { validateItem, validateSession } from "../util/validate";
 import classes from './Upload.module.css';
+import { BsX } from "react-icons/bs";
 
 export default function Upload() {
     const { user, userInfo, refreshUserInfo } = useAuth();
@@ -75,6 +76,12 @@ export default function Upload() {
             })
         };
         await setDoc(doc(getFirestore(), "sessions", user.uid), session);
+    }
+
+    async function removeItem(itemIdx: number) {
+        // TODO: delete referenced files on backend
+        // TODO: animation
+        queueHandlers.remove(itemIdx);
     }
 
     useEffect(() => {
@@ -222,6 +229,9 @@ export default function Upload() {
                             <span style={{ maxWidth: "200px", display: "inline-flex" }}><Text span truncate="end">{item.originalAudioFileName}</Text></span> | {formatDuration(item.audioFileLength)} | {formatBytes(item.audioFileSize)}
                         </Text>
                     </Stack>
+                    <UnstyledButton style={{ position: "absolute", top: 0, left: 0 }} onClick={() => removeItem(index)}>
+                        <BsX size="1.5rem" color="gray"></BsX>
+                    </UnstyledButton>
                 </div>
             )}
         </Draggable>
@@ -248,7 +258,7 @@ export default function Upload() {
                                 <ScrollArea.Autosize w="100%" maw="100%" mah="50vh" type="auto" scrollbars="y">
                                     <Droppable droppableId="dnd-list" direction="vertical">
                                         {(provided) => (
-                                            <div style={{}} {...provided.droppableProps} ref={provided.innerRef}>
+                                            <div {...provided.droppableProps} ref={provided.innerRef}>
                                                 {items}
                                                 {provided.placeholder}
                                             </div>
