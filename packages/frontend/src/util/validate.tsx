@@ -33,6 +33,9 @@ export function validateTags(value: string[]): string | null {
 }
 
 export function validateItem(item: UploadItem | UploadItemWithoutBlob, allowTemplates: boolean): string | null {
+    if (item.createdAt < Date.now() - 12 * 3600 * 1000) { // 12 hours ago = stale
+        return "Stale session. Please reload page";
+    }
     return validateTitle(item.metadata.title, allowTemplates) || validateDescription(item.metadata.description, allowTemplates) || validateTags(item.metadata.tags);
 }
 
@@ -41,9 +44,6 @@ export function validateSession(session: UploadSession): string | null {
         const err = validateItem(item, false);
         if (err) {
             return err;
-        }
-        if (item.createdAt < Date.now() - 12 * 3600 * 1000) { // 12 hours ago = stale
-            return "stale session";
         }
     }
     return null;
