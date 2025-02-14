@@ -124,7 +124,7 @@ export default function Upload() {
             // handle progress messages
             const unsub = onSnapshot(doc(getFirestore(), "task_messages", user.uid), async (doc) => {
                 const message = doc.data() as BaseMessage | undefined;
-                if (!message || message.timestamp < (Date.now() - 30 * 1000)) { // 30 second timeout
+                if (!message || message.timestamp < (Date.now() - 10 * 1000)) { // 10 second timeout
                     return;
                 }
                 if (message.timestamp <= lastMessageTimestamp.current) {

@@ -294,10 +294,11 @@ func Render(w http.ResponseWriter, r *http.Request) {
 
 type ProgressPipeReader struct {
 	*io.PipeReader
-	progress        int64
-	totalSize       int64
-	lastSent        int64
-	progressChannel chan float32
+	progress          int64
+	totalSize         int64
+	lastSentProgress  int64
+	lastSentTimestamp int64
+	progressChannel   chan float32
 }
 
 func (pr *ProgressPipeReader) Read(data []byte) (int, error) {
@@ -307,10 +308,12 @@ func (pr *ProgressPipeReader) Read(data []byte) (int, error) {
 		pr.progress += int64(n)
 	}
 
-	if (float32(pr.progress)-float32(pr.lastSent))/float32(pr.totalSize) >= 0.05 {
-		// send in 5% increments
+	if (float32(pr.progress)-float32(pr.lastSentProgress))/float32(pr.totalSize) >= 0.05 && pr.lastSentTimestamp < time.Now().UnixMilli()-500 {
+		// send in 5% increments or 0.5 second increments
 		pr.progressChannel <- float32(pr.progress) / float32(pr.totalSize)
-		pr.lastSent = pr.progress
+
+		pr.lastSentProgress = pr.progress
+		pr.lastSentTimestamp = time.Now().Unix()
 	}
 
 	return n, err
@@ -328,7 +331,6 @@ func (pr *ProgressPipeReader) CloseWithError(err error) error {
 
 func relayProgress(ctx context.Context, itemId string, userId string, progressChannel chan float32) {
 	for prog := range progressChannel {
-		// TODO: don't send unless enough time has elapsed since last write
 		sendMessage(ctx, userId, &types.RenderProgressMessage{
 			BaseMessage: types.BaseMessage{
 				Type:      "progress",
@@ -369,7 +371,7 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 	go renderVideo(ffmpegOutput, pw, *audioURL, *imageURL, request.AudioLength, &request.Settings)
 
 	progressChannel := make(chan float32, 64)
-	progReader := &ProgressPipeReader{pr, 0, *audioSize + *imageSize, 0, progressChannel}
+	progReader := &ProgressPipeReader{pr, 0, *audioSize + *imageSize, 0, 0, progressChannel}
 	go relayProgress(ctx, request.Id, userId, progressChannel)
 
 	response, err := call.Media(progReader).Do()
