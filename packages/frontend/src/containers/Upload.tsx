@@ -100,7 +100,7 @@ export default function Upload() {
             return;
         }
         queueHandlers.remove(i);
-        // deleteItemObjects(uploadQueue[i]);
+        deleteItemObjects(uploadQueue[i]);
     }
 
     useEffect(() => {
