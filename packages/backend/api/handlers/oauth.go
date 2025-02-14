@@ -82,21 +82,26 @@ func AuthCallbackHandler(ctx *gin.Context) {
 	}
 	chanEnd := min(maxChan-len(user.Channels), len(response.Items))
 	err = extensions.Firestore.RunTransaction(ctx, func(c context.Context, tx *firestore.Transaction) error {
+		anyAdded := false
 		for _, channel := range response.Items[:chanEnd] {
 			ref := extensions.Firestore.Collection("yt_channel_credentials").Doc(channel.Id)
-			err = tx.Set(ref, types.YTChannelCreds{
+			err = tx.Create(ref, types.YTChannelCreds{
 				UserId: userId,
 				Token:  *token,
 			})
 			if err != nil {
 				ctx.Error(err)
 			} else {
+				anyAdded = true
 				user.Channels = append(user.Channels, types.YTChannelInfo{
 					ChannelId: channel.Id,
 					Picture:   channel.Snippet.Thumbnails.Default.Url,
 					Name:      channel.Snippet.Title,
 				})
 			}
+		}
+		if !anyAdded {
+			return fmt.Errorf("channel already linked")
 		}
 		slices.SortFunc(user.Channels, func(a types.YTChannelInfo, b types.YTChannelInfo) int {
 			return cmp.Compare(a.ChannelId, b.ChannelId)
@@ -121,7 +126,7 @@ func AuthCallbackHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, "Failed to add channel")
+		ctx.JSON(http.StatusInternalServerError, "Channel already linked")
 		return
 	}
 	ctx.JSON(http.StatusOK, nil)

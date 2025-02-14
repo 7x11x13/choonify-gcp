@@ -181,7 +181,8 @@ resource "google_cloudfunctions2_function" "delete" {
     timeout_seconds       = 60
 
     environment_variables = {
-      FIREBASE_CONFIG = var.firebase_config
+      FIREBASE_CONFIG         = var.firebase_config
+      FIREBASE_STORAGE_BUCKET = google_storage_bucket.dev.name
     }
   }
 }

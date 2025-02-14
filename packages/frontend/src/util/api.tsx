@@ -47,10 +47,7 @@ export async function deleteAccount() {
         if (!user) {
             throw new Error("User is not logged in");
         }
-        const response = await apiPost("/delete", {});
-        if (response !== undefined) {
-            await user.delete();
-        }
+        await apiPost("/delete", {});
     } catch (err) {
         handleError(err);
         return null;

@@ -2,6 +2,7 @@ import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signO
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import config from "../config";
 import { ChoonifyUserInfo } from "../types/auth";
+import { displayError } from "../util/log";
 
 const AuthContext = createContext<{
     loading: boolean;
@@ -57,7 +58,12 @@ function useProvideAuth() {
         // provider.addScope("https://www.googleapis.com/auth/youtube.readonly");
         // provider.addScope("https://www.googleapis.com/auth/youtube.upload");
         // await signInWithRedirect(auth, provider);
-        await signInWithPopup(auth, provider);
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (err: any) {
+            console.error(err);
+            displayError(err.message || err.toString());
+        }
     };
 
     async function realSignOut() {

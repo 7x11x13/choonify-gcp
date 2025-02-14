@@ -7,6 +7,7 @@ import { useAuth } from './Auth';
 import cx from 'clsx';
 import GoogleLoginButton from './GoogleLoginButton';
 import { Link, useNavigate } from 'react-router-dom';
+import { notifications } from '@mantine/notifications';
 
 const links = [
     { link: '/about', label: 'Features' },
@@ -38,6 +39,12 @@ export function Header() {
 
     async function deleteUserAccount() {
         await (await import('../util/api')).deleteAccount();
+        await signOut();
+        deleteModalClose();
+        notifications.show({
+            title: 'Success',
+            message: "Account scheduled for deletion"
+        });
     }
 
     return (
