@@ -1,13 +1,14 @@
 import UploadForm from "../components/UploadForm";
 
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { ActionIcon, Anchor, Button, Center, Grid, Group, Progress, RingProgress, ScrollArea, Space, Stack, Text, UnstyledButton } from '@mantine/core';
+import { Anchor, Button, Center, Grid, Progress, RingProgress, ScrollArea, Space, Stack, Text, UnstyledButton } from '@mantine/core';
 import { Dropzone, type FileWithPath } from '@mantine/dropzone';
 import { useListState } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import cx from 'clsx';
-import { doc, getDoc, getFirestore, onSnapshot, setDoc, Unsubscribe } from "firebase/firestore";
+import { doc, getDoc, getFirestore, onSnapshot, setDoc } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
+import { BsX } from "react-icons/bs";
 import { LuAudioLines } from "react-icons/lu";
 import { useAuth } from "../components/Auth";
 import { ChannelSelector } from "../components/YoutubeChannelSelector";
@@ -19,7 +20,6 @@ import { formatBytes, formatDuration } from "../util/format";
 import { displayError } from "../util/log";
 import { validateItem, validateSession } from "../util/validate";
 import classes from './Upload.module.css';
-import { BsX } from "react-icons/bs";
 
 export default function Upload() {
     const { user, userInfo, refreshUserInfo } = useAuth();
@@ -31,7 +31,7 @@ export default function Upload() {
     const [uploadProgress, setUploadProgress] = useState(100);
     const [videoUploadProgress, setVideoUploadProgress] = useState(0);
     const [uploadingStatus, setUploadingStatus] = useState("");
-    const snapshotHandle = useRef<Unsubscribe | null>(null);
+    const lastMessageTimestamp = useRef(0);
     const currentVideoUpload = useRef(1);
     const totalVideoUpload = useRef(1);
     const uploadedIds = useRef(new Set());
@@ -86,21 +86,32 @@ export default function Upload() {
 
     useEffect(() => {
         saveSession();
+        if (selectedIndex !== null && selectedIndex >= uploadQueue.length) {
+            setSelectedIndex(null);
+        }
+        if (uploadQueue.length === 0) {
+            setVideoUploading(false);
+        }
     }, [uploadQueue]);
 
     useEffect(() => {
-        if (!user && snapshotHandle.current) {
-            snapshotHandle.current();
-        }
         if (user) {
-            // check for existing session
             loadSession(user.uid);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
             // handle progress messages
-            snapshotHandle.current = onSnapshot(doc(getFirestore(), "task_messages", user.uid), async (doc) => {
+            const unsub = onSnapshot(doc(getFirestore(), "task_messages", user.uid), async (doc) => {
                 const message = doc.data() as BaseMessage | undefined;
-                if (!message || message.timestamp < (Date.now() - 5 * 60 * 1000)) { // 5 minute timeout
+                if (!message || message.timestamp < (Date.now() - 30 * 1000)) { // 30 second timeout
                     return;
                 }
+                if (message.timestamp <= lastMessageTimestamp.current) {
+                    return;
+                }
+                lastMessageTimestamp.current = message.timestamp;
                 switch (message.type) {
                     case "error":
                         const errorMsg = message as ErrorMessage;
@@ -127,14 +138,8 @@ export default function Upload() {
                         if (i !== -1) {
                             uploadedIds.current.add(successMsg.itemId);
                             currentVideoUpload.current += 1;
-                            uploadQueue.splice(i, 1);
+                            // uploadQueue.splice(i, 1);
                             queueHandlers.remove(i);
-                            if (selectedIndex !== null && selectedIndex >= uploadQueue.length) {
-                                setSelectedIndex(null);
-                            }
-                            if (uploadQueue.length === 0) {
-                                setVideoUploading(false);
-                            }
                         }
                         setUploadingStatus(`Uploading video ${currentVideoUpload.current} of ${totalVideoUpload.current}`);
                         setVideoUploadProgress(0);
@@ -142,13 +147,11 @@ export default function Upload() {
                 }
             }, (err) => {
                 console.error(err);
-                // TODO: better solution than this
-                if (err.code !== "permission-denied") {
-                    displayError(err.message);
-                }
+                displayError(err.message);
             });
+            return unsub;
         }
-    }, [user]);
+    }, [user, uploadQueue]);
 
     async function uploadVideos() {
         setUploadingStatus("Sending upload info...");
