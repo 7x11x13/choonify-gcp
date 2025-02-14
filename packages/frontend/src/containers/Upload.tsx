@@ -78,10 +78,29 @@ export default function Upload() {
         await setDoc(doc(getFirestore(), "sessions", user.uid), session);
     }
 
-    async function removeItem(itemIdx: number) {
-        // TODO: delete referenced files on backend
+    async function deleteItemObjects(item: UploadItem) {
+        const { ref, getStorage, deleteObject } = await import("firebase/storage");
+        const storage = getStorage();
+        const refs = [];
+        if (item.audioFile.startsWith("private")) {
+            refs.push(ref(storage, item.audioFile));
+        }
+        if (item.imageFile.startsWith("private")) {
+            refs.push(ref(storage, item.imageFile));
+        }
+        for (const ref of refs) {
+            deleteObject(ref);
+        }
+    }
+
+    async function removeItem(itemId: string) {
         // TODO: animation
-        queueHandlers.remove(itemIdx);
+        const i = uploadQueue.findIndex((item) => item.id === itemId);
+        if (i === -1) {
+            return;
+        }
+        queueHandlers.remove(i);
+        // deleteItemObjects(uploadQueue[i]);
     }
 
     useEffect(() => {
@@ -138,7 +157,6 @@ export default function Upload() {
                         if (i !== -1) {
                             uploadedIds.current.add(successMsg.itemId);
                             currentVideoUpload.current += 1;
-                            // uploadQueue.splice(i, 1);
                             queueHandlers.remove(i);
                         }
                         setUploadingStatus(`Uploading video ${currentVideoUpload.current} of ${totalVideoUpload.current}`);
@@ -232,7 +250,7 @@ export default function Upload() {
                             <span style={{ maxWidth: "200px", display: "inline-flex" }}><Text span truncate="end">{item.originalAudioFileName}</Text></span> | {formatDuration(item.audioFileLength)} | {formatBytes(item.audioFileSize)}
                         </Text>
                     </Stack>
-                    <UnstyledButton style={{ position: "absolute", top: 0, left: 0 }} onClick={() => removeItem(index)}>
+                    <UnstyledButton style={{ position: "absolute", top: 0, left: 0 }} onClick={() => removeItem(item.id)}>
                         <BsX size="1.5rem" color="gray"></BsX>
                     </UnstyledButton>
                 </div>
@@ -251,7 +269,7 @@ export default function Upload() {
                     </>}
                     {sessionLoadProgress === 100 &&
                         <>
-                            {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === ""}>Upload to YouTube!</Button>}
+                            {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === "" || sessionLoadProgress < 100}>Upload to YouTube!</Button>}
                             {isVideoUploading && <Stack mt="sm" gap="0"><Progress value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
                             <DragDropContext
                                 onDragEnd={({ destination, source }) =>
@@ -261,7 +279,7 @@ export default function Upload() {
                                 <ScrollArea.Autosize w="100%" maw="100%" mah="50vh" type="auto" scrollbars="y">
                                     <Droppable droppableId="dnd-list" direction="vertical">
                                         {(provided) => (
-                                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                            <div style={(isVideoUploading) ? { "pointerEvents": "none" } : {}} {...provided.droppableProps} ref={provided.innerRef}>
                                                 {items}
                                                 {provided.placeholder}
                                             </div>
@@ -287,7 +305,7 @@ export default function Upload() {
                 </Stack>
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6, md: 8 }}>
-                {selectedIndex !== null && <UploadForm settingsMode="regular" disabled={isVideoUploading} initialItemData={{ ...userInfo!.settings, defaults: uploadQueue[selectedIndex] }} formCallback={formCallback}>
+                {selectedIndex !== null && selectedIndex < uploadQueue.length && <UploadForm settingsMode="regular" disabled={isVideoUploading} initialItemData={{ ...userInfo!.settings, defaults: uploadQueue[selectedIndex] }} formCallback={formCallback}>
                 </UploadForm>}
                 {selectedIndex === null && <Text ta="center">No track selected</Text>}
             </Grid.Col>
