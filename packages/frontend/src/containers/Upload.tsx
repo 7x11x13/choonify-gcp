@@ -264,14 +264,14 @@ export default function Upload() {
             <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
                 <Stack gap="0">
                     <ChannelSelector onChange={setSelectedChannelId} value={selectedChannelId}></ChannelSelector>
+                    {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === "" || sessionLoadProgress < 100}>{t('upload.button.upload-to-youtube')}</Button>}
+                    {isVideoUploading && <Stack mt="sm" gap="0"><Progress value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
                     {sessionLoadProgress < 100 && <>
                         <Center><RingProgress transitionDuration={200} label={<Text ta="center">{`${sessionLoadProgress.toFixed(1)}%`}</Text>} sections={[{ value: sessionLoadProgress, color: 'blue' }]}></RingProgress></Center>
                         <Center><Text c="dimmed" size="sm">{t('upload.loading-session')}</Text></Center>
                     </>}
                     {sessionLoadProgress === 100 &&
                         <>
-                            {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === "" || sessionLoadProgress < 100}>{t('upload.button.upload-to-youtube')}</Button>}
-                            {isVideoUploading && <Stack mt="sm" gap="0"><Progress value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
                             <DragDropContext
                                 onDragEnd={({ destination, source }) =>
                                     queueHandlers.reorder({ from: source.index, to: destination?.index || 0 })

@@ -12,10 +12,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var db = make(map[string]string)
-
 func auth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		if ctx.Request.Header.Get("X-Requested-With") != "XMLHttpRequest" {
+			ctx.AbortWithStatus(401)
+			return
+		}
 		header := ctx.Request.Header.Get("Authorization")
 		if header == "" {
 			ctx.AbortWithStatus(401)
