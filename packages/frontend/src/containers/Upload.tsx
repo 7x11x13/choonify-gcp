@@ -137,7 +137,7 @@ export default function Upload() {
                     case "error":
                         const errorMsg = message as ErrorMessage;
                         console.error(errorMsg.message);
-                        displayError(errorMsg.message);
+                        displayError(t(errorMsg.message.i18nKey, errorMsg.message.data) as string);
                         if (errorMsg.reloadUsers) {
                             await refreshUserInfo();
                         }

@@ -1,5 +1,10 @@
 package types
 
+type ErrorBody struct {
+	I18NKey string         `json:"i18nKey" firestore:"i18nKey"`
+	Data    map[string]any `json:"data" firestore:"data"`
+}
+
 type BaseMessage struct {
 	Type      string `json:"type" firestore:"type"`
 	ItemId    string `json:"itemId" firestore:"itemId"`
@@ -8,8 +13,8 @@ type BaseMessage struct {
 
 type ErrorMessage struct {
 	BaseMessage
-	Message     string `json:"message" firestore:"message"`
-	ReloadUsers bool   `json:"reloadUsers" firestore:"reloadUsers"`
+	Message     ErrorBody `json:"message" firestore:"message"`
+	ReloadUsers bool      `json:"reloadUsers" firestore:"reloadUsers"`
 }
 
 type RenderProgressMessage struct {

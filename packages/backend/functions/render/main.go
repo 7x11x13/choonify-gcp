@@ -110,12 +110,12 @@ func renderVideo(output chan error, pw *io.PipeWriter, audioFile string, imageFi
 func getYouTubeClient(ctx context.Context, channelId string) (*youtube.Service, string, error) {
 	channel, err := Firestore.Collection("yt_channel_credentials").Doc(channelId).Get(ctx)
 	if err != nil {
-		return nil, "Could not get YouTube credentials", err
+		return nil, "api.render.credentials-not-found", err
 	}
 	var item types.YTChannelCreds
 	err = channel.DataTo(&item)
 	if err != nil {
-		return nil, "Could not get YouTube credentials", err
+		return nil, "api.render.credentials-not-found", err
 	}
 	cfg := oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
@@ -130,7 +130,7 @@ func getYouTubeClient(ctx context.Context, channelId string) (*youtube.Service, 
 	service, err := youtube.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		log.Printf("Failed to make youtube client: %v", err)
-		return nil, "Internal error", err
+		return nil, "api.render.internal-error", err
 	}
 	return service, "", nil
 }
@@ -249,7 +249,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	}
 	if youtube == nil {
 		reloadUsers := false
-		if msg == "Could not get YouTube credentials" {
+		if msg == "api.render.credentials-not-found" {
 			deleteYTChannelInfo(ctx, request.UserId, request.ChannelId)
 			reloadUsers = true
 		}
@@ -259,14 +259,16 @@ func Render(w http.ResponseWriter, r *http.Request) {
 				ItemId:    request.Videos[0].Id,
 				Timestamp: time.Now().UnixMilli(),
 			},
-			Message:     msg,
+			Message: types.ErrorBody{
+				I18NKey: msg,
+			},
 			ReloadUsers: reloadUsers,
 		})
 		return
 	}
 
 	for _, req := range request.Videos {
-		err, errMessage := handleRequest(ctx, youtube, req, request.UserId)
+		errMessage, err := handleRequest(ctx, youtube, req, request.UserId)
 		if err == nil {
 			continue
 		}
@@ -285,7 +287,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 				ItemId:    req.Id,
 				Timestamp: time.Now().UnixMilli(),
 			},
-			Message:     errMessage,
+			Message:     *errMessage,
 			ReloadUsers: reloadUser,
 		})
 		return
@@ -342,7 +344,7 @@ func relayProgress(ctx context.Context, itemId string, userId string, progressCh
 	}
 }
 
-func handleRequest(ctx context.Context, yt *youtube.Service, request types.UploadRequestData, userId string) (error, string) {
+func handleRequest(ctx context.Context, yt *youtube.Service, request types.UploadRequestData, userId string) (*types.ErrorBody, error) {
 	startTime := time.Now()
 	upload := &youtube.Video{
 		Snippet: &youtube.VideoSnippet{
@@ -358,11 +360,15 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 	// get presigned download URL for audio and image
 	audioURL, audioSize, err := presignGet(ctx, request.AudioKey)
 	if err != nil {
-		return err, "Invalid audio path"
+		return &types.ErrorBody{
+			I18NKey: "validate.invalid-audio-path",
+		}, err
 	}
 	imageURL, imageSize, err := presignGet(ctx, request.ImageKey)
 	if err != nil {
-		return err, "Invalid image path"
+		return &types.ErrorBody{
+			I18NKey: "validate.invalid-image-path",
+		}, err
 	}
 
 	pr, pw := io.Pipe()
@@ -376,9 +382,14 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 
 	response, err := call.Media(progReader).Do()
 	if err != nil {
-		msg := fmt.Sprintf("Failed to upload video: %v", err)
+		msg := fmt.Sprintf("%s", err)
 		log.Println(msg)
-		return err, msg
+		return &types.ErrorBody{
+			I18NKey: "api.render.yt-error",
+			Data: map[string]any{
+				"msg": msg,
+			},
+		}, err
 	}
 
 	err = <-ffmpegOutput
@@ -407,7 +418,7 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 		if err != nil {
 			log.Printf("Error updating user: %s", err)
 		}
-		return nil, ""
+		return nil, nil
 	}
 	exiterr, ok := err.(*exec.ExitError)
 	var msg string
@@ -416,5 +427,10 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 	} else {
 		msg = err.Error()
 	}
-	return err, fmt.Sprintf("FFmpeg error: %s", msg)
+	return &types.ErrorBody{
+		I18NKey: "api.render.ffmpeg-error",
+		Data: map[string]any{
+			"msg": msg,
+		},
+	}, err
 }

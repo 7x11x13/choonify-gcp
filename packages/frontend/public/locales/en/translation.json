@@ -17,6 +17,12 @@
       "channel-already-unlinked": "Channel already unlinked",
       "failed-to-link-channel": "Failed to link channel"
     },
+    "render": {
+      "credentials-not-found": "Could not get YouTube credentials",
+      "ffmpeg-error": "FFmpeg error: {{msg}}",
+      "internal-error": "Internal error",
+      "yt-error": "YouTube error: {{msg}}"
+    },
     "unknown": "Unknown"
   },
   "button": {
@@ -142,6 +148,7 @@
     "invalid-channel": "Invalid channel ID",
     "invalid-description": "Description cannot contain < or > characters",
     "invalid-filter": "Invalid filter type",
+    "invalid-audio-path": "Invalid audio path",
     "invalid-image-path": "Invalid image path",
     "invalid-title": "Title cannot contain < or > characters",
     "invalid-visibility": "Invalid visibility",

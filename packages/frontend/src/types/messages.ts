@@ -1,3 +1,5 @@
+import { ErrorBody } from "./api";
+
 export type BaseMessage = {
     type: "error" | "progress" | "success";
     itemId: string;
@@ -6,7 +8,7 @@ export type BaseMessage = {
 
 export type ErrorMessage = BaseMessage & {
     type: "error";
-    message: string;
+    message: ErrorBody;
     reloadUsers: boolean;
 }
 
