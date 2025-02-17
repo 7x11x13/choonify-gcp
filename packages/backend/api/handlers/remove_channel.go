@@ -20,22 +20,24 @@ func RemoveChannelHandler(ctx *gin.Context) {
 	var body removeChannelBody
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, "Bad request")
+		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
+			I18NKey: "api.bad-request",
+		})
 		return
 	}
 
 	userId, user, err := util.GetUser(ctx)
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
+		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	chanIdx := slices.IndexFunc(user.Channels, func(channel types.YTChannelInfo) bool {
 		return channel.ChannelId == body.ChannelId
 	})
 	if chanIdx == -1 {
-		ctx.Error(err)
-		ctx.JSON(http.StatusBadRequest, "Channel already unlinked")
+		util.SendError(ctx, http.StatusBadRequest, err, &util.ErrorBody{
+			I18NKey: "api.remove_channel.channel-already-unlinked",
+		})
 		return
 	}
 	userRef := extensions.Firestore.Collection("users").Doc(userId)
@@ -61,8 +63,9 @@ func RemoveChannelHandler(ctx *gin.Context) {
 		return tx.Delete(channelRef)
 	})
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, "Failed to add channel")
+		util.SendError(ctx, http.StatusInternalServerError, err, &util.ErrorBody{
+			I18NKey: "api.remove_channel.failed-to-link-channel",
+		})
 		return
 	}
 	ctx.JSON(http.StatusOK, nil)

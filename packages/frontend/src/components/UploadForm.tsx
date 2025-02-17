@@ -1,10 +1,11 @@
 import { Anchor, Button, Checkbox, ColorInput, Fieldset, Grid, Group, Select, TagsInput, Textarea, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { UserSettings } from "../types/auth";
-import { categoryIds } from "../types/category-ids";
-import { FilterType } from "../types/upload";
+import { getCategoryIdData } from "../types/category-ids";
 import { getDefaultUserSettings } from "../types/defaults";
+import { FilterType } from "../types/upload";
 import { validateDescription, validateTags, validateTitle } from "../util/validate";
 import { useAuth } from "./Auth";
 import { CoverArtInput } from "./CoverImageInput";
@@ -25,6 +26,8 @@ export default function UploadForm({
 }) {
 
     const { userInfo } = useAuth();
+    const { t } = useTranslation();
+    const isPremium = userInfo!.subscription != 0;
 
     function handleSubmit(values: UserSettings) {
         form.resetDirty();
@@ -35,17 +38,17 @@ export default function UploadForm({
         return [
             {
                 value: FilterType.BLACK_BACKGROUND,
-                label: "Black background"
+                label: t('types.filtertype.black-background')
             },
             {
                 value: FilterType.COLOR_BACKGROUND,
-                label: userInfo!.subscription === 0 ? "Colored background (Premium)" : "Colored background",
-                disabled: userInfo!.subscription === 0
+                label: isPremium ? t('types.filtertype.colored-background-premium') : t('types.filtertype.colored-background'),
+                disabled: isPremium
             },
             {
                 value: FilterType.BLURRED_BACKGROUND,
-                label: userInfo!.subscription === 0 ? "Blurred background (Premium)" : "Blurred background",
-                disabled: userInfo!.subscription === 0
+                label: isPremium ? t('types.filtertype.blurred-background-premium') : t('types.filtertype.blurred-background'),
+                disabled: isPremium
             }
         ];
     }
@@ -54,15 +57,15 @@ export default function UploadForm({
         return [
             {
                 value: "public",
-                label: "Public"
+                label: t('types.visibility.public')
             },
             {
                 value: "unlisted",
-                label: "Unlisted"
+                label: t('types.visibility.unlisted')
             },
             {
                 value: "private",
-                label: "Private"
+                label: t('types.visibility.private')
             },
         ]
     }
@@ -88,7 +91,7 @@ export default function UploadForm({
 
     return (
         <form onSubmit={form.onSubmit(handleSubmit)} {...props}>
-            <Fieldset disabled={disabled} legend={settingsMode === "regular" ? "Upload settings" : "Default settings"}>
+            <Fieldset disabled={disabled} legend={settingsMode === "regular" ? t('upload_form.upload-settings') : t('upload_form.default-settings')}>
                 <Grid>
                     <Grid.Col span={{ base: 12, md: 6 }}>
                         <VideoPreview coverImage={form.getValues().defaults.imageFileBlob!} settings={form.getValues().defaults.settings} />
@@ -96,7 +99,7 @@ export default function UploadForm({
                             form={form}
                         />
                         <Select
-                            label="Render type"
+                            label={t('upload_form.label.render-type')}
                             key={form.key('defaults.settings.filterType')}
                             {...form.getInputProps('defaults.settings.filterType')}
                             data={getFilterTypeData()}
@@ -104,12 +107,12 @@ export default function UploadForm({
                         />
                         <Group justify="flex-end" mt="xs">
                             <Checkbox
-                                label="Enable watermark"
+                                label={t('upload_form.label.enable-watermark')}
                                 key={form.key('defaults.settings.watermark')}
                                 style={{ flexGrow: 1 }}
                                 {...form.getInputProps('defaults.settings.watermark', { type: 'checkbox' })}
-                                disabled={userInfo!.subscription === 0}
-                                description="Renders choonify.com in the top right corner"
+                                disabled={isPremium}
+                                description={t('upload_form.description.watermark')}
                             />
                             <ColorInput
                                 key={form.key('defaults.settings.backgroundColor')}
@@ -123,17 +126,19 @@ export default function UploadForm({
                     <Grid.Col span={{ base: 12, md: 6 }}>
                         {settingsMode === "regular" ? <TextInput
                             withAsterisk
-                            label="Title"
-                            placeholder="Video title"
+                            label={t('upload_form.label.title')}
+                            placeholder={t('upload_form.placeholder.title')}
                             key={form.key('defaults.metadata.title')}
                             {...form.getInputProps('defaults.metadata.title')}
-                            description="Must be between 1-100 characters and can't contain < or >"
+                            description={t('upload_form.description.title1')}
                         /> :
                             <Textarea
                                 withAsterisk
-                                label="Title"
-                                description={<span>Must be at most 10000 characters. Can be a <Anchor size="xs">template string</Anchor></span>}
-                                placeholder="Video title"
+                                label={t('upload_form.label.title')}
+                                description={<span>
+                                    <Trans t={t} i18nKey="upload_form.description.template-string" components={[<Anchor size="xs" />]} />
+                                </span>}
+                                placeholder={t('upload_form.placeholder.title')}
                                 key={form.key('defaults.metadata.title')}
                                 {...form.getInputProps('defaults.metadata.title')}
                                 autosize
@@ -142,17 +147,19 @@ export default function UploadForm({
                         }
                         {settingsMode === "regular" ?
                             <Textarea
-                                label="Description"
-                                description="Must be at most 5000 characters"
-                                placeholder="Video description"
+                                label={t('upload_form.label.description')}
+                                description={t('upload_form.description.description1')}
+                                placeholder={t('upload_form.placeholder.description')}
                                 key={form.key('defaults.metadata.description')}
                                 {...form.getInputProps('defaults.metadata.description')}
                                 autosize
                                 maxRows={10}
                             /> : <Textarea
-                                label="Description"
-                                description={<span>Must be at most 10000 characters. Can be a <Anchor size="xs">template string</Anchor></span>}
-                                placeholder="Video description"
+                                label={t('upload_form.label.description')}
+                                description={<span>
+                                    <Trans t={t} i18nKey="upload_form.description.template-string" components={[<Anchor size="xs" />]} />
+                                </span>}
+                                placeholder={t('upload_form.placeholder.description')}
                                 key={form.key('defaults.metadata.description')}
                                 {...form.getInputProps('defaults.metadata.description')}
                                 autosize
@@ -160,33 +167,33 @@ export default function UploadForm({
                             />
                         }
                         <TagsInput
-                            label="Tags"
-                            description="Must be at most 500 characters"
+                            label={t('upload_form.label.tags')}
+                            description={t('upload_form.description.tags')}
                             key={form.key('defaults.metadata.tags')}
                             {...form.getInputProps('defaults.metadata.tags')}
                         />
                         <Select
-                            label="Category"
+                            label={t('upload_form.label.category')}
                             key={form.key('defaults.metadata.categoryId')}
                             {...form.getInputProps('defaults.metadata.categoryId')}
-                            data={categoryIds}
+                            data={getCategoryIdData()}
                             allowDeselect={false}
                         />
                         <Select
-                            label="Visibility"
+                            label={t('upload_form.label.visibility')}
                             key={form.key('defaults.metadata.visibility')}
                             {...form.getInputProps('defaults.metadata.visibility')}
                             data={getVisibilityData()}
                             allowDeselect={false}
                         />
                         <Checkbox
-                            label="Made for kids"
+                            label={t('upload_form.label.made-for-kids')}
                             mt="sm"
                             key={form.key('defaults.metadata.madeForKids')}
                             {...form.getInputProps('defaults.metadata.madeForKids', { type: 'checkbox' })}
                         />
                         <Checkbox
-                            label="Notify subscribers"
+                            label={t('upload_form.label.notify-subscribers')}
                             mt="sm"
                             key={form.key('defaults.metadata.notifySubscribers')}
                             {...form.getInputProps('defaults.metadata.notifySubscribers', { type: 'checkbox' })}
@@ -194,9 +201,9 @@ export default function UploadForm({
                     </Grid.Col>
                 </Grid>
                 <Group justify="flex-end" mt="md">
-                    {settingsMode === "defaults" && <Button onClick={() => { form.setValues(getDefaultUserSettings()) }}>Reset defaults</Button>}
-                    <Button disabled={!form.isDirty()} onClick={form.reset}>Cancel</Button>
-                    <Button type="submit" disabled={!form.isDirty()}>Save</Button>
+                    {settingsMode === "defaults" && <Button onClick={() => { form.setValues(getDefaultUserSettings()) }}>{t('upload_form.button.reset-defaults')}</Button>}
+                    <Button disabled={!form.isDirty()} onClick={form.reset}>{t('button.cancel')}</Button>
+                    <Button type="submit" disabled={!form.isDirty()}>{t('button.save')}</Button>
                 </Group>
             </Fieldset>
         </form>

@@ -2,11 +2,19 @@ import axios from "axios"; // TODO: remove axios dep
 import { getAuth } from "firebase/auth";
 import config from "../config";
 import { displayError } from "./log";
+import { t } from "i18next";
+import { ErrorBody } from "../types/api";
 
 function handleError(err: any) {
     let message;
     if (axios.isAxiosError(err)) {
-        message = `(${err.status}) ${err.response?.data || "Unknown"}`;
+        if (err.response?.data) {
+            const body = err.response.data as ErrorBody;
+            message = t(body.i18nKey, body.data);
+        } else {
+            message = t('api.unknown');
+        }
+        message = `(${err.status}) ${message}`
     } else {
         console.error(err);
         message = err.toString();
@@ -45,7 +53,7 @@ export async function deleteAccount() {
     try {
         const user = getAuth().currentUser;
         if (!user) {
-            throw new Error("User is not logged in");
+            throw new Error(t('api.delete.user-is-not-logged-in'));
         }
         await apiPost("/delete", {});
     } catch (err) {

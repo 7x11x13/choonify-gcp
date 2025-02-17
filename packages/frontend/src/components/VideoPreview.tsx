@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { FilterType, RenderSettings } from "../types/upload";
 import { InputLabel, InputWrapper, Loader, Text } from "@mantine/core";
 import * as StackBlur from 'stackblur-canvas';
+import { useTranslation } from "react-i18next";
 
 export function VideoPreview({ coverImage, settings, ...props }: { coverImage: File, settings: RenderSettings }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const { t } = useTranslation();
 
     function onError(...any: any[]) {
         console.error("Preview error:", ...any);
@@ -93,10 +95,10 @@ export function VideoPreview({ coverImage, settings, ...props }: { coverImage: F
     }, [coverImage, ...Object.values(settings)]);
 
     if (error) {
-        return <Text>Error creating preview</Text>
+        return <Text>{t('video_preview.error')}</Text>
     }
 
 
-    return <InputWrapper><InputLabel>Preview</InputLabel>{loading && <Loader>Loading preview</Loader>}
+    return <InputWrapper><InputLabel>{t('video_preview.label')}</InputLabel>{loading && <Loader>{t('video_preview.loading')}</Loader>}
         <canvas ref={canvasRef} style={{ width: "100%", ...(loading ? { display: "none" } : {}) }} {...props} width={1280} height={720}></canvas></InputWrapper>
 }

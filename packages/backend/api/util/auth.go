@@ -48,14 +48,12 @@ func GetUser(ctx *gin.Context) (string, *types.UserInfo, error) {
 		}
 		_, err = extensions.Firestore.Collection("users").Doc(userId).Set(ctx, user)
 		if err != nil {
-			ctx.Error(err)
-			ctx.JSON(http.StatusInternalServerError, nil)
+			SendError(ctx, http.StatusInternalServerError, err, nil)
 			return userId, nil, err
 		}
 	} else {
 		if err != nil {
-			ctx.Error(err)
-			ctx.JSON(http.StatusInternalServerError, nil)
+			SendError(ctx, http.StatusInternalServerError, err, nil)
 			return userId, nil, err
 		}
 		userData.DataTo(&user)

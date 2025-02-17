@@ -15,9 +15,7 @@ export default function UnauthenticatedRoute({
     if (loading) {
         return (
             <Center>
-                <Loader role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </Loader>
+                <Loader role="status"></Loader>
             </Center>
         )
     }

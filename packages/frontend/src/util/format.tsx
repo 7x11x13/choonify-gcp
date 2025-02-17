@@ -1,12 +1,14 @@
+import { t } from "i18next";
+
 export function formatBytes(bytes: number, decimals = 1): string {
     if (bytes === 0) return '0 B';
 
     const k = 1000;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ['B', 'KiB', 'MiB', 'GiB', 'TiB']; // TODO: localization?
 
     const i = Math.min(Math.floor(Math.log2(bytes) / Math.log2(k)), sizes.length - 1);
 
-    return (bytes / Math.pow(k, i)).toFixed(decimals) + ' ' + sizes[i];
+    return t("format.bytes", { value: bytes / Math.pow(k, i), unit: sizes[i], maximumFractionDigits: decimals });
 }
 
 export function formatDuration(seconds: number): string {

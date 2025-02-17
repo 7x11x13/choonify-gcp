@@ -7,6 +7,7 @@ import { YTChannel } from '../types/auth';
 import { apiPost } from '../util/api';
 import { displayError } from '../util/log';
 import { useAuth, useGSI } from './Auth';
+import { useTranslation } from 'react-i18next';
 
 interface ChannelSelectorProps {
     value?: string;
@@ -32,6 +33,7 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
         onDropdownClose: () => combobox.resetSelectedOption(),
     });
     const gsiLoaded = useGSI();
+    const { t } = useTranslation();
 
     useEffect(() => {
         const channels = userInfo?.channels ?? [];
@@ -106,7 +108,7 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
 
     return (
         <InputWrapper>
-            <InputLabel>YouTube Channel</InputLabel>
+            <InputLabel>{t('channel_selector.label')}</InputLabel>
             <Group gap="xs">
                 <Combobox
                     store={combobox}
@@ -130,22 +132,22 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
                                 <Avatar src={getSelectedItem()?.picture} alt={getSelectedItem()?.name} radius="xl" size={24} />
                                 <Text>{getSelectedItem()?.name}</Text>
                             </Group>}
-                            {!_value && <Input.Placeholder>No channel selected</Input.Placeholder>}
+                            {!_value && <Input.Placeholder>{t('channel_selector.no-channel-selected')}</Input.Placeholder>}
                         </InputBase>
                     </Combobox.Target>
 
                     <Combobox.Dropdown>
                         <Combobox.Options>
-                            {loading ? <Combobox.Empty>Loading....</Combobox.Empty> : options}
+                            {loading ? <Combobox.Empty>{t('loading')}</Combobox.Empty> : options}
                         </Combobox.Options>
                     </Combobox.Dropdown>
                 </Combobox>
-                <Tooltip label={"Link channel"}>
+                <Tooltip label={t('channel_selector.link-channel')}>
                     <ActionIcon size="lg" color="green" onClick={authNewChannel} disabled={isFull}>
                         <BsPlus size="2rem"></BsPlus>
                     </ActionIcon>
                 </Tooltip>
-                <Tooltip label={"Unlink channel"}>
+                <Tooltip label={t('channel_selector.unlink-channel')}>
                     <ActionIcon size="lg" color="red" onClick={removeChannel} disabled={!_value}>
                         <BsDash size="2rem"></BsDash>
                     </ActionIcon>

@@ -29,7 +29,9 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 	var body types.UserSettings
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, "Bad request")
+		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
+			I18NKey: "api.bad-request",
+		})
 		return
 	}
 
@@ -40,7 +42,9 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 
 	msg := util.ValidateRequest(body.Defaults, user.Subscription, true)
 	if msg != "" {
-		ctx.JSON(http.StatusBadRequest, msg)
+		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
+			I18NKey: msg,
+		})
 		return
 	}
 
@@ -50,13 +54,17 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 		})
 
 		if !validChannelId {
-			ctx.JSON(http.StatusBadRequest, "Default channel not found")
+			util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
+				I18NKey: "validate.invalid-channel",
+			})
 			return
 		}
 	}
 
 	if !util.ValidateFilePath(body.Defaults.ImageKey, userId) {
-		ctx.JSON(http.StatusBadRequest, "Invalid image path")
+		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
+			I18NKey: "validate.invalid-image-path",
+		})
 		return
 	}
 
@@ -66,8 +74,7 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 		dst := extensions.Bucket.Object(defaultKey)
 		err = moveFile(ctx, src, dst)
 		if err != nil {
-			ctx.Error(err)
-			ctx.JSON(http.StatusInternalServerError, nil)
+			util.SendError(ctx, http.StatusInternalServerError, err, nil)
 			return
 		}
 		body.Defaults.ImageKey = defaultKey
@@ -82,8 +89,7 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 		},
 	)
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
+		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	ctx.JSON(http.StatusOK, nil)

@@ -22,18 +22,18 @@ func ValidateRequest(item types.UploadRequestData, subscription int, allowTempla
 	// title - between 1-100 chars, not containing < or >
 	titleLength := strLen(item.Metadata.Title)
 	if titleLength < 1 {
-		return "Title cannot be empty"
+		return "validate.empty.title"
 	}
 	if (!allowTemplates && titleLength > 100) || titleLength > 10000 {
-		return "Title is too long"
+		return "validate.title-too-long"
 	}
 	if strings.ContainsAny(item.Metadata.Title, "<>") {
-		return "Title cannot contain < or >"
+		return "validate.invalid-title"
 	}
 	// desc - <= 5000 utf-8 bytes
 	descLength := len(item.Metadata.Description)
 	if (!allowTemplates && descLength > 5000) || strLen(item.Metadata.Description) > 10000 {
-		return "Description is too long"
+		return "validate.description-too-long"
 	}
 	// tags - <= 500 encoded chars
 	count := -1
@@ -43,33 +43,33 @@ func ValidateRequest(item types.UploadRequestData, subscription int, allowTempla
 		count += 1 // for comma
 	}
 	if count > 500 {
-		return "Tags too long"
+		return "validate.too-many-tags"
 	}
 	// categoryid
 	if !slices.Contains(types.CategoryIds, item.Metadata.CategoryId) {
-		return "Invalid categoryId"
+		return "validate.invalid-category"
 	}
 
 	// visibility - public, unlisted, or private
 	if !slices.Contains(visibilities, item.Metadata.Visibility) {
-		return "Invalid visibility"
+		return "validate.invalid-visibility"
 	}
 
 	// filter type
 	if !types.IsFilterType(string(item.Settings.FilterType)) {
-		return "Invalid filter type"
+		return "validate.invalid-filter"
 	}
 	if subscription == 0 && item.Settings.FilterType != types.FilterTypeSolidBlack {
-		return "Not premium user"
+		return "validate.not-premium"
 	}
 
 	// watermark
 	if subscription == 0 && !item.Settings.Watermark {
-		return "Not premium user"
+		return "validate.not-premium"
 	}
 	// background color
-	if !colorRegex.MatchString(item.Settings.BackgroundColor) {
-		return "Invalid background color"
+	if item.Settings.FilterType == types.FilterTypeSolidColor && !colorRegex.MatchString(item.Settings.BackgroundColor) {
+		return "validate.invalid-background-color"
 	}
 	return ""
 }
@@ -84,25 +84,35 @@ func ValidateFilePath(fileKey string, userId string) bool {
 	return true
 }
 
-func ValidateBatchRequest(request *types.UploadBatchRequest, userId string, user *types.UserInfo) string {
+func ValidateBatchRequest(request *types.UploadBatchRequest, userId string, user *types.UserInfo) *ErrorBody {
 	validChannelId := slices.ContainsFunc(user.Channels, func(channel types.YTChannelInfo) bool {
 		return channel.ChannelId == request.ChannelId
 	})
 
 	if !validChannelId {
-		return "Invalid channel ID"
+		return &ErrorBody{
+			I18NKey: "validate.invalid-channel",
+		}
 	}
 
 	for i, item := range request.Videos {
 		msg := ValidateRequest(item, user.Subscription, false)
 		if msg != "" {
-			return fmt.Sprintf("Item %d: %s", i+1, msg)
+			return &ErrorBody{
+				I18NKey: "validate.item-error",
+				Data: map[string]any{
+					"i":      i + 1,
+					"reason": fmt.Sprintf("$t(%s)", msg),
+				},
+			}
 		}
 
 		// check that user has access to audio and image specified
 		if !ValidateFilePath(item.AudioKey, userId) || !ValidateFilePath(item.ImageKey, userId) {
-			return "User has insufficient access"
+			return &ErrorBody{
+				I18NKey: "validate.user-insufficient-access",
+			}
 		}
 	}
-	return ""
+	return nil
 }

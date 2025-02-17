@@ -1,16 +1,17 @@
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter as Router } from "react-router-dom";
-import App from './App'
 import { initializeApp } from "firebase/app";
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter as Router } from "react-router-dom";
+import App from './App';
 
+import { createTheme, MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import '@mantine/dropzone/styles.css';
-import '@mantine/notifications/styles.css';
-import "./index.css";
-import { ProvideAuth } from './components/Auth';
 import { Notifications } from '@mantine/notifications';
-import { createTheme, MantineProvider } from '@mantine/core';
+import '@mantine/notifications/styles.css';
 import { StrictMode } from 'react';
+import { ProvideAuth } from './components/Auth';
+import './i18n.ts';
+import "./index.css";
 
 const firebaseConfig = JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG);
 initializeApp(firebaseConfig);

@@ -17,9 +17,10 @@ import type { BaseMessage, ErrorMessage, RenderProgressMessage, RenderSuccessMes
 import type { UploadItem, UploadRequest, UploadSession } from "../types/upload";
 import { apiPost, downloadFile } from "../util/api";
 import { formatBytes, formatDuration } from "../util/format";
-import { displayError } from "../util/log";
+import { displayError, displaySuccess } from "../util/log";
 import { validateItem, validateSession } from "../util/validate";
 import classes from './Upload.module.css';
+import { Trans, useTranslation } from "react-i18next";
 
 export default function Upload() {
     const { user, userInfo, refreshUserInfo } = useAuth();
@@ -35,6 +36,7 @@ export default function Upload() {
     const currentVideoUpload = useRef(1);
     const totalVideoUpload = useRef(1);
     const uploadedIds = useRef(new Set());
+    const { t } = useTranslation();
 
     async function loadSession(userId: string) {
         setSessionLoadProgress(0);
@@ -149,17 +151,16 @@ export default function Upload() {
                         break;
                     case "success":
                         const successMsg = message as RenderSuccessMessage;
-                        notifications.show({
-                            title: 'Success',
-                            message: <Text><Anchor href={successMsg.videoUrl}>Upload</Anchor> took {successMsg.elapsed.toFixed(2)}s</Text>
-                        });
+                        displaySuccess(<Text>
+                            <Trans t={t} i18nKey="upload.success" values={{ duration: successMsg.elapsed }} components={[<Anchor href={successMsg.videoUrl} />]} />
+                        </Text>);
                         const i = uploadQueue.findIndex((item) => item.id === successMsg.itemId);
                         if (i !== -1) {
                             uploadedIds.current.add(successMsg.itemId);
                             currentVideoUpload.current += 1;
                             queueHandlers.remove(i);
                         }
-                        setUploadingStatus(`Uploading video ${currentVideoUpload.current} of ${totalVideoUpload.current}`);
+                        setUploadingStatus(t('upload.upload-status', { current: currentVideoUpload.current, total: totalVideoUpload.current }));
                         setVideoUploadProgress(0);
                         break;
                 }
@@ -172,7 +173,7 @@ export default function Upload() {
     }, [user, uploadQueue]);
 
     async function uploadVideos() {
-        setUploadingStatus("Sending upload info...");
+        setUploadingStatus(t('upload.upload-status-sending'));
         const request: UploadRequest = { channelId: selectedChannelId, videos: uploadQueue.map(({ imageFileBlob, ...rest }) => rest) }
         const response = await apiPost("/upload", request);
         if (response !== undefined) {
@@ -180,12 +181,12 @@ export default function Upload() {
             if (uploading < uploadQueue.length) {
                 notifications.show({
                     title: 'Warning',
-                    message: `Upload quota hit! Only uploading ${uploading} of ${uploadQueue.length} videos. Upgrade your plan to increase the quota`,
+                    message: t("upload.warning.quota-hit", { uploading, total: uploadQueue.length }),
                     color: "orange",
                 })
             }
             totalVideoUpload.current = uploading;
-            setUploadingStatus(`Uploading video ${currentVideoUpload.current} of ${totalVideoUpload.current}`);
+            setUploadingStatus(t('upload.upload-status', { current: currentVideoUpload.current, total: totalVideoUpload.current }));
             if (uploading === 0) {
                 setVideoUploading(false);
             }
@@ -198,14 +199,14 @@ export default function Upload() {
         for (const [i, item] of uploadQueue.entries()) {
             const reason = validateItem(item, false);
             if (reason !== null) {
-                displayError(`Upload item ${i + 1} is invalid: ${reason}`);
+                displayError(t("validate.item-error", { i: i + 1, reason }));
                 return;
             }
         }
         currentVideoUpload.current = 1;
         uploadedIds.current = new Set();
         setVideoUploading(true);
-        setUploadingStatus("Initializing...");
+        setUploadingStatus(t('upload.upload-status-initializing'));
         setVideoUploadProgress(0);
         uploadVideos();
     }
@@ -265,11 +266,11 @@ export default function Upload() {
                     <ChannelSelector onChange={setSelectedChannelId} value={selectedChannelId}></ChannelSelector>
                     {sessionLoadProgress < 100 && <>
                         <Center><RingProgress transitionDuration={200} label={<Text ta="center">{`${sessionLoadProgress.toFixed(1)}%`}</Text>} sections={[{ value: sessionLoadProgress, color: 'blue' }]}></RingProgress></Center>
-                        <Center><Text c="dimmed" size="sm">Loading session</Text></Center>
+                        <Center><Text c="dimmed" size="sm">{t('upload.loading-session')}</Text></Center>
                     </>}
                     {sessionLoadProgress === 100 &&
                         <>
-                            {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === "" || sessionLoadProgress < 100}>Upload to YouTube!</Button>}
+                            {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === "" || sessionLoadProgress < 100}>{t('upload.button.upload-to-youtube')}</Button>}
                             {isVideoUploading && <Stack mt="sm" gap="0"><Progress value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
                             <DragDropContext
                                 onDragEnd={({ destination, source }) =>
@@ -297,7 +298,7 @@ export default function Upload() {
                                 <Center>
                                     <LuAudioLines></LuAudioLines>
                                     <Space w="sm" />
-                                    <Text>Drag songs here or click to select files</Text>
+                                    <Text>{t('upload.dropzone')}</Text>
                                 </Center>
                             </Dropzone>}
                             {uploadProgress < 100 && <Progress value={uploadProgress} size="lg" transitionDuration={200} />}
@@ -307,7 +308,7 @@ export default function Upload() {
             <Grid.Col span={{ base: 12, sm: 6, md: 8 }}>
                 {selectedIndex !== null && selectedIndex < uploadQueue.length && <UploadForm settingsMode="regular" disabled={isVideoUploading} initialItemData={{ ...userInfo!.settings, defaults: uploadQueue[selectedIndex] }} formCallback={formCallback}>
                 </UploadForm>}
-                {selectedIndex === null && <Text ta="center">No track selected</Text>}
+                {selectedIndex === null && <Text ta="center">{t('upload.no-track-selected')}</Text>}
             </Grid.Col>
         </Grid >
     );

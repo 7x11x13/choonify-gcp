@@ -1,24 +1,26 @@
-import { BsBoxArrowRight, BsChevronDown, BsFillGearFill, BsTrash } from 'react-icons/bs';
-import { Avatar, Burger, Group, Menu, UnstyledButton, Text, Modal, Button, Stack } from '@mantine/core';
+import { Avatar, Burger, Button, Group, Menu, Modal, Stack, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import classes from './Header.module.css';
-import { useState } from 'react';
-import { useAuth } from './Auth';
 import cx from 'clsx';
-import GoogleLoginButton from './GoogleLoginButton';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { BsBoxArrowRight, BsChevronDown, BsFillGearFill, BsTrash } from 'react-icons/bs';
 import { Link, useNavigate } from 'react-router-dom';
-import { notifications } from '@mantine/notifications';
-
-const links = [
-    { link: '/about', label: 'Features' },
-    { link: '/pricing', label: 'Pricing' },
-];
+import { displaySuccess } from '../util/log';
+import { useAuth } from './Auth';
+import GoogleLoginButton from './GoogleLoginButton';
+import classes from './Header.module.css';
 
 export function Header() {
     const [opened, { toggle }] = useDisclosure(false);
     const [userMenuOpened, setUserMenuOpened] = useState(false);
     const { user, loading, signOut } = useAuth();
     const [deleteModalOpened, { open: deleteModalOpen, close: deleteModalClose }] = useDisclosure(false);
+    const { t } = useTranslation();
+
+    const links = [
+        { link: '/about', label: t('header.label.features') },
+        { link: '/pricing', label: t('header.label.pricing') },
+    ];
 
     let navigate = useNavigate();
 
@@ -41,10 +43,7 @@ export function Header() {
         await (await import('../util/api')).deleteAccount();
         await signOut();
         deleteModalClose();
-        notifications.show({
-            title: 'Success',
-            message: "Account scheduled for deletion"
-        });
+        displaySuccess(t('header.account-scheduled-for-deletion'));
     }
 
     return (
@@ -52,10 +51,10 @@ export function Header() {
             <div className={classes.inner}>
                 <Modal opened={deleteModalOpened} onClose={deleteModalClose} title="Delete Account">
                     <Stack>
-                        <Text>Are you sure? You will not be able to login for 24 hours, and then your account will be deleted.</Text>
+                        <Text>{t('header.deletion-warning')}</Text>
                         <Group justify='right'>
-                            <Button onClick={deleteModalClose}>Go back</Button>
-                            <Button onClick={deleteUserAccount}>Delete my account</Button>
+                            <Button onClick={deleteModalClose}>{t('header.go-back')}</Button>
+                            <Button onClick={deleteUserAccount}>{t('header.delete-confirmation')}</Button>
                         </Group>
                     </Stack>
                 </Modal>
@@ -91,15 +90,15 @@ export function Header() {
                         </Menu.Target>
                         <Menu.Dropdown>
                             <Menu.Item leftSection={<BsFillGearFill size={16} stroke={"1.5"} />} onClick={() => navigate("/settings")}>
-                                Account settings
+                                {t('header.account-settings')}
                             </Menu.Item>
-                            <Menu.Item leftSection={<BsBoxArrowRight size={16} stroke={"1.5"} />} onClick={signOut}>Logout</Menu.Item>
+                            <Menu.Item leftSection={<BsBoxArrowRight size={16} stroke={"1.5"} />} onClick={signOut}>{t('header.logout')}</Menu.Item>
 
                             <Menu.Divider />
 
-                            <Menu.Label>Danger zone</Menu.Label>
+                            <Menu.Label>{t('header.danger-zone')}</Menu.Label>
                             <Menu.Item color="red" leftSection={<BsTrash size={16} stroke={"1.5"} />} onClick={deleteModalOpen}>
-                                Delete account
+                                {t('header.delete-account')}
                             </Menu.Item>
                         </Menu.Dropdown>
                     </Menu>}

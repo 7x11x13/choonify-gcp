@@ -35,7 +35,9 @@ func AuthCallbackHandler(ctx *gin.Context) {
 	var body oAuthBody
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, "Bad request")
+		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
+			I18NKey: "api.bad-request",
+		})
 		return
 	}
 
@@ -50,34 +52,37 @@ func AuthCallbackHandler(ctx *gin.Context) {
 	token, err := cfg.Exchange(ctx, body.Code)
 	if err != nil {
 		// log.Printf("failed to exchange code: %s", err)
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
+		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	client := cfg.Client(ctx, token)
 	service, err := youtube.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		// log.Printf("Failed to make youtube client: %v", err)
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
+		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	call := service.Channels.List([]string{"snippet"})
 	response, err := call.Mine(true).Do()
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, "Failed to get channels")
+		util.SendError(ctx, http.StatusInternalServerError, err, &util.ErrorBody{
+			I18NKey: "api.oauth.failed-to-get-channels",
+		})
 		return
 	}
 	userId, user, err := util.GetUser(ctx)
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
+		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	maxChan := maxChannels(user.Subscription)
 	if len(user.Channels) >= maxChan {
-		ctx.JSON(http.StatusBadRequest, fmt.Sprintf("Too many channels linked! Max: %d", maxChan))
+		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
+			I18NKey: "api.oauth.too-many-channels",
+			Data: map[string]any{
+				"maxChannels": maxChan,
+			},
+		})
 		return
 	}
 	chanEnd := min(maxChan-len(user.Channels), len(response.Items))
@@ -125,8 +130,9 @@ func AuthCallbackHandler(ctx *gin.Context) {
 		})
 	})
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, "Channel already linked")
+		util.SendError(ctx, http.StatusInternalServerError, err, &util.ErrorBody{
+			I18NKey: "api.oauth.channel-already-linked",
+		})
 		return
 	}
 	ctx.JSON(http.StatusOK, nil)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"choonify.com/backend/api/extensions"
+	"choonify.com/backend/api/util"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
@@ -24,14 +25,12 @@ func DeleteAccountHandler(ctx *gin.Context) {
 	update = update.Disabled(true)
 	_, err := extensions.Auth.UpdateUser(ctx, userId, update)
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
+		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	raw, err := json.Marshal(deleteRequestBody{UserId: userId})
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
+		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	_, err = extensions.Tasks.CreateTask(ctx, &cloudtaskspb.CreateTaskRequest{
@@ -53,8 +52,7 @@ func DeleteAccountHandler(ctx *gin.Context) {
 		},
 	})
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
+		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	ctx.JSON(http.StatusOK, nil)

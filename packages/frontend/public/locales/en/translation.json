@@ -1,0 +1,160 @@
+{
+  "api": {
+    "bad-request": "Bad request",
+    "delete": {
+      "user-is-not-logged-in": "User is not logged in"
+    },
+    "oauth": {
+      "channel-already-linked": "Channel already linked",
+      "failed-to-get-channels": "Failed to get channels",
+      "too-many-channels": "Too many channels linked! Max: {{maxChannels}}"
+    },
+    "presign": {
+      "file-too-big": "File too big. Upgrade for a higher limit",
+      "out-of-storage": "Not enough storage. Try again tomorrow"
+    },
+    "remove_channel": {
+      "channel-already-unlinked": "Channel already unlinked",
+      "failed-to-link-channel": "Failed to link channel"
+    },
+    "unknown": "Unknown"
+  },
+  "button": {
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "channel_selector": {
+    "label": "YouTube Channel",
+    "link-channel": "Link channel",
+    "no-channel-selected": "No channel selected",
+    "unlink-channel": "Unlink channel"
+  },
+  "error": "Error",
+  "format": {
+    "bytes": "{{value, number}} {{unit}}"
+  },
+  "header": {
+    "account-scheduled-for-deletion": "Account scheduled for deletion",
+    "account-settings": "Account settings",
+    "danger-zone": "Danger zone",
+    "delete-account": "Delete account",
+    "delete-confirmation": "Delete my account",
+    "deletion-warning": "Are you sure? You will not be able to login for 24 hours, and then your account will be deleted.",
+    "go-back": "Go back",
+    "label": {
+      "features": "Features",
+      "pricing": "Pricing"
+    },
+    "logout": "Logout"
+  },
+  "loading": "Loading...",
+  "login_button": {
+    "login-with-google": "Login with Google"
+  },
+  "metadata": {
+    "file-length-error": "Could not determine length of file: {{name}}"
+  },
+  "settings": {
+    "label": "User settings",
+    "settings-changed": "Settings changed"
+  },
+  "success": "Success",
+  "types": {
+    "categories": {
+      "autos-and-vehicles": "Autos & Vehicles",
+      "comedy": "Comedy",
+      "education": "Education",
+      "entertainment": "Entertainment",
+      "film-and-animation": "Film & Animation",
+      "gaming": "Gaming",
+      "howto-and-style": "Howto & Style",
+      "music": "Music",
+      "news-and-politics": "News & Politics",
+      "nonprofits-and-activism": "Nonprofits & Activism",
+      "people-and-blogs": "People & Blogs",
+      "pets-and-animals": "Pets & Animals",
+      "science-and-technology": "Science & Technology",
+      "sports": "Sports",
+      "travel-and-events": "Travel & Events"
+    },
+    "filtertype": {
+      "black-background": "Black background",
+      "blurred-background": "Blurred background",
+      "blurred-background-premium": "Blurred background (Premium)",
+      "colored-background": "Colored background",
+      "colored-background-premium": "Colored background (Premium)"
+    },
+    "visibility": {
+      "private": "Private",
+      "public": "Public",
+      "unlisted": "Unlisted"
+    }
+  },
+  "upload": {
+    "button": {
+      "upload-to-youtube": "Upload to YouTube!"
+    },
+    "dropzone": "Drag songs here or click to select files",
+    "loading-session": "Loading session",
+    "no-track-selected": "No track selected",
+    "success": "<0>Upload</0> took {{duration, number(maximumFractionDigits: 2)}}s",
+    "upload-status": "Uploading video {{current}} of {{total}}",
+    "upload-status-initializing": "Initializing...",
+    "upload-status-sending": "Sending upload info...",
+    "warning": {
+      "quota-hit": "Upload quota hit! Only uploading {{uploading}} of {{total}} videos. Upgrade your plan to increase the quota"
+    }
+  },
+  "upload_form": {
+    "button": {
+      "reset-defaults": "Reset defaults"
+    },
+    "default-settings": "Default settings",
+    "description": {
+      "description1": "Must be at most 5000 characters",
+      "tags": "Must be at most 500 characters",
+      "template-string": "Must be at most 10000 characters. Can be a <0>template string</0>",
+      "title1": "Must be between 1-100 characters and can't contain < or >",
+      "watermark": "Renders choonify.com in the top right corner"
+    },
+    "label": {
+      "category": "Category",
+      "description": "Description",
+      "enable-watermark": "Enable watermark",
+      "made-for-kids": "Made for kids",
+      "notify-subscribers": "Notify subscribers",
+      "render-type": "Render type",
+      "tags": "Tags",
+      "title": "Title",
+      "visibility": "Visibility"
+    },
+    "placeholder": {
+      "description": "Video description",
+      "title": "Video title"
+    },
+    "upload-settings": "Upload settings"
+  },
+  "validate": {
+    "description-too-long": "Description too long",
+    "empty-title": "Title cannot be empty",
+    "invalid-background-color": "Invalid background color",
+    "invalid-category": "Invalid category",
+    "invalid-channel": "Invalid channel ID",
+    "invalid-description": "Description cannot contain < or > characters",
+    "invalid-filter": "Invalid filter type",
+    "invalid-image-path": "Invalid image path",
+    "invalid-title": "Title cannot contain < or > characters",
+    "invalid-visibility": "Invalid visibility",
+    "item-error": "Upload item {{i}} is invalid: {{reason}}",
+    "not-premium": "User is not premium",
+    "stale-session": "Stale session. Please reload page",
+    "title-too-long": "Title too long",
+    "too-many-tags": "Too many tags",
+    "user-insufficient-access": "User has insufficient access"
+  },
+  "video_preview": {
+    "error": "Error creating preview",
+    "label": "Preview",
+    "loading": "Loading preview"
+  }
+}

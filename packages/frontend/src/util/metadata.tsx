@@ -6,6 +6,7 @@ import { ChoonifyUserInfo } from "../types/auth";
 import { getDefaultUploadItem } from "../types/defaults";
 import { uploadFile } from "./api";
 import { displayError } from "./log";
+import { t } from "i18next";
 
 async function getFileMetadata(file: FileWithPath) {
     try {
@@ -39,7 +40,7 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
 
     if (metadata.format.duration === undefined) {
         console.error(`Could not determine length of file: ${file}`);
-        displayError(`Could not determine length of file: ${file.name}`);
+        displayError(t('metadata.file-length-error', { name: file.name }))
         return null;
     }
     item.audioFileLength = metadata.format.duration;

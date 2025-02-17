@@ -24,7 +24,9 @@ func UploadRequestHandler(ctx *gin.Context) {
 	var body types.UploadBatchRequest
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, "Bad request")
+		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
+			I18NKey: "api.bad-request",
+		})
 		return
 	}
 
@@ -39,8 +41,8 @@ func UploadRequestHandler(ctx *gin.Context) {
 	body.Videos = body.Videos[:uploadCount]
 
 	msg := util.ValidateBatchRequest(&body, userId, user)
-	if msg != "" {
-		ctx.JSON(http.StatusBadRequest, msg)
+	if msg != nil {
+		util.SendError(ctx, http.StatusBadRequest, nil, msg)
 		return
 	}
 
@@ -49,8 +51,7 @@ func UploadRequestHandler(ctx *gin.Context) {
 		body.UserId = userId
 		raw, err := json.Marshal(body)
 		if err != nil {
-			ctx.Error(err)
-			ctx.JSON(http.StatusInternalServerError, nil)
+			util.SendError(ctx, http.StatusInternalServerError, err, nil)
 			return
 		}
 		_, err = extensions.Tasks.CreateTask(ctx, &cloudtaskspb.CreateTaskRequest{
@@ -69,8 +70,7 @@ func UploadRequestHandler(ctx *gin.Context) {
 			},
 		})
 		if err != nil {
-			ctx.Error(err)
-			ctx.JSON(http.StatusInternalServerError, nil)
+			util.SendError(ctx, http.StatusInternalServerError, err, nil)
 			return
 		}
 	}

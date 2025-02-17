@@ -1,14 +1,16 @@
-import { Center, Container, Loader } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { Container } from "@mantine/core";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../components/Auth";
 import UploadForm from "../components/UploadForm";
 import { UserSettings } from "../types/auth";
 import { apiPost } from "../util/api";
+import { displaySuccess } from "../util/log";
 
 export default function Settings() {
     const { userInfo, refreshUserInfo } = useAuth();
     const [sending, setSending] = useState(false);
+    const { t } = useTranslation();
 
     async function updateSettings(settings: UserSettings) {
         setSending(true);
@@ -16,29 +18,21 @@ export default function Settings() {
         const settingsWithoutBlob = { ...settings, defaults: defaultsWithoutBlob };
         if (await apiPost("/settings", settingsWithoutBlob) !== undefined) {
             await refreshUserInfo();
-            notifications.show(
-                {
-                    title: "Success",
-                    message: "Settings changed"
-                }
-            )
+            displaySuccess(t('settings.settings-changed'));
         }
         setSending(false);
     }
-
-    if (!userInfo) {
-        return (
-            <Center>
-                <Loader role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </Loader>
-            </Center>
-        )
-    }
+    // if (!userInfo) {
+    //     return (
+    //         <Center>
+    //             <Loader role="status"></Loader>
+    //         </Center>
+    //     )
+    // }
     // TODO: display user upload stats
     return (
-        <Container title="User settings">
-            <UploadForm settingsMode="defaults" disabled={sending} initialItemData={userInfo.settings} formCallback={updateSettings} />
+        <Container title={t('settings.label')}>
+            <UploadForm settingsMode="defaults" disabled={sending} initialItemData={userInfo!.settings} formCallback={updateSettings} />
         </Container>
     );
 }

@@ -14,7 +14,7 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func canUploadFile(subscription int, fileSize int64, totalBytes int64) *string {
+func canUploadFile(subscription int, fileSize int64, totalBytes int64) *util.ErrorBody {
 	var maxFileSize int64
 	switch subscription {
 	case 1:
@@ -27,14 +27,16 @@ func canUploadFile(subscription int, fileSize int64, totalBytes int64) *string {
 		maxFileSize = 10 * 1024 * 1024 // 10 MB
 	}
 	if totalBytes+fileSize > maxFileSize*10 {
-		reason := "Not enough storage. Try again tomorrow" // TODO: prettify
-		return &reason
+		return &util.ErrorBody{
+			I18NKey: "api.presign.out-of-storage",
+		}
 	}
 	if fileSize <= maxFileSize {
 		return nil
 	}
-	reason := "File too big. Upgrade for a higher limit" // TODO: prettify
-	return &reason
+	return &util.ErrorBody{
+		I18NKey: "api.presign.file-too-big",
+	}
 }
 
 type presignRequestBody struct {
@@ -52,7 +54,9 @@ func PresignUploadHandler(ctx *gin.Context) {
 	var body presignRequestBody
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, "Bad request")
+		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
+			I18NKey: "api.bad-request",
+		})
 		return
 	}
 
@@ -73,8 +77,7 @@ func PresignUploadHandler(ctx *gin.Context) {
 			break
 		}
 		if err != nil {
-			ctx.Error(err)
-			ctx.JSON(http.StatusInternalServerError, nil)
+			util.SendError(ctx, http.StatusInternalServerError, err, nil)
 			return
 		}
 		totalBytes += attrs.Size
@@ -82,7 +85,7 @@ func PresignUploadHandler(ctx *gin.Context) {
 
 	reason := canUploadFile(user.Subscription, body.Size, totalBytes)
 	if reason != nil {
-		ctx.JSON(http.StatusInsufficientStorage, *reason)
+		util.SendError(ctx, http.StatusInsufficientStorage, nil, reason)
 		return
 	}
 
@@ -97,8 +100,7 @@ func PresignUploadHandler(ctx *gin.Context) {
 		},
 	})
 	if err != nil {
-		ctx.Error(err)
-		ctx.JSON(http.StatusInternalServerError, nil)
+		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	res := presignRequestResponse{URL: url, Path: key}
