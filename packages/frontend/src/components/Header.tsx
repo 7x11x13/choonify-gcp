@@ -1,7 +1,7 @@
 import { Burger, Group } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link } from 'wouter';
 import { useAuth } from './Auth';
 import GoogleLoginButton from './GoogleLoginButton';
 import classes from './Header.module.css';

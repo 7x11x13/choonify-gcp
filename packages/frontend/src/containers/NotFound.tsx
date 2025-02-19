@@ -1,7 +1,7 @@
-import { Navigate } from "react-router-dom";
+import { Redirect } from "wouter";
 
 export default function NotFound() {
     return (
-        <Navigate to="/"></Navigate>
+        <Redirect to="/" />
     );
 }

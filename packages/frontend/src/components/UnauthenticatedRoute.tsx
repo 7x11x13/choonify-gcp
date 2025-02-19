@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import { Navigate } from "react-router-dom";
+import { Redirect } from "wouter";
 import { useAuth } from "./Auth";
 import { Center, Loader } from "@mantine/core";
 
@@ -21,7 +21,7 @@ export default function UnauthenticatedRoute({
     }
 
     if (user && userInfo) {
-        return <Navigate to={to} />;
+        return <Redirect to={to} />;
     }
 
     return children;

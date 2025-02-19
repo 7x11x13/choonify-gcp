@@ -3,19 +3,19 @@ import { useDisclosure } from '@mantine/hooks';
 import { t } from 'i18next';
 import { useState } from 'react';
 import { BsChevronDown, BsFillGearFill, BsBoxArrowRight, BsTrash } from 'react-icons/bs';
-import { useNavigate } from 'react-router-dom';
 import { displaySuccess } from '../util/log';
 import { useAuth } from './Auth';
 import cx from 'clsx';
 
 import classes from './Header.module.css';
+import { useLocation } from 'wouter';
 
 export default function HeaderLoggedIn() {
 
     const [userMenuOpened, setUserMenuOpened] = useState(false);
     const [deleteModalOpened, { open: deleteModalOpen, close: deleteModalClose }] = useDisclosure(false);
-    let navigate = useNavigate();
     const { user, signOut } = useAuth();
+    const [_location, navigate] = useLocation();
 
     async function deleteUserAccount() {
         await (await import('../util/api')).deleteAccount();

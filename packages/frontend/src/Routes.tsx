@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Switch } from "wouter";
 import Home from "./containers/Home.tsx";
 import NotFound from "./containers/NotFound.tsx";
 import AuthenticatedRoute from "./components/AuthenticatedRoute.tsx";
@@ -8,13 +8,13 @@ import React from "react";
 const Upload = React.lazy(() => import("./containers/Upload.tsx"));
 const Settings = React.lazy(() => import("./containers/Settings.tsx"));
 
-export default function Links() {
+export default function Routes() {
     return (
-        <Routes>
-            <Route path="/" element={<UnauthenticatedRoute to={"/upload"}><Home /></UnauthenticatedRoute>} />
-            <Route path="/upload" element={<AuthenticatedRoute><Upload /></AuthenticatedRoute>} />
-            <Route path="/settings" element={<AuthenticatedRoute><Settings /></AuthenticatedRoute>} />
-            <Route path="*" element={<NotFound />} />;
-        </Routes>
+        <Switch>
+            <Route path="/"><UnauthenticatedRoute to={"/upload"}><Home /></UnauthenticatedRoute></Route>
+            <Route path="/upload"><AuthenticatedRoute><Upload /></AuthenticatedRoute></Route>
+            <Route path="/settings"><AuthenticatedRoute><Settings /></AuthenticatedRoute></Route>
+            <Route><NotFound /></Route>
+        </Switch>
     );
 }

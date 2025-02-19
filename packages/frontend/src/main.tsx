@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter as Router } from "react-router-dom";
 import App from './App';
 
 import { createTheme, MantineProvider } from '@mantine/core';
@@ -24,11 +23,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider theme={theme}>
       <Notifications autoClose={5000} />
-      <Router>
-        <ProvideAuth>
-          <App />
-        </ProvideAuth>
-      </Router>
+      <ProvideAuth>
+        <App />
+      </ProvideAuth>
     </MantineProvider>
   </StrictMode>,
 )
