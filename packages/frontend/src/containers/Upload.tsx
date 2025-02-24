@@ -1,6 +1,6 @@
 import UploadForm from "../components/UploadForm";
 
-import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'; // TODO: switch to dndkit?
 import { Anchor, Button, Center, Grid, Progress, RingProgress, ScrollArea, Space, Stack, Text, UnstyledButton } from '@mantine/core';
 import { Dropzone, type FileWithPath } from '@mantine/dropzone';
 import { useListState } from '@mantine/hooks';
@@ -61,14 +61,14 @@ export default function Upload() {
             }
         } catch (err) {
             console.error(`Error loading session: ${err}`);
-            saveSession();
+            saveSession(true);
         } finally {
             setSessionLoadProgress(100);
         }
     }
 
-    async function saveSession() {
-        if (!user || sessionLoadProgress < 100) {
+    async function saveSession(force: boolean = false) {
+        if (!force && (sessionLoadProgress < 100)) {
             return;
         }
         const session: UploadSession = {
@@ -77,7 +77,7 @@ export default function Upload() {
                 return rest;
             })
         };
-        await setDoc(doc(getFirestore(), "sessions", user.uid), session);
+        await setDoc(doc(getFirestore(), "sessions", user!.uid), session);
     }
 
     async function deleteItemObjects(item: UploadItem) {

@@ -86,6 +86,14 @@ resource "google_cloud_run_v2_service" "dev" {
         name  = "SERVICE_ACCOUNT_EMAIL"
         value = google_service_account.backend_admin.email
       }
+      env {
+        name  = "STRIPE_API_KEY"
+        value = var.stripe_api_key
+      }
+      env {
+        name  = "STRIPE_FREE_TIER_PRICE"
+        value = stripe_price.free_monthly.id
+      }
     }
   }
 

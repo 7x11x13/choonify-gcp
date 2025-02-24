@@ -1,4 +1,3 @@
-import "./Home.css";
 import { Center, Stack } from "@mantine/core";
 import GoogleLoginButton from "../components/GoogleLoginButton";
 

@@ -66,6 +66,7 @@ export function getDefaultUserSettings(): UserSettings {
 export function getDefaultUserInfo(): ChoonifyUserInfo {
     return {
         subscription: 0,
+        customerId: "",
         uploadedToday: 0,
         uploadedBytesToday: 0,
         uploadedAllTime: 0,

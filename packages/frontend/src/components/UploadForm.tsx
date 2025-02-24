@@ -27,7 +27,7 @@ export default function UploadForm({
 
     const { userInfo } = useAuth();
     const { t } = useTranslation();
-    const isPremium = userInfo!.subscription != 0;
+    const isFree = userInfo!.subscription === 0;
 
     function handleSubmit(values: UserSettings) {
         form.resetDirty();
@@ -42,13 +42,13 @@ export default function UploadForm({
             },
             {
                 value: FilterType.COLOR_BACKGROUND,
-                label: isPremium ? t('types.filtertype.colored-background-premium') : t('types.filtertype.colored-background'),
-                disabled: isPremium
+                label: isFree ? t('types.filtertype.colored-background-premium') : t('types.filtertype.colored-background'),
+                disabled: isFree
             },
             {
                 value: FilterType.BLURRED_BACKGROUND,
-                label: isPremium ? t('types.filtertype.blurred-background-premium') : t('types.filtertype.blurred-background'),
-                disabled: isPremium
+                label: isFree ? t('types.filtertype.blurred-background-premium') : t('types.filtertype.blurred-background'),
+                disabled: isFree
             }
         ];
     }
@@ -111,7 +111,7 @@ export default function UploadForm({
                                 key={form.key('defaults.settings.watermark')}
                                 style={{ flexGrow: 1 }}
                                 {...form.getInputProps('defaults.settings.watermark', { type: 'checkbox' })}
-                                disabled={isPremium}
+                                disabled={isFree}
                                 description={t('upload_form.description.watermark')}
                             />
                             <ColorInput

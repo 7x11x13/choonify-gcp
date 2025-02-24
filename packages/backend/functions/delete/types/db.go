@@ -27,6 +27,7 @@ type UserSettings struct {
 // User info
 type UserInfo struct {
 	Subscription         int             `json:"subscription" firestore:"subscription"`
+	CustomerId           string          `json:"customerId" firestore:"customerId"`
 	UploadedToday        int             `json:"uploadedToday" firestore:"uploadedToday"`
 	UploadedBytesToday   int64           `json:"uploadedBytesToday" firestore:"uploadedBytesToday"`
 	LastUploaded         int64           `json:"lastUploaded" firestore:"lastUploaded"`

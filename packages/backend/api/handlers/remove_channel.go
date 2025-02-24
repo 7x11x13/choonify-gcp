@@ -36,7 +36,7 @@ func RemoveChannelHandler(ctx *gin.Context) {
 	})
 	if chanIdx == -1 {
 		util.SendError(ctx, http.StatusBadRequest, err, &util.ErrorBody{
-			I18NKey: "api.remove_channel.channel-already-unlinked",
+			I18NKey: "api.remove-channel.channel-already-unlinked",
 		})
 		return
 	}
@@ -64,7 +64,7 @@ func RemoveChannelHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		util.SendError(ctx, http.StatusInternalServerError, err, &util.ErrorBody{
-			I18NKey: "api.remove_channel.failed-to-link-channel",
+			I18NKey: "api.remove-channel.failed-to-link-channel",
 		})
 		return
 	}

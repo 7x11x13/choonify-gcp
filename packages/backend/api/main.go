@@ -43,17 +43,14 @@ func setupRouter() *gin.Engine {
 	// gin.DisableConsoleColor()
 	r := gin.Default()
 
-	// cors
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
 		AllowHeaders:     []string{"authorization", "x-requested-with", "content-type"},
 		AllowCredentials: true,
 	}))
 
-	// auth
-	r.Use(auth())
-
 	api := r.Group("/api")
+	api.Use(auth())
 	{
 		// routes
 		api.POST("/delete", handlers.DeleteAccountHandler)
@@ -61,7 +58,8 @@ func setupRouter() *gin.Engine {
 		api.POST("/presign-url", handlers.PresignUploadHandler)
 		api.POST("/settings", handlers.UpdateUserSettingsHandler)
 		api.POST("/upload", handlers.UploadRequestHandler)
-		api.POST("/remove_channel", handlers.RemoveChannelHandler)
+		api.POST("/remove-channel", handlers.RemoveChannelHandler)
+		api.POST("/create-customer-portal-session", handlers.CreatePortalSessionHandler)
 	}
 
 	return r
@@ -69,6 +67,7 @@ func setupRouter() *gin.Engine {
 
 func init() {
 	extensions.InitFirebase()
+	extensions.InitStripe()
 }
 
 func main() {

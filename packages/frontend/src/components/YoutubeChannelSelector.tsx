@@ -62,7 +62,7 @@ export function ChannelSelector({ onChange, value, defaultValue }: ChannelSelect
             return;
         }
         setLoading(true);
-        await apiPost("/remove_channel", {
+        await apiPost("/remove-channel", {
             channelId: _value
         });
         await refreshUserInfo();

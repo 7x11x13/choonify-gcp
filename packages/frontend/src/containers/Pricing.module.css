@@ -1,0 +1,7 @@
+.productSelected {
+    border: calc(0.0625rem * var(--mantine-scale)) solid var(--mantine-primary-color-3)
+}
+
+.currentPlanText {
+    color: var(--mantine-primary-color-3)
+}

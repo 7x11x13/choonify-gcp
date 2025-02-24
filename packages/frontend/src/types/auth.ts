@@ -13,6 +13,7 @@ export type YTChannel = {
 
 export type ChoonifyUserInfo = {
     subscription: number,
+    customerId: string,
     uploadedToday: number,
     uploadedBytesToday: number,
     lastUploaded: number,

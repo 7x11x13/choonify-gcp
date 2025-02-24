@@ -2,7 +2,8 @@ import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signO
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import config from "../config";
 import { ChoonifyUserInfo } from "../types/auth";
-import { displayError } from "../util/log";
+import { displayError, displaySuccess } from "../util/log";
+import { useTranslation } from "react-i18next";
 
 const AuthContext = createContext<{
     loading: boolean;
@@ -28,6 +29,7 @@ export function ProvideAuth({ children }: { children: any }) {
 }
 
 function useProvideAuth() {
+    const { t } = useTranslation();
     const auth = getAuth();
     auth.useDeviceLanguage();
     const [user, setUser] = useState<User | null>(auth.currentUser);
@@ -68,6 +70,7 @@ function useProvideAuth() {
 
     async function realSignOut() {
         await signOut(auth);
+        displaySuccess(t('api.auth.logged-out'));
     }
 
     async function refreshUserInfo(newUser?: User | null) {
@@ -124,6 +127,9 @@ export function useGSI() {
         script.addEventListener('load', () => {
             clientLoaded.current = true;
         });
+        return () => {
+            body.removeChild(script);
+        }
     }, []);
     return clientLoaded;
 }

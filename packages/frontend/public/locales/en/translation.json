@@ -1,5 +1,8 @@
 {
   "api": {
+    "auth": {
+      "logged-out": "Logged out"
+    },
     "bad-request": "Bad request",
     "delete": {
       "user-is-not-logged-in": "User is not logged in"
@@ -13,7 +16,7 @@
       "file-too-big": "File too big. Upgrade for a higher limit",
       "out-of-storage": "Not enough storage. Try again tomorrow"
     },
-    "remove_channel": {
+    "remove-channel": {
       "channel-already-unlinked": "Channel already unlinked",
       "failed-to-link-channel": "Failed to link channel"
     },
@@ -59,6 +62,29 @@
   },
   "metadata": {
     "file-length-error": "Could not determine length of file: {{name}}"
+  },
+  "product": {
+    "button": {
+      "change-plan": "Change plan",
+      "current-plan": "Current plan",
+      "get-started": "Get started"
+    },
+    "features": {
+      "batch-upload": "Batch upload",
+      "link-multiple-channels": "Link multiple channels",
+      "more-video-filters": "More video filter options",
+      "no-ads": "No ads",
+      "no-transcoding": "No transcoding",
+      "no-watermark": "No watermark",
+      "read-metadata-tags": "Read metadata tags (ID3 & more)",
+      "upload-quota": "{{quota}} of uploads per day"
+    },
+    "pricing": {
+      "monthly": "Monthly",
+      "per-month": "per month",
+      "per-year": "per year",
+      "yearly": "Yearly"
+    }
   },
   "settings": {
     "label": "User settings",

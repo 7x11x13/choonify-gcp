@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/archive"
       version = "2.7.0"
     }
+    stripe = {
+      source  = "lukasaron/stripe"
+      version = "3.3.0"
+    }
   }
 }
 
@@ -22,6 +26,10 @@ provider "google-beta" {
 
 provider "google-beta" {
   user_project_override = true
+}
+
+provider "stripe" {
+  api_key = var.stripe_api_key
 }
 
 resource "google_project" "dev" {

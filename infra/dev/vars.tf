@@ -6,3 +6,4 @@ variable "region" {
   default = "us-west1"
 }
 variable "firebase_config" { type = string }
+variable "stripe_api_key" { type = string }

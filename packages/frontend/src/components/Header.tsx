@@ -16,19 +16,11 @@ export function Header() {
     const { t } = useTranslation();
 
     const links = [
-        { link: '/about', label: t('header.label.features') },
         { link: '/pricing', label: t('header.label.pricing') },
     ];
 
     const items = links.map((link) => (
-        <a
-            key={link.label}
-            href={link.link}
-            className={classes.link}
-            onClick={(event) => event.preventDefault()}
-        >
-            {link.label}
-        </a>
+        <Link to={link.link} className={classes.link}>{link.label}</Link>
     ));
 
     if (loading) {

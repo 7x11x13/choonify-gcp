@@ -19,6 +19,7 @@ func GetUser(ctx *gin.Context) (string, *types.UserInfo, error) {
 		// insert default user data
 		user = types.UserInfo{
 			Subscription:         0,
+			CustomerId:           "",
 			UploadedToday:        0,
 			UploadedBytesToday:   0,
 			UploadedAllTime:      0,
