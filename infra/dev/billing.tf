@@ -102,6 +102,10 @@ resource "stripe_price" "premium_yearly" {
   }
 }
 
+output "STRIPE_FREE_TIER_PRICE" {
+  value = stripe_price.free_monthly.id
+}
+
 // use adaptive pricing
 // create customer portal
 // enable stripe tax

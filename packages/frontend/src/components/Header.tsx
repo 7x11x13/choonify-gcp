@@ -20,7 +20,7 @@ export function Header() {
     ];
 
     const items = links.map((link) => (
-        <Link to={link.link} className={classes.link}>{link.label}</Link>
+        <Link key={link.label} to={link.link} className={classes.link}>{link.label}</Link>
     ));
 
     if (loading) {

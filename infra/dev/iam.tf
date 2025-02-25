@@ -25,6 +25,6 @@ resource "google_project_iam_member" "signer_binding" {
   member   = "serviceAccount:${google_service_account.backend_admin.email}"
 }
 
-output "service_account_email" {
+output "SERVICE_ACCOUNT_EMAIL" {
   value = google_service_account.backend_admin.email
 }

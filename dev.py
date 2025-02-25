@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import json
+import os
+import subprocess
+
+
+def main():
+    with open(".env.api.dev.json", "r") as f:
+        api_env = json.load(f)
+
+    frontend_env = {
+        "NODE_ENV": "development",
+        "VITE_LOCAL_BACKEND": "1",
+        "VITE_GOOGLE_CLIENT_ID": api_env["GOOGLE_CLIENT_ID"],
+        "VITE_FIREBASE_CONFIG": api_env["FIREBASE_CONFIG"],
+    }
+
+    #     cd packages/frontend && npm run dev &
+    # cd packages/backend/api && air
+
+    os.chdir("./packages/frontend")
+    proc = subprocess.Popen(["npm", "run", "dev"], env={**os.environ, **frontend_env})
+
+    os.chdir("../backend/api")
+    subprocess.run(["air"], env={**os.environ, **api_env})
+    proc.kill()
+    proc.wait()
+
+
+if __name__ == "__main__":
+    main()

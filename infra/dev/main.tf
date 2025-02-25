@@ -98,10 +98,6 @@ data "google_firebase_web_app_config" "dev" {
   depends_on = [google_firebase_web_app.dev]
 }
 
-output "firebase_site" {
-  value = google_firebase_hosting_site.dev.site_id
-}
-
-output "firebase_config" {
+output "FIREBASE_CONFIG" {
   value = replace(jsonencode(data.google_firebase_web_app_config.dev), data.google_firebase_web_app_config.dev.storage_bucket, google_storage_bucket.dev.name)
 }
