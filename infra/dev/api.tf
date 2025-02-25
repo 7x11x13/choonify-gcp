@@ -75,10 +75,6 @@ resource "google_cloud_run_v2_service" "dev" {
         value = google_cloudfunctions2_function.delete.url
       }
       env {
-        name  = "FIREBASE_CONFIG"
-        value = replace(jsonencode(data.google_firebase_web_app_config.dev), data.google_firebase_web_app_config.dev.storage_bucket, google_storage_bucket.dev.name)
-      }
-      env {
         name  = "FIREBASE_STORAGE_BUCKET"
         value = google_storage_bucket.dev.name
       }
@@ -139,7 +135,6 @@ resource "google_cloudfunctions2_function" "render" {
     timeout_seconds       = 1800
 
     environment_variables = {
-      FIREBASE_CONFIG         = replace(jsonencode(data.google_firebase_web_app_config.dev), data.google_firebase_web_app_config.dev.storage_bucket, google_storage_bucket.dev.name)
       SERVICE_ACCOUNT_EMAIL   = google_service_account.backend_admin.email
       FIREBASE_STORAGE_BUCKET = google_storage_bucket.dev.name
       GOOGLE_CLIENT_ID        = var.google_client_id
@@ -189,7 +184,6 @@ resource "google_cloudfunctions2_function" "delete" {
     timeout_seconds       = 60
 
     environment_variables = {
-      FIREBASE_CONFIG         = replace(jsonencode(data.google_firebase_web_app_config.dev), data.google_firebase_web_app_config.dev.storage_bucket, google_storage_bucket.dev.name)
       FIREBASE_STORAGE_BUCKET = google_storage_bucket.dev.name
     }
   }

@@ -7,6 +7,18 @@ import subprocess
 import sys
 
 
+def convert_firebase_config(config: str):
+    old: dict[str, str] = json.loads(config)
+    new = {}
+    for k, v in old.items():
+        # convert to camelcase
+        new_k = "".join(map(lambda word: word.title(), k.split("_")))
+        new_k = new_k[0].lower() + new_k[1:]
+        new[new_k] = v
+    new["projectId"] = old["project"]
+    return json.dumps(new)
+
+
 def main():
     stage = "prod" if len(sys.argv) > 1 and sys.argv[1] == "prod" else "dev"
     tf_env_file = f".env.tf.{stage}.json"
@@ -28,17 +40,18 @@ def main():
     )
     p.check_returncode()
 
+    p = subprocess.run(["terraform", "output", "-json"], capture_output=True)
+    p.check_returncode()
+    tf_outputs = {k: v["value"] for k, v in json.loads(p.stdout).items()}
+    api_env = copy.deepcopy(tf_outputs)
+    api_env["GIN_MODE"] = "debug"
+    api_env["GOOGLE_REDIRECT_URL"] = "http://localhost:3000"
+    for k, v in tf_env.items():
+        k = k[len("TF_VAR_") :].upper()
+        api_env[k] = v
+    api_env["FIREBASE_CONFIG"] = convert_firebase_config(api_env["FIREBASE_CONFIG"])
     # save outputs to env file for local development
     if stage == "dev":
-        p = subprocess.run(["terraform", "output", "-json"], capture_output=True)
-        p.check_returncode()
-        tf_outputs = {k: v["value"] for k, v in json.loads(p.stdout).items()}
-        api_env = copy.deepcopy(tf_outputs)
-        api_env["GIN_MODE"] = "debug"
-        api_env["GOOGLE_REDIRECT_URL"] = "http://localhost:3000"
-        for k, v in tf_env.items():
-            k = k[len("TF_VAR_") :].upper()
-            api_env[k] = v
         with open(f"../../.env.api.{stage}.json", "w") as f:
             json.dump(api_env, f, sort_keys=True, indent=4)
 
@@ -47,8 +60,8 @@ def main():
     frontend_env = {
         "NODE_ENV": "production",
         "VITE_LOCAL_BACKEND": "0",
-        "VITE_GOOGLE_CLIENT_ID": tf_env["TF_VAR_google_client_id"],
-        "VITE_FIREBASE_CONFIG": tf_outputs["FIREBASE_CONFIG"],
+        "VITE_GOOGLE_CLIENT_ID": api_env["GOOGLE_CLIENT_ID"],
+        "VITE_FIREBASE_CONFIG": api_env["FIREBASE_CONFIG"],
     }
 
     p = subprocess.run(

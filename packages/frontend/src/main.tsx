@@ -13,19 +13,7 @@ import './i18n.ts';
 import "./index.css";
 
 const firebaseConfig: Record<string, string> = JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG);
-const newFirebaseConfig: Record<string, string> = {};
-for (const [k, v] of Object.entries(firebaseConfig)) {
-  const newK = k.split("_").map((word, i) => {
-    if (i > 0) {
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    } else {
-      return word;
-    }
-  }).join("");
-  newFirebaseConfig[newK] = v;
-}
-newFirebaseConfig["projectId"] = firebaseConfig["project"];
-initializeApp(newFirebaseConfig);
+initializeApp(firebaseConfig);
 
 const theme = createTheme({
   /** Put your mantine theme override here */

@@ -33,7 +33,7 @@ function useProvideAuth() {
     const auth = getAuth();
     auth.useDeviceLanguage();
     const [user, setUser] = useState<User | null>(auth.currentUser);
-    const [userInfo, setUserInfo] = useState<ChoonifyUserInfo | null>(null);
+    const [userInfo, setUserInfo] = useState<ChoonifyUserInfo | null>(null); // TODO: listen for changes?
     const [loading, setLoading] = useState(true);
 
     // async function handleRedirectResult() {
