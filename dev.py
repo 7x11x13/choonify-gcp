@@ -16,9 +16,6 @@ def main():
         "VITE_FIREBASE_CONFIG": api_env["FIREBASE_CONFIG"],
     }
 
-    #     cd packages/frontend && npm run dev &
-    # cd packages/backend/api && air
-
     os.chdir("./packages/frontend")
     proc = subprocess.Popen(["npm", "run", "dev"], env={**os.environ, **frontend_env})
 
