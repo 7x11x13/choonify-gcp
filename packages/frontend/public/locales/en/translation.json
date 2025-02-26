@@ -65,6 +65,7 @@
   },
   "loading": "Loading...",
   "login_button": {
+    "login": "Login",
     "login-with-google": "Login with Google"
   },
   "metadata": {

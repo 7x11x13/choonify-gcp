@@ -12,7 +12,7 @@ const HeaderLoggedIn = React.lazy(() => import("./HeaderLoggedIn.tsx"))
 
 export function Header() {
     const [opened, { toggle }] = useDisclosure(false);
-    const { user, loading } = useAuth();
+    const { user, loading, signIn } = useAuth();
     const { t } = useTranslation();
 
     const links = [
@@ -22,6 +22,12 @@ export function Header() {
     const items = links.map((link) => (
         <Link key={link.label} to={link.link} className={classes.link}>{link.label}</Link>
     ));
+
+    if (!user) {
+        items.push(
+            <Link key={"login"} to="" onClick={signIn} className={classes.link}>{t('login_button.login')}</Link>
+        );
+    }
 
     if (loading) {
         return;
@@ -38,7 +44,6 @@ export function Header() {
                     <Group ml={50} gap={5} className={classes.links} visibleFrom="sm">
                         {items}
                     </Group>
-                    {!user && <GoogleLoginButton></GoogleLoginButton>}
                     {user && <HeaderLoggedIn></HeaderLoggedIn>}
                 </Group>
             </div>
