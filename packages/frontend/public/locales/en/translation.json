@@ -40,7 +40,14 @@
   },
   "error": "Error",
   "format": {
-    "bytes": "{{value, number}} {{unit}}"
+    "bytes": "{{value, number}} {{unit}}",
+    "units": {
+      "b": "B",
+      "gb": "GB",
+      "kb": "KB",
+      "mb": "MB",
+      "tb": "TB"
+    }
   },
   "header": {
     "account-scheduled-for-deletion": "Account scheduled for deletion",
@@ -145,6 +152,10 @@
     "dropzone": "Drag songs here or click to select files",
     "loading-session": "Loading session",
     "no-track-selected": "No track selected",
+    "quota": {
+      "description": "Uploaded {{current}} / {{quota}} for today",
+      "label": "Upload quota"
+    },
     "success": "<0>Upload</0> took {{duration, number(maximumFractionDigits: 2)}}s",
     "upload-status": "Uploading video {{current}} of {{total}}",
     "upload-status-initializing": "Initializing...",

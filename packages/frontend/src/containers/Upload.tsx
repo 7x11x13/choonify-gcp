@@ -21,6 +21,7 @@ import { displayError, displaySuccess } from "../util/log";
 import { validateItem, validateSession } from "../util/validate";
 import classes from './Upload.module.css';
 import { Trans, useTranslation } from "react-i18next";
+import QuotaMeter from "../components/QuotaMeter";
 
 export default function Upload() {
     const { user, userInfo, refreshUserInfo } = useAuth();
@@ -156,6 +157,7 @@ export default function Upload() {
                         </Text>);
                         const i = uploadQueue.findIndex((item) => item.id === successMsg.itemId);
                         if (i !== -1) {
+                            refreshUserInfo();
                             uploadedIds.current.add(successMsg.itemId);
                             currentVideoUpload.current += 1;
                             queueHandlers.remove(i);
@@ -264,8 +266,9 @@ export default function Upload() {
             <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
                 <Stack gap="0">
                     <ChannelSelector onChange={setSelectedChannelId} value={selectedChannelId}></ChannelSelector>
+                    <QuotaMeter />
                     {!isVideoUploading && <Button fullWidth my={"sm"} onClick={beginUpload} disabled={uploadQueue.length === 0 || selectedChannelId === "" || sessionLoadProgress < 100}>{t('upload.button.upload-to-youtube')}</Button>}
-                    {isVideoUploading && <Stack mt="sm" gap="0"><Progress value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
+                    {isVideoUploading && <Stack mt="sm" gap="0"><Progress animated value={videoUploadProgress} size="lg" transitionDuration={200} /><Text c="dimmed" ta="center" size="sm">{uploadingStatus}</Text></Stack>}
                     {sessionLoadProgress < 100 && <>
                         <Center><RingProgress transitionDuration={200} label={<Text ta="center">{`${sessionLoadProgress.toFixed(1)}%`}</Text>} sections={[{ value: sessionLoadProgress, color: 'blue' }]}></RingProgress></Center>
                         <Center><Text c="dimmed" size="sm">{t('upload.loading-session')}</Text></Center>
@@ -301,7 +304,7 @@ export default function Upload() {
                                     <Text>{t('upload.dropzone')}</Text>
                                 </Center>
                             </Dropzone>}
-                            {uploadProgress < 100 && <Progress value={uploadProgress} size="lg" transitionDuration={200} />}
+                            {uploadProgress < 100 && <Progress animated value={uploadProgress} size="lg" transitionDuration={200} />}
                         </>}
                 </Stack>
             </Grid.Col>

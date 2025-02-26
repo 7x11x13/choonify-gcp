@@ -21,5 +21,5 @@ export function CoverArtInput({ form, ...others }: {
         return <FileInput label="Cover" {...form.getInputProps("defaults.imageFileBlob")} accept="image/*" onChange={onFileChange} {...others}></FileInput>
     }
 
-    return <Progress value={uploadProgress} size="lg" transitionDuration={200} />
+    return <Progress animated value={uploadProgress} size="lg" transitionDuration={200} />
 }
