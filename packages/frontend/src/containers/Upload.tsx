@@ -152,7 +152,7 @@ export default function Upload() {
                     case "success":
                         const successMsg = message as RenderSuccessMessage;
                         displaySuccess(<Text>
-                            <Trans t={t} i18nKey="upload.success" values={{ duration: successMsg.elapsed }} components={[<Anchor href={successMsg.videoUrl} />]} />
+                            <Trans t={t} i18nKey="upload.success" values={{ duration: successMsg.elapsed }} components={[<Anchor href={successMsg.videoUrl} target="_blank" />]} />
                         </Text>);
                         const i = uploadQueue.findIndex((item) => item.id === successMsg.itemId);
                         if (i !== -1) {
