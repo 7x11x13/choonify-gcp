@@ -28,17 +28,33 @@ def main():
     # "TF_VAR_google_client_secret"
     # "TF_VAR_stripe_api_key"
     with open(tf_env_file, "r") as f:
-        tf_env = json.load(f)
+        tf_env: dict[str, str] = json.load(f)
 
     os.chdir(f"./infra/{stage}")
-    p = subprocess.run(
-        ["terraform", "apply", "-auto-approve"],
-        env={
-            **os.environ,
-            **tf_env,
-        },
-    )
-    p.check_returncode()
+
+    def apply(tf_env: dict[str, str]):
+        p = subprocess.run(
+            ["terraform", "apply", "-auto-approve"],
+            env={
+                **os.environ,
+                **tf_env,
+            },
+        )
+        p.check_returncode()
+
+    apply(tf_env)
+
+    # hacky fix for circular dependency
+    if not tf_env.get("TF_VAR_stripe_webhook_secret"):
+        p = subprocess.run(
+            ["terraform", "output", "-raw", "STRIPE_WEBHOOK_SECRET"],
+            capture_output=True,
+        )
+        p.check_returncode()
+        tf_env["TF_VAR_stripe_webhook_secret"] = p.stdout.decode()
+        with open(f"../../.env.tf.{stage}.json", "w") as f:
+            json.dump(tf_env, f, sort_keys=True, indent=4)
+        apply(tf_env)
 
     p = subprocess.run(["terraform", "output", "-json"], capture_output=True)
     p.check_returncode()

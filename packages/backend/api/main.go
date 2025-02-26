@@ -49,6 +49,8 @@ func setupRouter() *gin.Engine {
 		AllowCredentials: true,
 	}))
 
+	r.POST("/stripe-webhook", handlers.StripeWebhookHandler)
+
 	api := r.Group("/api")
 	api.Use(auth())
 	{

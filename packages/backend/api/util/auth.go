@@ -57,7 +57,11 @@ func GetUser(ctx *gin.Context) (string, *types.UserInfo, error) {
 			SendError(ctx, http.StatusInternalServerError, err, nil)
 			return userId, nil, err
 		}
-		userData.DataTo(&user)
+		err := userData.DataTo(&user)
+		if err != nil {
+			SendError(ctx, http.StatusInternalServerError, err, nil)
+			return userId, nil, err
+		}
 	}
 	return userId, &user, nil
 }

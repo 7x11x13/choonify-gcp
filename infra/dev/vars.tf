@@ -6,3 +6,7 @@ variable "region" {
   default = "us-west1"
 }
 variable "stripe_api_key" { type = string }
+variable "stripe_webhook_secret" {
+  type    = string
+  default = ""
+}

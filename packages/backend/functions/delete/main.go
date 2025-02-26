@@ -14,12 +14,18 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
+	"github.com/stripe/stripe-go/v81"
+	"github.com/stripe/stripe-go/v81/customer"
 )
 
 var Firestore *firestore.Client
 var Firebase *firebase.App
 var Bucket *storage.BucketHandle
 var Auth *auth.Client
+
+func InitStripe() {
+	stripe.Key = os.Getenv("STRIPE_API_KEY")
+}
 
 func InitFirebase() {
 	var err error
@@ -48,6 +54,7 @@ func InitFirebase() {
 
 func init() {
 	InitFirebase()
+	InitStripe()
 	functions.HTTP("Delete", Delete)
 }
 
@@ -73,6 +80,13 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		err = doc.DataTo(&user)
 		if err != nil {
 			return err
+		}
+		if user.CustomerId != "" {
+			// delete stripe customer
+			_, err := customer.Del(user.CustomerId, &stripe.CustomerParams{})
+			if err != nil {
+				return err
+			}
 		}
 		for _, channel := range user.Channels {
 			err = t.Delete(Firestore.Collection("yt_channel_credentials").Doc(channel.ChannelId))

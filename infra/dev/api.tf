@@ -90,6 +90,10 @@ resource "google_cloud_run_v2_service" "dev" {
         name  = "STRIPE_FREE_TIER_PRICE"
         value = stripe_price.free_monthly.id
       }
+      env {
+        name  = "STRIPE_WEBHOOK_SECRET"
+        value = var.stripe_webhook_secret
+      }
     }
   }
 
@@ -185,6 +189,7 @@ resource "google_cloudfunctions2_function" "delete" {
 
     environment_variables = {
       FIREBASE_STORAGE_BUCKET = google_storage_bucket.dev.name
+      STRIPE_API_KEY          = var.stripe_api_key
     }
   }
 }

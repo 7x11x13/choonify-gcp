@@ -122,7 +122,8 @@ export default function Pricing() {
                     <List ta="left" mx="md">
                         {...features}
                     </List>
-                    {user && !selected && <Button mt="auto" disabled={portalSessionURL === ""} onClick={openPortalSession}>{t('product.button.change-plan')}</Button>}
+                    {/* TODO: loading animation for buttons */}
+                    {user && !selected && <Button mt="auto" disabled={portalSessionURL === ""} onClick={openPortalSession}>{(portalSessionURL === "") ? t('loading') : t('product.button.change-plan')}</Button>}
                     {user && selected && <Button mt="auto" disabled>{t('product.button.current-plan')}</Button>}
                     {!user && <Button mt="auto" onClick={signIn}>{t('product.button.get-started')}</Button>}
                 </Stack>

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"os"
 
@@ -34,6 +35,10 @@ func CreatePortalSessionHandler(ctx *gin.Context) {
 		return
 	}
 
+	log.Printf("User: %+v", user)
+	log.Println(user)
+	log.Println(user.CustomerId)
+
 	if user.CustomerId == "" {
 		// create stripe customer and save in db
 		record, err := extensions.Auth.GetUser(ctx, userId)
@@ -44,6 +49,9 @@ func CreatePortalSessionHandler(ctx *gin.Context) {
 		cus, err := customer.New(&stripe.CustomerParams{
 			Name:  stripe.String(record.DisplayName),
 			Email: stripe.String(record.Email),
+			Metadata: map[string]string{
+				"UID": userId,
+			},
 		})
 		if err != nil {
 			util.SendError(ctx, http.StatusInternalServerError, err, nil)
