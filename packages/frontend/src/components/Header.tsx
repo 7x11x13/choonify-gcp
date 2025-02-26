@@ -1,11 +1,10 @@
 import { Burger, Group } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'wouter';
 import { useAuth } from './Auth';
-import GoogleLoginButton from './GoogleLoginButton';
 import classes from './Header.module.css';
-import React from 'react';
 
 // split this to reduce bundle size
 const HeaderLoggedIn = React.lazy(() => import("./HeaderLoggedIn.tsx"))

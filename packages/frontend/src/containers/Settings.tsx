@@ -22,14 +22,6 @@ export default function Settings() {
         }
         setSending(false);
     }
-    // if (!userInfo) {
-    //     return (
-    //         <Center>
-    //             <Loader role="status"></Loader>
-    //         </Center>
-    //     )
-    // }
-    // TODO: display user upload stats
     return (
         <Container title={t('settings.label')}>
             <UploadForm settingsMode="defaults" disabled={sending} initialItemData={userInfo!.settings} formCallback={updateSettings} />

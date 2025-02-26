@@ -3,6 +3,7 @@ import { FilterType, RenderSettings } from "../types/upload";
 import { InputLabel, InputWrapper, Loader, Text } from "@mantine/core";
 import * as StackBlur from 'stackblur-canvas';
 import { useTranslation } from "react-i18next";
+import Loading from "./Loading";
 
 export function VideoPreview({ coverImage, settings, ...props }: { coverImage: File, settings: RenderSettings }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -99,6 +100,6 @@ export function VideoPreview({ coverImage, settings, ...props }: { coverImage: F
     }
 
 
-    return <InputWrapper><InputLabel>{t('video_preview.label')}</InputLabel>{loading && <Loader>{t('video_preview.loading')}</Loader>}
+    return <InputWrapper><InputLabel>{t('video_preview.label')}</InputLabel>{loading && <Loading />}
         <canvas ref={canvasRef} style={{ width: "100%", ...(loading ? { display: "none" } : {}) }} {...props} width={1280} height={720}></canvas></InputWrapper>
 }

@@ -48,11 +48,7 @@ export default function Pricing() {
     }
 
     if (loading) {
-        return (
-            <Center>
-                <Loader role="status"></Loader>
-            </Center>
-        )
+        return;
     }
 
     const freeFeatures = [

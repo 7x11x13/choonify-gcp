@@ -1,7 +1,7 @@
 import { ReactElement } from "react";
 import { Redirect } from "wouter";
 import { useAuth } from "./Auth";
-import { Center, Loader } from "@mantine/core";
+import Loading from "./Loading";
 
 export default function UnauthenticatedRoute({
     children,
@@ -9,15 +9,11 @@ export default function UnauthenticatedRoute({
 }: {
     children: ReactElement;
     to: string;
-}): ReactElement {
+}) {
     const { loading, user, userInfo } = useAuth();
 
     if (loading) {
-        return (
-            <Center>
-                <Loader role="status"></Loader>
-            </Center>
-        )
+        return <Loading />;
     }
 
     if (user && userInfo) {

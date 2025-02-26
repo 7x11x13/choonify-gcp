@@ -216,6 +216,6 @@
   "video_preview": {
     "error": "Error creating preview",
     "label": "Preview",
-    "loading": "Loading preview"
+    "loading": ""
   }
 }
