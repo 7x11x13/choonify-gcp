@@ -3,11 +3,18 @@ import cx from "clsx";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../components/Auth";
-import { SubscriptionTierInfo } from "../types/product";
 
 import config from "../config";
 import { apiPost } from "../util/api";
 import classes from './Pricing.module.css';
+
+type SubscriptionTierInfo = {
+    name: string,
+    priceMonthlyUSD: number,
+    priceYearlyUSD: number,
+    marketingFeatures: React.ReactNode[],
+    footnote: string,
+};
 
 export default function Pricing() {
     const { t } = useTranslation();
@@ -68,36 +75,40 @@ export default function Pricing() {
             priceMonthlyUSD: 0,
             priceYearlyUSD: 0,
             marketingFeatures: [
-                t('product.features.upload-quota', { quota: "100 MB" }),
+                t('product.features.upload-quota', { quota: t('product.tier0.quota') }),
                 ...freeFeatures,
-            ]
+            ],
+            footnote: t('product.tier0.footnote'),
         },
         {
             name: "Basic",
             priceMonthlyUSD: 5.99,
             priceYearlyUSD: 59.99,
             marketingFeatures: [
-                t('product.features.upload-quota', { quota: "500 MB" }),
+                t('product.features.upload-quota', { quota: t('product.tier1.quota') }),
                 ...paidFeatures,
-            ]
+            ],
+            footnote: t('product.tier1.footnote'),
         },
         {
             name: "Plus",
             priceMonthlyUSD: 11.99,
             priceYearlyUSD: 119.99,
             marketingFeatures: [
-                t('product.features.upload-quota', { quota: "5 GB" }),
+                t('product.features.upload-quota', { quota: t('product.tier2.quota') }),
                 ...paidFeatures,
-            ]
+            ],
+            footnote: t('product.tier2.footnote'),
         },
         {
             name: "Premium",
             priceMonthlyUSD: 23.99,
             priceYearlyUSD: 239.99,
             marketingFeatures: [
-                t('product.features.upload-quota', { quota: "50 GB" }),
+                t('product.features.upload-quota', { quota: t('product.tier3.quota') }),
                 ...paidFeatures,
-            ]
+            ],
+            footnote: t('product.tier3.footnote'),
         },
     ];
 
@@ -110,7 +121,7 @@ export default function Pricing() {
         const selected = userInfo?.subscription === idx;
 
         return <Stack gap="0">
-            <Paper shadow="md" w="300px" h="450px" withBorder className={cx(classes.product, { [classes.productSelected]: selected })} >
+            <Paper shadow="md" w="300px" h="500px" withBorder className={cx(classes.product, { [classes.productSelected]: selected })} >
                 <Stack h="100%">
                     <Title order={3}>{tier.name}</Title>
                     <Stack gap="0">
@@ -122,10 +133,10 @@ export default function Pricing() {
                     <List ta="left" mx="md">
                         {...features}
                     </List>
-                    {/* TODO: loading animation for buttons */}
-                    {user && !selected && <Button mt="auto" disabled={portalSessionURL === ""} onClick={openPortalSession}>{(portalSessionURL === "") ? t('loading') : t('product.button.change-plan')}</Button>}
-                    {user && selected && <Button mt="auto" disabled>{t('product.button.current-plan')}</Button>}
-                    {!user && <Button mt="auto" onClick={signIn}>{t('product.button.get-started')}</Button>}
+                    <Text mx="sm" mt="auto" mb="0" ta="left" size="xs" c="dimmed">{tier.footnote}</Text>
+                    {user && !selected && <Button mt="0" disabled={portalSessionURL === ""} onClick={openPortalSession}>{(portalSessionURL === "") ? t('loading') : t('product.button.change-plan')}</Button>}
+                    {user && selected && <Button mt="0" disabled>{t('product.button.current-plan')}</Button>}
+                    {!user && <Button mt="0" onClick={signIn}>{t('product.button.get-started')}</Button>}
                 </Stack>
             </Paper>
             {/* <Text className={classes.currentPlanText} c="primary" style={!selected ? { visibility: "hidden" } : {}}>Current plan</Text> */}

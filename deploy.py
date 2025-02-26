@@ -27,6 +27,7 @@ def main():
     # "TF_VAR_google_client_id"
     # "TF_VAR_google_client_secret"
     # "TF_VAR_stripe_api_key"
+    # "TF_VAR_stripe_webhook_secret" (optional)
     with open(tf_env_file, "r") as f:
         tf_env: dict[str, str] = json.load(f)
 

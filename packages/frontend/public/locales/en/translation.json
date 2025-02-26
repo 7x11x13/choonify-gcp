@@ -77,13 +77,29 @@
       "no-transcoding": "No transcoding",
       "no-watermark": "No watermark",
       "read-metadata-tags": "Read metadata tags (ID3 & more)",
-      "upload-quota": "{{quota}} of uploads per day"
+      "upload-quota": "{{quota}}† of uploads per day"
     },
     "pricing": {
       "monthly": "Monthly",
       "per-month": "per month",
       "per-year": "per year",
       "yearly": "Yearly"
+    },
+    "tier0": {
+      "footnote": "†Equivalent to 1.7 hours of 128 kbps MP3 audio",
+      "quota": "100 MB"
+    },
+    "tier1": {
+      "footnote": "†Equivalent to 3.4 hours of 320 kbps MP3 audio",
+      "quota": "500 MB"
+    },
+    "tier2": {
+      "footnote": "†Equivalent to 7.8 hours of 1411 kbps WAV audio",
+      "quota": "5 GB"
+    },
+    "tier3": {
+      "footnote": "†Equivalent to 78 hours of 1411 kbps WAV audio",
+      "quota": "50 GB"
     }
   },
   "settings": {
