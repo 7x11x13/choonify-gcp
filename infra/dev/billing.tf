@@ -128,6 +128,5 @@ output "STRIPE_WEBHOOK_SECRET" {
   value     = stripe_webhook_endpoint.webhook.secret
 }
 
-// use adaptive pricing
 // create customer portal
 // enable stripe tax

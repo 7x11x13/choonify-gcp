@@ -1,4 +1,4 @@
-import { Button, Center, Group, List, Loader, Paper, Stack, Switch, Text, Title } from "@mantine/core";
+import { Button, Center, Group, List, Paper, Stack, Switch, Text, Title } from "@mantine/core";
 import cx from "clsx";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

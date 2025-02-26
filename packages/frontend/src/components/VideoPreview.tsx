@@ -1,8 +1,8 @@
+import { InputLabel, InputWrapper, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
-import { FilterType, RenderSettings } from "../types/upload";
-import { InputLabel, InputWrapper, Loader, Text } from "@mantine/core";
-import * as StackBlur from 'stackblur-canvas';
 import { useTranslation } from "react-i18next";
+import * as StackBlur from 'stackblur-canvas';
+import { FilterType, RenderSettings } from "../types/upload";
 import Loading from "./Loading";
 
 export function VideoPreview({ coverImage, settings, ...props }: { coverImage: File, settings: RenderSettings }) {
