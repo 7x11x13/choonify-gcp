@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/handlers"
+	"choonify.com/backend/core/log"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -68,7 +68,8 @@ func setupRouter() *gin.Engine {
 }
 
 func init() {
-	extensions.InitFirebase()
+	log.InitLogging("api")
+	extensions.InitGCP()
 	extensions.InitStripe()
 }
 
@@ -77,7 +78,6 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
-		log.Printf("defaulting to port %s", port)
 	}
 	r.Run(fmt.Sprintf(":%s", port))
 }

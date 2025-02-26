@@ -1,10 +1,5 @@
 package types
 
-type ErrorBody struct {
-	I18NKey string         `json:"i18nKey" firestore:"i18nKey"`
-	Data    map[string]any `json:"data" firestore:"data"`
-}
-
 type BaseMessage struct {
 	Type      string `json:"type" firestore:"type"`
 	ItemId    string `json:"itemId" firestore:"itemId"`

@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
-	"choonify.com/backend/types"
+	"choonify.com/backend/core/types"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"github.com/gin-gonic/gin"
 )
@@ -24,8 +25,9 @@ func UploadRequestHandler(ctx *gin.Context) {
 	var body types.UploadBatchRequest
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-			I18NKey: "api.bad-request",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.bad-request",
 		})
 		return
 	}
@@ -42,7 +44,7 @@ func UploadRequestHandler(ctx *gin.Context) {
 
 	msg := util.ValidateBatchRequest(&body, userId, user)
 	if msg != nil {
-		util.SendError(ctx, http.StatusBadRequest, nil, msg)
+		util.SendErrorNoLog(ctx, msg)
 		return
 	}
 
@@ -51,7 +53,10 @@ func UploadRequestHandler(ctx *gin.Context) {
 		body.UserId = userId
 		raw, err := json.Marshal(body)
 		if err != nil {
-			util.SendError(ctx, http.StatusInternalServerError, err, nil)
+			util.SendError(ctx, err, "Could not marshal render request", &map[string]string{
+				"body":   fmt.Sprintf("%+v", body),
+				"userId": userId,
+			}, nil)
 			return
 		}
 		_, err = extensions.Tasks.CreateTask(ctx, &cloudtaskspb.CreateTaskRequest{
@@ -70,7 +75,12 @@ func UploadRequestHandler(ctx *gin.Context) {
 			},
 		})
 		if err != nil {
-			util.SendError(ctx, http.StatusInternalServerError, err, nil)
+			util.SendError(ctx, err, "Could not create upload task", &map[string]string{
+				"body":            fmt.Sprintf("%+v", body),
+				"userId":          userId,
+				"url":             os.Getenv("RENDER_FUNCTION_URL"),
+				"TASK_QUEUE_NAME": os.Getenv("TASK_QUEUE_NAME"),
+			}, nil)
 			return
 		}
 	}

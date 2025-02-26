@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"slices"
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
-	"choonify.com/backend/types"
+	"choonify.com/backend/core/types"
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
 )
@@ -20,23 +21,24 @@ func RemoveChannelHandler(ctx *gin.Context) {
 	var body removeChannelBody
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-			I18NKey: "api.bad-request",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.bad-request",
 		})
 		return
 	}
 
 	userId, user, err := util.GetUser(ctx)
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	chanIdx := slices.IndexFunc(user.Channels, func(channel types.YTChannelInfo) bool {
 		return channel.ChannelId == body.ChannelId
 	})
 	if chanIdx == -1 {
-		util.SendError(ctx, http.StatusBadRequest, err, &util.ErrorBody{
-			I18NKey: "api.remove-channel.channel-already-unlinked",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.remove-channel.channel-already-unlinked",
 		})
 		return
 	}
@@ -63,8 +65,13 @@ func RemoveChannelHandler(ctx *gin.Context) {
 		return tx.Delete(channelRef)
 	})
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, &util.ErrorBody{
-			I18NKey: "api.remove-channel.failed-to-link-channel",
+		util.SendError(ctx, err, "Could not remove channel", &map[string]string{
+			"user":      fmt.Sprintf("%+v", user),
+			"chanIdx":   fmt.Sprintf("%d", chanIdx),
+			"channelId": body.ChannelId,
+		}, &types.ErrorBody{
+			StatusCode: http.StatusInternalServerError,
+			I18NKey:    "api.remove-channel.failed-to-unlink-channel",
 		})
 		return
 	}

@@ -8,13 +8,14 @@ import (
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
+	"choonify.com/backend/core/types"
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"google.golang.org/api/iterator"
 )
 
-func canUploadFile(subscription int, fileSize int64, totalBytes int64) *util.ErrorBody {
+func canUploadFile(subscription int, fileSize int64, totalBytes int64) *types.ErrorBody {
 	var maxFileSize int64
 	switch subscription {
 	case 1:
@@ -27,15 +28,17 @@ func canUploadFile(subscription int, fileSize int64, totalBytes int64) *util.Err
 		maxFileSize = 10 * 1024 * 1024 // 10 MB
 	}
 	if totalBytes+fileSize > maxFileSize*10 {
-		return &util.ErrorBody{
-			I18NKey: "api.presign.out-of-storage",
+		return &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.presign.out-of-storage",
 		}
 	}
 	if fileSize <= maxFileSize {
 		return nil
 	}
-	return &util.ErrorBody{
-		I18NKey: "api.presign.file-too-big",
+	return &types.ErrorBody{
+		StatusCode: http.StatusBadRequest,
+		I18NKey:    "api.presign.file-too-big",
 	}
 }
 
@@ -54,8 +57,9 @@ func PresignUploadHandler(ctx *gin.Context) {
 	var body presignRequestBody
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-			I18NKey: "api.bad-request",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.bad-request",
 		})
 		return
 	}
@@ -77,7 +81,9 @@ func PresignUploadHandler(ctx *gin.Context) {
 			break
 		}
 		if err != nil {
-			util.SendError(ctx, http.StatusInternalServerError, err, nil)
+			util.SendError(ctx, err, "Iterator error", &map[string]string{
+				"userId": userId,
+			}, nil)
 			return
 		}
 		totalBytes += attrs.Size
@@ -85,7 +91,7 @@ func PresignUploadHandler(ctx *gin.Context) {
 
 	reason := canUploadFile(user.Subscription, body.Size, totalBytes)
 	if reason != nil {
-		util.SendError(ctx, http.StatusInsufficientStorage, nil, reason)
+		util.SendErrorNoLog(ctx, reason)
 		return
 	}
 
@@ -100,7 +106,11 @@ func PresignUploadHandler(ctx *gin.Context) {
 		},
 	})
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
+		util.SendError(ctx, err, "Could not get presigned URL", &map[string]string{
+			"key":                   key,
+			"SERVICE_ACCOUNT_EMAIL": os.Getenv("SERVICE_ACCOUNT_EMAIL"),
+			"body":                  fmt.Sprintf("%+v", body),
+		}, nil)
 		return
 	}
 	res := presignRequestResponse{URL: url, Path: key}

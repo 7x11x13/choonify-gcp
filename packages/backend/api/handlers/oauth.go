@@ -10,7 +10,7 @@ import (
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
-	"choonify.com/backend/types"
+	"choonify.com/backend/core/types"
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -35,8 +35,9 @@ func AuthCallbackHandler(ctx *gin.Context) {
 	var body oAuthBody
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-			I18NKey: "api.bad-request",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.bad-request",
 		})
 		return
 	}
@@ -51,34 +52,33 @@ func AuthCallbackHandler(ctx *gin.Context) {
 	}
 	token, err := cfg.Exchange(ctx, body.Code)
 	if err != nil {
-		// log.Printf("failed to exchange code: %s", err)
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
+		util.SendError(ctx, err, "Failed to exchange code", nil, nil)
 		return
 	}
 	client := cfg.Client(ctx, token)
 	service, err := youtube.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		// log.Printf("Failed to make youtube client: %v", err)
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
+		util.SendError(ctx, err, "Failed to make youtube client", nil, nil)
 		return
 	}
 	call := service.Channels.List([]string{"snippet"})
 	response, err := call.Mine(true).Do()
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, &util.ErrorBody{
-			I18NKey: "api.oauth.failed-to-get-channels",
+		util.SendError(ctx, err, "Could not get channels", nil, &types.ErrorBody{
+			StatusCode: http.StatusInternalServerError,
+			I18NKey:    "api.oauth.failed-to-get-channels",
 		})
 		return
 	}
 	userId, user, err := util.GetUser(ctx)
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 	maxChan := maxChannels(user.Subscription)
 	if len(user.Channels) >= maxChan {
-		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-			I18NKey: "api.oauth.too-many-channels",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.oauth.too-many-channels",
 			Data: map[string]any{
 				"maxChannels": maxChan,
 			},
@@ -94,9 +94,7 @@ func AuthCallbackHandler(ctx *gin.Context) {
 				UserId: userId,
 				Token:  *token,
 			})
-			if err != nil {
-				ctx.Error(err)
-			} else {
+			if err == nil {
 				anyAdded = true
 				user.Channels = append(user.Channels, types.YTChannelInfo{
 					ChannelId: channel.Id,
@@ -130,8 +128,9 @@ func AuthCallbackHandler(ctx *gin.Context) {
 		})
 	})
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, &util.ErrorBody{
-			I18NKey: "api.oauth.channel-already-linked",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusInternalServerError,
+			I18NKey:    "api.oauth.channel-already-linked",
 		})
 		return
 	}

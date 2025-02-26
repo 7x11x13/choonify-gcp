@@ -7,6 +7,7 @@ import (
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
+	"choonify.com/backend/core/types"
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v81"
@@ -23,15 +24,15 @@ func CreatePortalSessionHandler(ctx *gin.Context) {
 	var body portalSessionRequestBody
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-			I18NKey: "api.bad-request",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.bad-request",
 		})
 		return
 	}
 
 	userId, user, err := util.GetUser(ctx)
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 
@@ -43,7 +44,9 @@ func CreatePortalSessionHandler(ctx *gin.Context) {
 		// create stripe customer and save in db
 		record, err := extensions.Auth.GetUser(ctx, userId)
 		if err != nil {
-			util.SendError(ctx, http.StatusInternalServerError, err, nil)
+			util.SendError(ctx, err, "Could not get IDP user", &map[string]string{
+				"userId": userId,
+			}, nil)
 			return
 		}
 		cus, err := customer.New(&stripe.CustomerParams{
@@ -54,7 +57,11 @@ func CreatePortalSessionHandler(ctx *gin.Context) {
 			},
 		})
 		if err != nil {
-			util.SendError(ctx, http.StatusInternalServerError, err, nil)
+			util.SendError(ctx, err, "Could not create Stripe customer", &map[string]string{
+				"userId": userId,
+				"email":  record.Email,
+				"name":   record.DisplayName,
+			}, nil)
 			return
 		}
 		user.CustomerId = cus.ID
@@ -65,7 +72,10 @@ func CreatePortalSessionHandler(ctx *gin.Context) {
 			},
 		})
 		if err != nil {
-			util.SendError(ctx, http.StatusInternalServerError, err, nil)
+			util.SendError(ctx, err, "Could not update user in DB", &map[string]string{
+				"userId":     userId,
+				"customerId": cus.ID,
+			}, nil)
 			return
 		}
 	}
@@ -89,7 +99,11 @@ func CreatePortalSessionHandler(ctx *gin.Context) {
 			},
 		})
 		if err != nil {
-			util.SendError(ctx, http.StatusInternalServerError, err, nil)
+			util.SendError(ctx, err, "Could not subscribe to free plan", &map[string]string{
+				"userId":     userId,
+				"customerId": user.CustomerId,
+				"priceId":    os.Getenv("STRIPE_FREE_TIER_PRICE"),
+			}, nil)
 			return
 		}
 	}
@@ -100,7 +114,10 @@ func CreatePortalSessionHandler(ctx *gin.Context) {
 		ReturnURL: &body.ReturnUrl,
 	})
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
+		util.SendError(ctx, err, "Could not create portal session", &map[string]string{
+			"customerId": user.CustomerId,
+			"returnUrl":  body.ReturnUrl,
+		}, nil)
 		return
 	}
 

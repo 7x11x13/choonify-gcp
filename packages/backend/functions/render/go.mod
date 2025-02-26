@@ -1,12 +1,20 @@
 module choonify.com/backend/functions/render
 
+replace choonify.com/backend/core => ../../core
+
 go 1.23.4
 
-require cloud.google.com/go/cloudtasks v1.13.3
+require (
+	choonify.com/backend/core v0.0.0-00010101000000-000000000000
+	cloud.google.com/go/cloudtasks v1.13.3
+	cloud.google.com/go/logging v1.13.0
+	github.com/GoogleCloudPlatform/functions-framework-go v1.9.1
+)
 
 require (
 	cel.dev/expr v0.19.0 // indirect
 	cloud.google.com/go v0.117.0 // indirect
+	cloud.google.com/go/functions v1.19.3 // indirect
 	cloud.google.com/go/longrunning v0.6.2 // indirect
 	cloud.google.com/go/monitoring v1.21.2 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0 // indirect
@@ -40,7 +48,6 @@ require (
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/storage v1.50.0
 	firebase.google.com/go v3.13.0+incompatible
-	github.com/GoogleCloudPlatform/functions-framework-go v1.9.1
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -54,7 +61,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.32.0 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/oauth2 v0.24.0
+	golang.org/x/oauth2 v0.27.0
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

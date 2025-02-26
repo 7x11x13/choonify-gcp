@@ -9,7 +9,7 @@ import (
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
-	"choonify.com/backend/types"
+	"choonify.com/backend/core/types"
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
@@ -29,8 +29,9 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 	var body types.UserSettings
 	err := ctx.BindJSON(&body)
 	if err != nil {
-		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-			I18NKey: "api.bad-request",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.bad-request",
 		})
 		return
 	}
@@ -42,8 +43,9 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 
 	msg := util.ValidateRequest(body.Defaults, user.Subscription, true)
 	if msg != "" {
-		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-			I18NKey: msg,
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    msg,
 		})
 		return
 	}
@@ -54,16 +56,18 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 		})
 
 		if !validChannelId {
-			util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-				I18NKey: "validate.invalid-channel",
+			util.SendErrorNoLog(ctx, &types.ErrorBody{
+				StatusCode: http.StatusBadRequest,
+				I18NKey:    "validate.invalid-channel",
 			})
 			return
 		}
 	}
 
 	if !util.ValidateFilePath(body.Defaults.ImageKey, userId) {
-		util.SendError(ctx, http.StatusBadRequest, nil, &util.ErrorBody{
-			I18NKey: "validate.invalid-image-path",
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "validate.invalid-image-path",
 		})
 		return
 	}
@@ -74,7 +78,10 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 		dst := extensions.Bucket.Object(defaultKey)
 		err = moveFile(ctx, src, dst)
 		if err != nil {
-			util.SendError(ctx, http.StatusInternalServerError, err, nil)
+			util.SendError(ctx, err, "Could not save default image", &map[string]string{
+				"source": body.Defaults.ImageKey,
+				"dest":   defaultKey,
+			}, nil)
 			return
 		}
 		body.Defaults.ImageKey = defaultKey
@@ -89,7 +96,10 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 		},
 	)
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
+		util.SendError(ctx, err, "Could not save user settings", &map[string]string{
+			"settings": fmt.Sprintf("%+v", body),
+			"userId":   userId,
+		}, nil)
 		return
 	}
 	ctx.JSON(http.StatusOK, nil)

@@ -101,3 +101,7 @@ data "google_firebase_web_app_config" "dev" {
 output "FIREBASE_CONFIG" {
   value = replace(jsonencode(data.google_firebase_web_app_config.dev), data.google_firebase_web_app_config.dev.storage_bucket, google_storage_bucket.dev.name)
 }
+
+output "PROJECT_ID" {
+  value = google_firebase_project.dev.id
+}

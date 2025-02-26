@@ -25,12 +25,16 @@ func DeleteAccountHandler(ctx *gin.Context) {
 	update = update.Disabled(true)
 	_, err := extensions.Auth.UpdateUser(ctx, userId, update)
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
+		util.SendError(ctx, err, "Could not disable user", &map[string]string{
+			"userId": userId,
+		}, nil)
 		return
 	}
 	raw, err := json.Marshal(deleteRequestBody{UserId: userId})
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
+		util.SendAlert(ctx, err, "Could not marshal delete request", &map[string]string{
+			"userId": userId,
+		}, nil)
 		return
 	}
 	_, err = extensions.Tasks.CreateTask(ctx, &cloudtaskspb.CreateTaskRequest{
@@ -52,7 +56,9 @@ func DeleteAccountHandler(ctx *gin.Context) {
 		},
 	})
 	if err != nil {
-		util.SendError(ctx, http.StatusInternalServerError, err, nil)
+		util.SendAlert(ctx, err, "Could not create delete task", &map[string]string{
+			"userId": userId,
+		}, nil)
 		return
 	}
 	ctx.JSON(http.StatusOK, nil)

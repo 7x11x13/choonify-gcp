@@ -2,12 +2,13 @@ package util
 
 import (
 	"fmt"
+	"net/http"
 	"regexp"
 	"slices"
 	"strings"
 	"unicode/utf8"
 
-	"choonify.com/backend/types"
+	"choonify.com/backend/core/types"
 )
 
 var visibilities = []string{"private", "unlisted", "public"}
@@ -84,22 +85,24 @@ func ValidateFilePath(fileKey string, userId string) bool {
 	return true
 }
 
-func ValidateBatchRequest(request *types.UploadBatchRequest, userId string, user *types.UserInfo) *ErrorBody {
+func ValidateBatchRequest(request *types.UploadBatchRequest, userId string, user *types.UserInfo) *types.ErrorBody {
 	validChannelId := slices.ContainsFunc(user.Channels, func(channel types.YTChannelInfo) bool {
 		return channel.ChannelId == request.ChannelId
 	})
 
 	if !validChannelId {
-		return &ErrorBody{
-			I18NKey: "validate.invalid-channel",
+		return &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "validate.invalid-channel",
 		}
 	}
 
 	for i, item := range request.Videos {
 		msg := ValidateRequest(item, user.Subscription, false)
 		if msg != "" {
-			return &ErrorBody{
-				I18NKey: "validate.item-error",
+			return &types.ErrorBody{
+				StatusCode: http.StatusBadRequest,
+				I18NKey:    "validate.item-error",
 				Data: map[string]any{
 					"i":      i + 1,
 					"reason": fmt.Sprintf("$t(%s)", msg),
@@ -109,8 +112,9 @@ func ValidateBatchRequest(request *types.UploadBatchRequest, userId string, user
 
 		// check that user has access to audio and image specified
 		if !ValidateFilePath(item.AudioKey, userId) || !ValidateFilePath(item.ImageKey, userId) {
-			return &ErrorBody{
-				I18NKey: "validate.user-insufficient-access",
+			return &types.ErrorBody{
+				StatusCode: http.StatusBadRequest,
+				I18NKey:    "validate.user-insufficient-access",
 			}
 		}
 	}

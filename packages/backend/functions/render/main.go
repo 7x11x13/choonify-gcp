@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -13,12 +12,15 @@ import (
 	"strings"
 	"time"
 
-	"choonify.com/backend/functions/render/types"
+	"choonify.com/backend/core/log"
+	"choonify.com/backend/core/types"
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
 	"cloud.google.com/go/firestore"
+	"cloud.google.com/go/logging"
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -38,23 +40,47 @@ func InitFirebase() {
 	ctx := context.Background()
 	Firebase, err = firebase.NewApp(ctx, nil)
 	if err != nil {
+		log.LogError(logging.Emergency, "Failed to create Firebase app", err, &map[string]string{
+			"FIREBASE_CONFIG": os.Getenv("FIREBASE_CONFIG"),
+		})
+		panic(err)
+	}
+	Auth, err = Firebase.Auth(ctx)
+	if err != nil {
+		log.LogError(logging.Emergency, "Failed to create Firebase auth client", err, &map[string]string{
+			"FIREBASE_CONFIG": os.Getenv("FIREBASE_CONFIG"),
+		})
 		panic(err)
 	}
 	Firestore, err = Firebase.Firestore(ctx)
 	if err != nil {
+		log.LogError(logging.Emergency, "Failed to create Firebase firestore client", err, &map[string]string{
+			"FIREBASE_CONFIG": os.Getenv("FIREBASE_CONFIG"),
+		})
 		panic(err)
 	}
 	Storage, err := Firebase.Storage(ctx)
 	if err != nil {
+		log.LogError(logging.Emergency, "Failed to create Firebase storage client", err, &map[string]string{
+			"FIREBASE_CONFIG": os.Getenv("FIREBASE_CONFIG"),
+		})
 		panic(err)
 	}
 	Bucket, err = Storage.Bucket(os.Getenv("FIREBASE_STORAGE_BUCKET"))
 	if err != nil {
+		log.LogError(logging.Emergency, "Failed to create Firebase bucket", err, &map[string]string{
+			"FIREBASE_CONFIG":         os.Getenv("FIREBASE_CONFIG"),
+			"FIREBASE_STORAGE_BUCKET": os.Getenv("FIREBASE_STORAGE_BUCKET"),
+		})
 		panic(err)
 	}
 }
 
 func init() {
+	if false {
+		funcframework.Start("foo")
+	}
+	log.InitLogging("render")
 	InitFirebase()
 	functions.HTTP("Render", Render)
 }
@@ -129,7 +155,7 @@ func getYouTubeClient(ctx context.Context, channelId string) (*youtube.Service, 
 	client := cfg.Client(ctx, &token)
 	service, err := youtube.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.Printf("Failed to make youtube client: %v", err)
+		log.LogError(logging.Error, "Failed to make youtube client", err, nil)
 		return nil, "api.render.internal-error", err
 	}
 	return service, "", nil
@@ -209,7 +235,10 @@ func deleteYTChannelInfo(ctx context.Context, userId string, channelId string) {
 		return tx.Delete(credsRef)
 	})
 	if err != nil {
-		log.Printf("Error deleting YT channel: %s", err)
+		log.LogError(logging.Error, "Failed to delete youtube channel", err, &map[string]string{
+			"userId":    userId,
+			"channelId": channelId,
+		})
 	}
 }
 
@@ -232,20 +261,23 @@ func presignGet(ctx context.Context, key string) (*string, *int64, error) {
 func sendMessage(ctx context.Context, userId string, msg any) {
 	_, err := Firestore.Collection("task_messages").Doc(userId).Set(ctx, msg)
 	if err != nil {
-		log.Printf("Error sending message: %s", err)
+		log.LogError(logging.Error, "Error sending message", err, &map[string]string{
+			"userId": userId,
+			"msg":    fmt.Sprintf("%+v", msg),
+		})
 	}
 }
 
 func Render(w http.ResponseWriter, r *http.Request) {
 	var request types.UploadBatchRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		log.Printf("Failed to decode body: %s", err)
+		log.LogError(logging.Error, "Failed to decode body", err, nil)
 		return
 	}
 	ctx := r.Context()
 	youtube, msg, err := getYouTubeClient(ctx, request.ChannelId)
 	if err != nil {
-		log.Printf("Error getting YT client: %s", err)
+		log.LogError(logging.Error, "Failed to get youtube client", err, nil)
 	}
 	if youtube == nil {
 		reloadUsers := false
@@ -272,10 +304,13 @@ func Render(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			continue
 		}
-		log.Printf("Error while uploading: %s", err)
+		log.LogError(logging.Error, "Could not upload video", err, &map[string]string{
+			"request": fmt.Sprintf("%+v", req),
+		})
 		reloadUser := false
 		gerr, ok := err.(*googleapi.Error)
 		if ok {
+			log.LogError(logging.Error, "googleapi error", err, nil)
 			if gerr.Code == 401 || gerr.Code == 403 {
 				deleteYTChannelInfo(ctx, request.UserId, request.ChannelId)
 				reloadUser = true
@@ -383,7 +418,6 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 	response, err := call.Media(progReader).Do()
 	if err != nil {
 		msg := fmt.Sprintf("%s", err)
-		log.Println(msg)
 		return &types.ErrorBody{
 			I18NKey: "api.render.yt-error",
 			Data: map[string]any{
@@ -397,12 +431,16 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 		if strings.HasPrefix(request.ImageKey, "private") {
 			err = Bucket.Object(request.ImageKey).Delete(ctx)
 			if err != nil {
-				log.Printf("Error deleting image: %s", err)
+				log.LogError(logging.Error, "Could not delete image", err, &map[string]string{
+					"imageKey": request.ImageKey,
+				})
 			}
 		}
 		err = Bucket.Object(request.AudioKey).Delete(ctx)
 		if err != nil {
-			log.Printf("Error deleting audio: %s", err)
+			log.LogError(logging.Error, "Could not delete audio", err, &map[string]string{
+				"audioKey": request.AudioKey,
+			})
 		}
 		sendMessage(ctx, userId, types.RenderSuccessMessage{
 			BaseMessage: types.BaseMessage{
@@ -416,7 +454,9 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 		// update user stats
 		err = updateUserTable(ctx, userId, *audioSize+*imageSize)
 		if err != nil {
-			log.Printf("Error updating user: %s", err)
+			log.LogError(logging.Error, "Could not update user stats", err, &map[string]string{
+				"userId": userId,
+			})
 		}
 		return nil, nil
 	}

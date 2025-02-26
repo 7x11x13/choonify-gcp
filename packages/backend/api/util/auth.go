@@ -1,10 +1,10 @@
 package util
 
 import (
-	"net/http"
+	"fmt"
 
 	"choonify.com/backend/api/extensions"
-	"choonify.com/backend/types"
+	"choonify.com/backend/core/types"
 	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc/codes"
@@ -49,17 +49,17 @@ func GetUser(ctx *gin.Context) (string, *types.UserInfo, error) {
 		}
 		_, err = extensions.Firestore.Collection("users").Doc(userId).Set(ctx, user)
 		if err != nil {
-			SendError(ctx, http.StatusInternalServerError, err, nil)
+			SendError(ctx, err, "Could not set user", &map[string]string{"userId": userId}, nil)
 			return userId, nil, err
 		}
 	} else {
 		if err != nil {
-			SendError(ctx, http.StatusInternalServerError, err, nil)
+			SendError(ctx, err, "Could not get user", &map[string]string{"userId": userId}, nil)
 			return userId, nil, err
 		}
 		err := userData.DataTo(&user)
 		if err != nil {
-			SendError(ctx, http.StatusInternalServerError, err, nil)
+			SendError(ctx, err, "Could not convert user data", &map[string]string{"userId": userId, "userData": fmt.Sprintf("%+v", userData.Data())}, nil)
 			return userId, nil, err
 		}
 	}

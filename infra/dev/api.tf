@@ -94,6 +94,10 @@ resource "google_cloud_run_v2_service" "dev" {
         name  = "STRIPE_WEBHOOK_SECRET"
         value = var.stripe_webhook_secret
       }
+      env {
+        name  = "PROJECT_ID"
+        value = google_firebase_project.dev.id
+      }
     }
   }
 

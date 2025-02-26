@@ -18,7 +18,7 @@
     },
     "remove-channel": {
       "channel-already-unlinked": "Channel already unlinked",
-      "failed-to-link-channel": "Failed to link channel"
+      "failed-to-unlink-channel": "Failed to unlink channel"
     },
     "render": {
       "credentials-not-found": "Could not get YouTube credentials",
