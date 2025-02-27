@@ -127,6 +127,9 @@ func renderVideo(output chan error, pw *io.PipeWriter, audioFile string, imageFi
 		"-f", "matroska",
 		"-",
 	)
+	cmd.Env = []string{
+		fmt.Sprintf("PATH=%s", os.Getenv("PATH")),
+	}
 	cmd.Stdout = pw
 	err := cmd.Run()
 	pw.CloseWithError(err)
