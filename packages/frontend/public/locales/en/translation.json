@@ -57,6 +57,7 @@
     "deletion-warning": "Are you sure? You will not be able to login for 24 hours, and then your account will be deleted.",
     "go-back": "Go back",
     "label": {
+      "docs": "Docs",
       "features": "Features",
       "pricing": "Pricing"
     },
