@@ -1,51 +1,58 @@
-import { Burger, Group } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'wouter';
-import { useAuth } from './Auth';
-import classes from './Header.module.css';
+import { Burger, Group } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "wouter";
+import { useAuth } from "./Auth";
+import classes from "./Header.module.css";
 
 // split this to reduce bundle size
-const HeaderLoggedIn = React.lazy(() => import("./HeaderLoggedIn.tsx"))
+const HeaderLoggedIn = React.lazy(() => import("./HeaderLoggedIn.tsx"));
 
 export function Header() {
-    const [opened, { toggle }] = useDisclosure(false);
-    const { user, loading, signIn } = useAuth();
-    const { t } = useTranslation();
+  const [opened, { toggle }] = useDisclosure(false);
+  const { user, loading, signIn } = useAuth();
+  const { t } = useTranslation();
 
-    const links = [
-        { link: '/pricing', label: t('header.label.pricing') },
-    ];
+  const links = [{ link: "/pricing", label: t("header.label.pricing") }];
 
-    const items = links.map((link) => (
-        <Link key={link.label} to={link.link} className={classes.link}>{link.label}</Link>
-    ));
+  const items = links.map((link) => (
+    <Link key={link.label} to={link.link} className={classes.link}>
+      {link.label}
+    </Link>
+  ));
 
-    if (!user) {
-        items.push(
-            <Link key={"login"} to="" onClick={signIn} className={classes.link}>{t('login_button.login')}</Link>
-        );
-    }
-
-    if (loading) {
-        return;
-    }
-
-    return (
-        <header className={classes.header}>
-            <div className={classes.inner}>
-                <Group>
-                    <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" /> {/* TODO */}
-                    <h1><Link to="/" style={{ textDecoration: 'none', color: 'black' }}>Choonify</Link></h1>
-                </Group>
-                <Group>
-                    <Group ml={50} gap={5} className={classes.links} visibleFrom="sm">
-                        {items}
-                    </Group>
-                    {user && <HeaderLoggedIn></HeaderLoggedIn>}
-                </Group>
-            </div>
-        </header>
+  if (!user) {
+    items.push(
+      <Link key={"login"} to="" onClick={signIn} className={classes.link}>
+        {t("login_button.login")}
+      </Link>,
     );
+  }
+
+  if (loading) {
+    return;
+  }
+
+  return (
+    <header className={classes.header}>
+      <div className={classes.inner}>
+        <Group>
+          <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />{" "}
+          {/* TODO */}
+          <h1>
+            <Link to="/" style={{ textDecoration: "none", color: "black" }}>
+              Choonify
+            </Link>
+          </h1>
+        </Group>
+        <Group>
+          <Group ml={50} gap={5} className={classes.links} visibleFrom="sm">
+            {items}
+          </Group>
+          {user && <HeaderLoggedIn></HeaderLoggedIn>}
+        </Group>
+      </div>
+    </header>
+  );
 }

@@ -1,25 +1,49 @@
-import { FileInput, Progress } from '@mantine/core';
-import { UseFormReturnType } from '@mantine/form';
-import { useState } from 'react';
-import { UserSettings } from '../types/auth';
-import { uploadFile } from '../util/api';
+import { FileInput, Progress } from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
+import { useState } from "react";
+import { UserSettings } from "../types/auth";
+import { uploadFile } from "../util/api";
 
-export function CoverArtInput({ form, ...others }: {
-    form: UseFormReturnType<UserSettings, (values: UserSettings) => UserSettings>
+export function CoverArtInput({
+  form,
+  ...others
+}: {
+  form: UseFormReturnType<UserSettings, (values: UserSettings) => UserSettings>;
 }) {
-    const [uploadProgress, setUploadProgress] = useState(100);
+  const [uploadProgress, setUploadProgress] = useState(100);
 
-    async function onFileChange(file: File | File[] | null) {
-        setUploadProgress(0);
-        const image = file as File;
-        const imagePath = await uploadFile(image, image.type, image.size, image.name, setUploadProgress);
-        form.getInputProps("defaults.imageFileBlob").onChange(image);
-        form.getInputProps("defaults.imageFile").onChange(imagePath);
-    }
+  async function onFileChange(file: File | File[] | null) {
+    setUploadProgress(0);
+    const image = file as File;
+    const imagePath = await uploadFile(
+      image,
+      image.type,
+      image.size,
+      image.name,
+      setUploadProgress,
+    );
+    form.getInputProps("defaults.imageFileBlob").onChange(image);
+    form.getInputProps("defaults.imageFile").onChange(imagePath);
+  }
 
-    if (uploadProgress === 100) {
-        return <FileInput label="Cover" {...form.getInputProps("defaults.imageFileBlob")} accept="image/*" onChange={onFileChange} {...others}></FileInput>
-    }
+  if (uploadProgress === 100) {
+    return (
+      <FileInput
+        label="Cover"
+        {...form.getInputProps("defaults.imageFileBlob")}
+        accept="image/*"
+        onChange={onFileChange}
+        {...others}
+      ></FileInput>
+    );
+  }
 
-    return <Progress animated value={uploadProgress} size="lg" transitionDuration={200} />
+  return (
+    <Progress
+      animated
+      value={uploadProgress}
+      size="lg"
+      transitionDuration={200}
+    />
+  );
 }

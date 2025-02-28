@@ -10,13 +10,29 @@ const Upload = React.lazy(() => import("./containers/Upload.tsx"));
 const Settings = React.lazy(() => import("./containers/Settings.tsx"));
 
 export default function Routes() {
-    return (
-        <Switch>
-            <Route path="/"><UnauthenticatedRoute to={"/upload"}><Home /></UnauthenticatedRoute></Route>
-            <Route path="/pricing"><Pricing /></Route>
-            <Route path="/upload"><AuthenticatedRoute><Upload /></AuthenticatedRoute></Route>
-            <Route path="/settings"><AuthenticatedRoute><Settings /></AuthenticatedRoute></Route>
-            <Route><NotFound /></Route>
-        </Switch>
-    );
+  return (
+    <Switch>
+      <Route path="/">
+        <UnauthenticatedRoute to={"/upload"}>
+          <Home />
+        </UnauthenticatedRoute>
+      </Route>
+      <Route path="/pricing">
+        <Pricing />
+      </Route>
+      <Route path="/upload">
+        <AuthenticatedRoute>
+          <Upload />
+        </AuthenticatedRoute>
+      </Route>
+      <Route path="/settings">
+        <AuthenticatedRoute>
+          <Settings />
+        </AuthenticatedRoute>
+      </Route>
+      <Route>
+        <NotFound />
+      </Route>
+    </Switch>
+  );
 }

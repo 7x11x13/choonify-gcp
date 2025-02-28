@@ -4,19 +4,19 @@ import { useAuth } from "./Auth";
 import Loading from "./Loading";
 
 export default function AuthenticatedRoute({
-    children,
+  children,
 }: {
-    children: ReactElement;
+  children: ReactElement;
 }) {
-    const { loading, user, userInfo } = useAuth();
+  const { loading, user, userInfo } = useAuth();
 
-    if (loading) {
-        return <Loading />;
-    }
+  if (loading) {
+    return <Loading />;
+  }
 
-    if (!user || !userInfo) {
-        return <Redirect to={"/"} />;
-    }
+  if (!user || !userInfo) {
+    return <Redirect to={"/"} />;
+  }
 
-    return children;
+  return children;
 }

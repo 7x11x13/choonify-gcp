@@ -1,35 +1,31 @@
 {
-    "hosting": [
+  "hosting": [
+    {
+      "target": "dev",
+      "public": "dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
         {
-            "target": "dev",
-            "public": "dist",
-            "ignore": [
-                "firebase.json",
-                "**/.*",
-                "**/node_modules/**"
-            ],
-            "rewrites": [
-                {
-                    "source": "/api/**",
-                    "run": {
-                        "serviceId": "api",
-                        "region": "us-west1"
-                    }
-                },
-                {
-                    "source": "**",
-                    "destination": "/index.html"
-                }
-            ]
-        }
-    ],
-    "firestore": {
-        "rules": "firestore.rules"
-    },
-    "storage": [
+          "source": "/api/**",
+          "run": {
+            "serviceId": "api",
+            "region": "us-west1"
+          }
+        },
         {
-            "rules": "storage.rules",
-            "bucket": "choonify-dev-ffmpeg-input"
+          "source": "**",
+          "destination": "/index.html"
         }
-    ]
+      ]
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": [
+    {
+      "rules": "storage.rules",
+      "bucket": "choonify-dev-ffmpeg-input"
+    }
+  ]
 }

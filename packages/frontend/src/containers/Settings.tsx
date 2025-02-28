@@ -8,23 +8,28 @@ import { apiPost } from "../util/api";
 import { displaySuccess } from "../util/log";
 
 export default function Settings() {
-    const { userInfo, refreshUserInfo } = useAuth();
-    const [sending, setSending] = useState(false);
-    const { t } = useTranslation();
+  const { userInfo, refreshUserInfo } = useAuth();
+  const [sending, setSending] = useState(false);
+  const { t } = useTranslation();
 
-    async function updateSettings(settings: UserSettings) {
-        setSending(true);
-        const { imageFileBlob: _, ...defaultsWithoutBlob } = settings.defaults;
-        const settingsWithoutBlob = { ...settings, defaults: defaultsWithoutBlob };
-        if (await apiPost("/settings", settingsWithoutBlob) !== undefined) {
-            await refreshUserInfo();
-            displaySuccess(t('settings.settings-changed'));
-        }
-        setSending(false);
+  async function updateSettings(settings: UserSettings) {
+    setSending(true);
+    const { imageFileBlob: _, ...defaultsWithoutBlob } = settings.defaults;
+    const settingsWithoutBlob = { ...settings, defaults: defaultsWithoutBlob };
+    if ((await apiPost("/settings", settingsWithoutBlob)) !== undefined) {
+      await refreshUserInfo();
+      displaySuccess(t("settings.settings-changed"));
     }
-    return (
-        <Container title={t('settings.label')}>
-            <UploadForm settingsMode="defaults" disabled={sending} initialItemData={userInfo!.settings} formCallback={updateSettings} />
-        </Container>
-    );
+    setSending(false);
+  }
+  return (
+    <Container title={t("settings.label")}>
+      <UploadForm
+        settingsMode="defaults"
+        disabled={sending}
+        initialItemData={userInfo!.settings}
+        formCallback={updateSettings}
+      />
+    </Container>
+  );
 }
