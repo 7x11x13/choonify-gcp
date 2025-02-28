@@ -8,7 +8,7 @@ import { ErrorBody } from "../types/api";
 function handleError(err: any) {
   let message;
   if (axios.isAxiosError(err)) {
-    if (err.response?.data) {
+    if (err.response?.data?.i18nKey) {
       const body = err.response.data as ErrorBody;
       message = t(body.i18nKey, body.data);
     } else {

@@ -26,29 +26,7 @@
   font-weight: 500;
 }
 
-.burgerlink {
-  display: block;
-  line-height: 2;
-  padding: 8px 12px;
-  border-radius: var(--mantine-radius-sm);
-  text-decoration: none;
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-  font-size: var(--mantine-font-size-md);
-  font-weight: 500;
-  background-color: light-dark(
-    var(--mantine-color-gray-0),
-    var(--mantine-color-dark-6)
-  );
-}
-
 .link:hover {
-  background-color: light-dark(
-    var(--mantine-color-gray-0),
-    var(--mantine-color-dark-6)
-  );
-}
-
-.burgerlink:hover {
   background-color: light-dark(
     var(--mantine-color-gray-0),
     var(--mantine-color-dark-6)

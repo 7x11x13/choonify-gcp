@@ -59,7 +59,8 @@
     "label": {
       "docs": "Docs",
       "features": "Features",
-      "pricing": "Pricing"
+      "pricing": "Pricing",
+      "support": "Support"
     },
     "logout": "Logout"
   },

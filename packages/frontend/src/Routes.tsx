@@ -8,6 +8,10 @@ import NotFound from "./containers/NotFound.tsx";
 const Pricing = React.lazy(() => import("./containers/Pricing.tsx"));
 const Upload = React.lazy(() => import("./containers/Upload.tsx"));
 const Settings = React.lazy(() => import("./containers/Settings.tsx"));
+const Support = React.lazy(() => import("./containers/Support.tsx"));
+const Documentation = React.lazy(
+  () => import("./containers/Documentation.tsx"),
+);
 
 export default function Routes() {
   return (
@@ -19,6 +23,12 @@ export default function Routes() {
       </Route>
       <Route path="/pricing">
         <Pricing />
+      </Route>
+      <Route path="/support">
+        <Support />
+      </Route>
+      <Route path="/documentation">
+        <Documentation />
       </Route>
       <Route path="/upload">
         <AuthenticatedRoute>
