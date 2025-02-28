@@ -22,6 +22,7 @@ import { validateItem, validateSession } from "../util/validate";
 import classes from './Upload.module.css';
 import { Trans, useTranslation } from "react-i18next";
 import QuotaMeter from "../components/QuotaMeter";
+import config from "../config";
 
 export default function Upload() {
     const { user, userInfo, refreshUserInfo } = useAuth();
@@ -222,7 +223,10 @@ export default function Upload() {
             }
 
             const { getUploadItemFromFile } = await import("../util/metadata");
-            const uploadItem = await getUploadItemFromFile(userInfo!, file, onProg);
+            // calculate max upload item size to stay in quota
+            const quota = config.const.UPLOAD_QUOTA_BYTES[userInfo!.subscription];
+            const queueSize = uploadQueue.map((item) => item.audioFileSize + item.imageFileSize).reduce((t, a) => t + a, 0);
+            const uploadItem = await getUploadItemFromFile(userInfo!, file, onProg, Math.max(0, quota - queueSize));
             if (uploadItem) {
                 queueHandlers.append(uploadItem);
             }

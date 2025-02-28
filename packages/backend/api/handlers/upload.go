@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,17 +9,42 @@ import (
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
+	"choonify.com/backend/core/constants"
 	"choonify.com/backend/core/types"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"github.com/gin-gonic/gin"
 )
 
-func getUploadQuota(subscription int) int {
-	return []int{10, 25, 1000, 1000}[subscription]
-}
-
 type uploadRequestResponse struct {
 	Uploading int `json:"uploading"`
+}
+
+func getVideoSizeBytes(ctx context.Context, video *types.UploadRequestData) (int64, error) {
+	audioAttrs, err := extensions.Bucket.Object(video.AudioKey).Attrs(ctx)
+	if err != nil {
+		return 0, err
+	}
+	imgAttrs, err := extensions.Bucket.Object(video.ImageKey).Attrs(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return audioAttrs.Size + imgAttrs.Size, nil
+}
+
+func getUploadCount(ctx context.Context, videos *[]types.UploadRequestData, uploadedBytesToday int64, uploadQuota int64) (int, error) {
+	// return how many videos to upload to stay within bytes quota
+	bytes := uploadedBytesToday
+	for i, video := range *videos {
+		if bytes > uploadQuota {
+			return i, nil
+		}
+		videoBytes, err := getVideoSizeBytes(ctx, &video)
+		if err != nil {
+			return 0, err
+		}
+		bytes += videoBytes
+	}
+	return len(*videos), nil
 }
 
 func UploadRequestHandler(ctx *gin.Context) {
@@ -37,9 +63,14 @@ func UploadRequestHandler(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: change to bytes quota
-	uploadedToday, _ := user.RealUploadedToday()
-	uploadCount := min(max(0, getUploadQuota(user.Subscription)-uploadedToday), len(body.Videos))
+	_, uploadedBytesToday := user.RealUploadedToday()
+	uploadCount, err := getUploadCount(ctx, &body.Videos, uploadedBytesToday, constants.UPLOAD_QUOTA_BYTES[user.Subscription])
+	if err != nil {
+		util.SendError(ctx, err, "Could not find video request size", &map[string]string{
+			"body":   fmt.Sprintf("%+v", body),
+			"userId": userId,
+		}, nil)
+	}
 	body.Videos = body.Videos[:uploadCount]
 
 	msg := util.ValidateBatchRequest(&body, userId, user)

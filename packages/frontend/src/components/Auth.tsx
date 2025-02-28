@@ -47,12 +47,13 @@ function useProvideAuth() {
 
     useEffect(() => {
         // handleRedirectResult();
-        onAuthStateChanged(auth, async (newUser) => {
+        const unsub = onAuthStateChanged(auth, async (newUser) => {
             setLoading(true);
             setUser(newUser);
             await refreshUserInfo(newUser);
             setLoading(false);
         });
+        return unsub;
     }, []);
 
     async function signIn() {

@@ -22,6 +22,7 @@ export type UploadItemWithoutBlob = {
     audioFileLength: number,
     audioFileSize: number,
     imageFile: string,
+    imageFileSize: number,
     metadata: YTMetadata,
     settings: RenderSettings
 }

@@ -13,8 +13,7 @@
       "too-many-channels": "Too many channels linked! Max: {{maxChannels}}"
     },
     "presign": {
-      "file-too-big": "File too big. Upgrade for a higher limit",
-      "out-of-storage": "Not enough storage. Try again tomorrow"
+      "out-of-storage": "Upload quota exceeded for today. Upgrade for a larger quota or try again tomorrow"
     },
     "remove-channel": {
       "channel-already-unlinked": "Channel already unlinked",

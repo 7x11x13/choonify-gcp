@@ -30,6 +30,7 @@ export function getDefaultImageFile(): File {
 }
 
 export function getDefaultUploadItem(): UploadItem {
+    const defaultImage = getDefaultImageFile();
     return {
         id: randomId(),
         createdAt: 0,
@@ -38,7 +39,8 @@ export function getDefaultUploadItem(): UploadItem {
         audioFileLength: 0,
         audioFileSize: 0,
         imageFile: config.settings.DEFAULT_COVER_IMAGE,
-        imageFileBlob: getDefaultImageFile(),
+        imageFileBlob: defaultImage,
+        imageFileSize: defaultImage.size,
         metadata: {
             title: "{{@if(it.metadata.title && it.metadata.artist)}}\n    {{_ it.metadata.artist}} - {{it.metadata.title}}\n{{ #else }}\n    {{_ it.file.name}}\n{{/if}}",
             description: "Uploaded with https://choonify.com",

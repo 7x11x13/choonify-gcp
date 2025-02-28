@@ -8,6 +8,7 @@ import (
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
+	"choonify.com/backend/core/constants"
 	"choonify.com/backend/core/types"
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
@@ -15,30 +16,21 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func canUploadFile(subscription int, fileSize int64, totalBytes int64) *types.ErrorBody {
-	var maxFileSize int64
-	switch subscription {
-	case 1:
-		maxFileSize = 25 * 1024 * 1024 // 100 MB
-	case 2:
-		maxFileSize = 500 * 1024 * 1024 // 500 MB
-	case 3:
-		maxFileSize = 2 * 1024 * 1024 * 1024 // 2 GB
-	default:
-		maxFileSize = 10 * 1024 * 1024 // 10 MB
-	}
-	if totalBytes+fileSize > maxFileSize*10 {
+func canUploadFile(user *types.UserInfo, fileSize int64, totalBytes int64) *types.ErrorBody {
+	quota := constants.UPLOAD_QUOTA_BYTES[user.Subscription]
+	if totalBytes+fileSize > 2*quota {
 		return &types.ErrorBody{
 			StatusCode: http.StatusBadRequest,
 			I18NKey:    "api.presign.out-of-storage",
 		}
 	}
-	if fileSize <= maxFileSize {
+	_, uploadedBytesToday := user.RealUploadedToday()
+	if uploadedBytesToday+fileSize <= quota {
 		return nil
 	}
 	return &types.ErrorBody{
 		StatusCode: http.StatusBadRequest,
-		I18NKey:    "api.presign.file-too-big",
+		I18NKey:    "api.presign.out-of-storage",
 	}
 }
 
@@ -89,7 +81,7 @@ func PresignUploadHandler(ctx *gin.Context) {
 		totalBytes += attrs.Size
 	}
 
-	reason := canUploadFile(user.Subscription, body.Size, totalBytes)
+	reason := canUploadFile(user, body.Size, totalBytes)
 	if reason != nil {
 		util.SendErrorNoLog(ctx, reason)
 		return

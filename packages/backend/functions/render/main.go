@@ -109,7 +109,6 @@ func renderVideo(output chan error, pw *io.PipeWriter, audioFile string, imageFi
 		pw.Close()
 	}
 	if settings.Watermark {
-		// TODO: use image overlay instead?
 		filter += ",drawtext=text:'choonify.com':fontcolor=white:bordercolor=black:borderw=2:fontsize=1080/20:x=w-tw-20:y=20"
 	}
 	cmd := exec.Command("ffmpeg",

@@ -39,8 +39,9 @@ type UploadRequestData struct {
 	OriginalAudioFileName string         `json:"originalAudioFileName" firestore:"originalAudioFileName"`
 	AudioKey              string         `json:"audioFile" firestore:"audioFile"`
 	AudioLength           float32        `json:"audioFileLength" firestore:"audioFileLength"`
-	AudioFileSize         int64          `json:"audioFileSize" firestore:"audioFileSize"`
+	AudioFileSize         int64          `json:"audioFileSize" firestore:"audioFileSize"` // can't rely on this - sent by client
 	ImageKey              string         `json:"imageFile" firestore:"imageFile"`
+	ImageFileSize         int64          `json:"imageFileSize" firestore:"imageFileSize"` // can't rely on this - sent by client
 	Metadata              YTMetadata     `json:"metadata" firestore:"metadata"`
 	Settings              RenderSettings `json:"settings" firestore:"settings"`
 }

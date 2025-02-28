@@ -27,7 +27,12 @@ async function renderTemplateString(template: string, file: FileWithPath, metada
 }
 
 
-export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWithPath, onProg: (percent: number) => void) {
+export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWithPath, onProg: (percent: number) => void, maxSizeBytes: number) {
+    if (maxSizeBytes <= 0) {
+        displayError(t("api.presign.out-of-storage"))
+        return null;
+    }
+
     const metadata = await getFileMetadata(file);
     if (!metadata) {
         return null;
@@ -37,6 +42,12 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
     item.createdAt = Date.now();
     item.originalAudioFileName = file.name;
     item.audioFileSize = file.size;
+
+    if (item.audioFileSize + item.imageFileSize > maxSizeBytes) {
+        console.error(`File too big: ${item.audioFileSize + item.imageFileSize} > ${maxSizeBytes}`);
+        displayError(t("api.presign.out-of-storage"))
+        return null;
+    }
 
     if (metadata.format.duration === undefined) {
         console.error(`Could not determine length of file: ${file}`);
@@ -48,6 +59,7 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
     const defaultItem = user.settings.defaults;
     item.imageFile = defaultItem.imageFile;
     item.imageFileBlob = defaultItem.imageFileBlob;
+    item.imageFileSize = defaultItem.imageFileSize;
     item.metadata = {
         ...item.metadata, ...(defaultItem.metadata)
     }
@@ -64,6 +76,13 @@ export async function getUploadItemFromFile(user: ChoonifyUserInfo, file: FileWi
             onProg(percent / 2);
         }
         const picture = metadata.common.picture[0];
+
+        if (item.audioFileSize + picture.data.length > maxSizeBytes) {
+            console.error(`File too big: ${item.audioFileSize + picture.data.length} > ${maxSizeBytes}`);
+            displayError(t("api.presign.out-of-storage"))
+            return null;
+        }
+
         const imagePath = await uploadFile(picture.data, picture.format, picture.data.byteLength, picture.name ?? `cover.${picture.format.split("/").at(-1)}`, onImageProg);
         if (imagePath === null) {
             return null;
