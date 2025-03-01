@@ -15,7 +15,7 @@ export function validateTitle(
   if ((!allowTemplates && value.length > 100) || value.length > 10000) {
     return t("validate.title-too-long");
   }
-  if (value.includes("<") || value.includes(">")) {
+  if (!allowTemplates && (value.includes("<") || value.includes(">"))) {
     return t("validate.invalid-title");
   }
   return null;

@@ -29,6 +29,10 @@ export function getDefaultImageFile(): File {
   });
 }
 
+export function getDefaultTitleTemplateString(): string {
+  return "<% if(it.metadata.title && it.metadata.artist) { %>\n    <%_ = it.metadata.artist %> - <% = it.metadata.title %>\n<% } else { %>\n    <%_ = it.file.name %>\n<% } %>";
+}
+
 export function getDefaultUploadItem(): UploadItem {
   const defaultImage = getDefaultImageFile();
   return {
@@ -42,8 +46,7 @@ export function getDefaultUploadItem(): UploadItem {
     imageFileBlob: defaultImage,
     imageFileSize: defaultImage.size,
     metadata: {
-      title:
-        "{{@if(it.metadata.title && it.metadata.artist)}}\n    {{_ it.metadata.artist}} - {{it.metadata.title}}\n{{ #else }}\n    {{_ it.file.name}}\n{{/if}}",
+      title: getDefaultTitleTemplateString(),
       description: "Uploaded with https://choonify.com",
       tags: ["choonify"],
       categoryId: "10",

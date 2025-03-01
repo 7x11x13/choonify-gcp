@@ -28,7 +28,7 @@ func ValidateRequest(item types.UploadRequestData, subscription int, allowTempla
 	if (!allowTemplates && titleLength > 100) || titleLength > 10000 {
 		return "validate.title-too-long"
 	}
-	if strings.ContainsAny(item.Metadata.Title, "<>") {
+	if !allowTemplates && strings.ContainsAny(item.Metadata.Title, "<>") {
 		return "validate.invalid-title"
 	}
 	// desc - <= 5000 utf-8 bytes

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { displayError } from "../util/log";
 import { Center, Container, TypographyStylesProvider } from "@mantine/core";
+import TemplateStringPlayground from "../components/TemplateStringPlayground";
 
 export default function Documentation() {
   const { t, i18n } = useTranslation();
@@ -27,9 +28,16 @@ export default function Documentation() {
 
   return (
     <Center>
-      <Container size="md" my="xl">
+      <Container size="md" m="xl">
         <TypographyStylesProvider>
-          <Markdown children={mdString} />
+          <Markdown
+            children={mdString}
+            options={{
+              overrides: {
+                TemplateStringPlayground: TemplateStringPlayground,
+              },
+            }}
+          />
         </TypographyStylesProvider>
       </Container>
     </Center>

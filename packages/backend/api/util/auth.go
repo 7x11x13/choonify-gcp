@@ -30,7 +30,7 @@ func GetUser(ctx *gin.Context) (string, *types.UserInfo, error) {
 				Defaults: types.UploadRequestData{
 					ImageKey: "public/default-image",
 					Metadata: types.YTMetadata{
-						Title:             "{{@if(it.metadata.title && it.metadata.artist)}}\n    {{_ it.metadata.artist}} - {{it.metadata.title}}\n{{ #else }}\n    {{_ it.file.name}}\n{{/if}}",
+						Title:             "<% if(it.metadata.title && it.metadata.artist) { %>\n    <%_ = it.metadata.artist %> - <% = it.metadata.title %>\n<% } else { %>\n    <%_ = it.file.name %>\n<% } %>",
 						Description:       "Uploaded with https://choonify.com",
 						CategoryId:        "10",
 						MadeForKids:       false,

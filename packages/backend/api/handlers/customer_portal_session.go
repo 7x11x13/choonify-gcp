@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"os"
 
@@ -35,10 +34,6 @@ func CreatePortalSessionHandler(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-
-	log.Printf("User: %+v", user)
-	log.Println(user)
-	log.Println(user.CustomerId)
 
 	if user.CustomerId == "" {
 		// create stripe customer and save in db

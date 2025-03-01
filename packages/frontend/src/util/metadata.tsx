@@ -7,8 +7,11 @@ import { getDefaultUploadItem } from "../types/defaults";
 import { uploadFile } from "./api";
 import { displayError } from "./log";
 import { t } from "i18next";
+import { TemplateStringInput } from "../types/template";
 
-async function getFileMetadata(file: FileWithPath) {
+export async function getFileMetadata(
+  file: FileWithPath,
+): Promise<IAudioMetadata | null> {
   try {
     const metadata = await parseBlob(file, {
       duration: true,
@@ -21,17 +24,30 @@ async function getFileMetadata(file: FileWithPath) {
   }
 }
 
-async function renderTemplateString(
-  template: string,
+export async function getTemplateStringInput(
   file: FileWithPath,
   metadata: IAudioMetadata,
-): Promise<string> {
-  const sqrl = await import("squirrelly");
-  return sqrl.render(template, {
+) {
+  return {
     metadata: metadata.common,
     format: metadata.format,
-    file: file,
-  });
+    file,
+  };
+}
+
+async function renderTemplateString(
+  template: string,
+  input: TemplateStringInput,
+): Promise<string> {
+  try {
+    const { Eta } = await import("eta");
+    const eta = new Eta();
+    return eta.renderString(template, input);
+  } catch (err: any) {
+    console.error(err);
+    displayError("Invalid template string");
+    return "N/A";
+  }
 }
 
 export async function getUploadItemFromFile(
@@ -82,15 +98,14 @@ export async function getUploadItemFromFile(
     ...item.settings,
     ...defaultItem.settings,
   };
+  const templateInput = await getTemplateStringInput(file, metadata);
   item.metadata.title = await renderTemplateString(
     item.metadata.title,
-    file,
-    metadata,
+    templateInput,
   );
   item.metadata.description = await renderTemplateString(
     item.metadata.description,
-    file,
-    metadata,
+    templateInput,
   );
   item.metadata.tags.push(...(metadata.common.genre ?? []));
 
