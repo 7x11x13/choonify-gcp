@@ -1,4 +1,4 @@
-import { FileInput, Grid, Textarea } from "@mantine/core";
+import { Fieldset, FileInput, Grid, Textarea } from "@mantine/core";
 import { useState } from "react";
 import { TemplateStringInput } from "../types/template";
 import { FileWithPath } from "@mantine/dropzone";
@@ -106,31 +106,33 @@ export default function TemplateStringPlayground() {
   }
 
   return (
-    <Grid>
-      <Grid.Col span={{ base: 12, sm: 6 }}>
-        <Textarea
-          label="Template string"
-          autosize
-          maxRows={10}
-          value={templateString}
-          onChange={(event) => setTemplateString(event.currentTarget.value)}
-        />
-        <FileInput
-          label="Audio file"
-          onChange={onFileChange}
-          value={templateInput.file}
-          accept="audio/*"
-        />
-      </Grid.Col>
-      <Grid.Col span={{ base: 12, sm: 6 }}>
-        <Textarea
-          label="Output"
-          readOnly
-          autosize
-          maxRows={10}
-          {...renderOutput(templateString, templateInput)}
-        />
-      </Grid.Col>
-    </Grid>
+    <Fieldset m="lg">
+      <Grid>
+        <Grid.Col span={{ base: 12, sm: 6 }}>
+          <Textarea
+            label="Template string"
+            autosize
+            maxRows={10}
+            value={templateString}
+            onChange={(event) => setTemplateString(event.currentTarget.value)}
+          />
+          <FileInput
+            label="Audio file"
+            onChange={onFileChange}
+            value={templateInput.file}
+            accept="audio/*"
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, sm: 6 }}>
+          <Textarea
+            label="Output"
+            readOnly
+            autosize
+            maxRows={10}
+            {...renderOutput(templateString, templateInput)}
+          />
+        </Grid.Col>
+      </Grid>
+    </Fieldset>
   );
 }
