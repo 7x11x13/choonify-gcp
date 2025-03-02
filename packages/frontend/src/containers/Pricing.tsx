@@ -17,6 +17,7 @@ import { useAuth } from "../components/Auth";
 import config from "../config";
 import { apiPost } from "../util/api";
 import classes from "./Pricing.module.css";
+import Loading from "../components/Loading";
 
 type SubscriptionTierInfo = {
   name: string;
@@ -60,7 +61,7 @@ export default function Pricing() {
   }
 
   if (loading) {
-    return;
+    return <Loading />;
   }
 
   const freeFeatures = [
