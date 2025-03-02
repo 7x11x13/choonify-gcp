@@ -4,6 +4,7 @@ import AuthenticatedRoute from "./components/AuthenticatedRoute.tsx";
 import UnauthenticatedRoute from "./components/UnauthenticatedRoute.tsx";
 import Home from "./containers/Home.tsx";
 import NotFound from "./containers/NotFound.tsx";
+import AdWrap from "./components/AdWrap.tsx";
 
 const Pricing = React.lazy(() => import("./containers/Pricing.tsx"));
 const Upload = React.lazy(() => import("./containers/Upload.tsx"));
@@ -18,26 +19,36 @@ export default function Routes() {
     <Switch>
       <Route path="/">
         <UnauthenticatedRoute to={"/upload"}>
-          <Home />
+          <AdWrap>
+            <Home />
+          </AdWrap>
         </UnauthenticatedRoute>
       </Route>
       <Route path="/pricing">
         <Pricing />
       </Route>
       <Route path="/support">
-        <Support />
+        <AdWrap>
+          <Support />
+        </AdWrap>
       </Route>
       <Route path="/documentation">
-        <Documentation />
+        <AdWrap>
+          <Documentation />
+        </AdWrap>
       </Route>
       <Route path="/upload">
         <AuthenticatedRoute>
-          <Upload />
+          <AdWrap>
+            <Upload />
+          </AdWrap>
         </AuthenticatedRoute>
       </Route>
       <Route path="/settings">
         <AuthenticatedRoute>
-          <Settings />
+          <AdWrap>
+            <Settings />
+          </AdWrap>
         </AuthenticatedRoute>
       </Route>
       <Route>

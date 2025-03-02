@@ -353,7 +353,7 @@ export default function Upload() {
 
   return (
     <Grid>
-      <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+      <Grid.Col span={{ base: 12, sm: 6, lg: 4 }}>
         <Stack gap="0">
           <ChannelSelector
             onChange={setSelectedChannelId}
@@ -465,7 +465,7 @@ export default function Upload() {
           )}
         </Stack>
       </Grid.Col>
-      <Grid.Col span={{ base: 12, sm: 6, md: 8 }}>
+      <Grid.Col span={{ base: 12, sm: 6, lg: 8 }}>
         {selectedIndex !== null && selectedIndex < uploadQueue.length && (
           <UploadForm
             settingsMode="regular"

@@ -3,13 +3,7 @@ import { useAuth } from "./Auth";
 import { useTranslation } from "react-i18next";
 import { realUploadedToday } from "../types/auth";
 import { formatBytes } from "../util/format";
-
-const byteQuotas = [
-  100 * 1000 * 1000, // 100 MB
-  500 * 1000 * 1000, // 500 MB
-  5 * 1000 * 1000 * 1000, // 5 GB
-  50 * 1000 * 1000 * 1000, // 50 GB
-];
+import config from "../config";
 
 function getColorForProgress(prog: number) {
   if (prog < 50) {
@@ -31,7 +25,7 @@ export default function QuotaMeter() {
   }
 
   const { uploadedBytes } = realUploadedToday(userInfo);
-  const quota = byteQuotas[userInfo.subscription];
+  const quota = config.const.UPLOAD_QUOTA_BYTES[userInfo.subscription];
   const progress = (uploadedBytes / quota) * 100;
   const color = getColorForProgress(progress);
 

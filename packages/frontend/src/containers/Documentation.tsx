@@ -28,7 +28,7 @@ export default function Documentation() {
 
   return (
     <Center>
-      <Container size="md" m="xl">
+      <Container size="md" m="md">
         <TypographyStylesProvider>
           <Markdown
             children={mdString}

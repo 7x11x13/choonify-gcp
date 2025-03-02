@@ -120,7 +120,7 @@ export default function UploadForm({
         }
       >
         <Grid>
-          <Grid.Col span={{ base: 12, md: 6 }}>
+          <Grid.Col span={{ base: 12, lg: 6 }}>
             <VideoPreview
               coverImage={form.getValues().defaults.imageFileBlob!}
               settings={form.getValues().defaults.settings}
@@ -162,7 +162,7 @@ export default function UploadForm({
               ></ChannelSelector>
             )}
           </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 6 }}>
+          <Grid.Col span={{ base: 12, lg: 6 }}>
             {settingsMode === "regular" ? (
               <TextInput
                 withAsterisk
