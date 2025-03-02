@@ -3,6 +3,8 @@ import { UseFormReturnType } from "@mantine/form";
 import { useState } from "react";
 import { UserSettings } from "../types/auth";
 import { uploadFile } from "../util/api";
+import config from "../config";
+import { displayError } from "../util/log";
 
 export function CoverArtInput({
   form,
@@ -12,17 +14,23 @@ export function CoverArtInput({
 }) {
   const [uploadProgress, setUploadProgress] = useState(100);
 
-  async function onFileChange(file: File | File[] | null) {
+  async function onFileChange(file: File | null) {
+    if (!file) {
+      return;
+    }
+    if (config.const.DISALLOWED_IMG_MIMETYPES.includes(file.type)) {
+      displayError(`Image type ${file.type} is not supported`);
+      return;
+    }
     setUploadProgress(0);
-    const image = file as File;
     const imagePath = await uploadFile(
-      image,
-      image.type,
-      image.size,
-      image.name,
+      file,
+      file.type,
+      file.size,
+      file.name,
       setUploadProgress,
     );
-    form.getInputProps("defaults.imageFileBlob").onChange(image);
+    form.getInputProps("defaults.imageFileBlob").onChange(file);
     form.getInputProps("defaults.imageFile").onChange(imagePath);
   }
 

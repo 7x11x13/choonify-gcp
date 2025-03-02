@@ -15,6 +15,7 @@ const config = {
       5 * 1000 * 1000 * 1000, // tier 2: 5 GB
       50 * 1000 * 1000 * 1000, // tier 3: 50 GB
     ],
+    DISALLOWED_IMG_MIMETYPES: ["image/heif", "image/heic", "image/avif"],
   },
 };
 
