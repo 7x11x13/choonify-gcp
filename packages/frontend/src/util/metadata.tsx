@@ -140,6 +140,7 @@ export async function getUploadItemFromFile(
       item.imageFile.split("/").at(-1)!,
       { type: picture.format },
     );
+    item.imageFileSize = item.imageFileBlob.size;
   }
   onProg(50);
   // Upload audio file to s3

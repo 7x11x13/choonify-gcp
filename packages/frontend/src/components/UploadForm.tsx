@@ -29,7 +29,12 @@ import { VideoPreview } from "./VideoPreview";
 import { ChannelSelector } from "./YoutubeChannelSelector";
 
 import "@mantine/core/styles/Checkbox.css";
-import "@mantine/core/styles/ColorInput.css";
+import "@mantine/core/styles/ColorInput.css"; // for colorinput
+import "@mantine/core/styles/ColorSwatch.css"; // for colorinput
+import "@mantine/core/styles/ColorPicker.css"; // for colorinput
+import "@mantine/core/styles/Combobox.css";
+import "@mantine/core/styles/Pill.css"; // for tagsinput
+import "@mantine/core/styles/PillsInput.css"; // for tagsinput
 
 export default function UploadForm({
   formCallback,

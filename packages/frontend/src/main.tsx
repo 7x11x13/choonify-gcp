@@ -20,6 +20,8 @@ import "@mantine/core/styles/InlineInput.css";
 import "@mantine/core/styles/Flex.css";
 import "@mantine/core/styles/FloatingIndicator.css";
 
+import "@mantine/core/styles/Text.css";
+
 import "@mantine/core/styles/Anchor.css";
 import "@mantine/core/styles/AppShell.css";
 import "@mantine/core/styles/Avatar.css";
@@ -32,15 +34,16 @@ import "@mantine/core/styles/Fieldset.css";
 import "@mantine/core/styles/Grid.css";
 import "@mantine/core/styles/List.css";
 import "@mantine/core/styles/NavLink.css";
+import "@mantine/core/styles/Notification.css";
 import "@mantine/core/styles/Progress.css";
 import "@mantine/core/styles/RingProgress.css";
 import "@mantine/core/styles/Skeleton.css";
 import "@mantine/core/styles/Stack.css";
-import "@mantine/core/styles/Text.css";
 import "@mantine/core/styles/Switch.css";
 import "@mantine/core/styles/Title.css";
 import "@mantine/core/styles/TypographyStylesProvider.css";
 import "@mantine/dropzone/styles.css";
+import "@mantine/notifications/styles.css";
 import { Notifications } from "@mantine/notifications";
 import { StrictMode } from "react";
 import { ProvideAuth } from "./components/Auth";

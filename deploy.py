@@ -23,11 +23,13 @@ def convert_firebase_config(config: str):
     return json.dumps(new)
 
 
-def parse_only_flag(only: str) -> list[str]:
+def parse_only_flag(only: str, skip: str) -> list[str]:
     valid_steps = ["tf", "vite", "firebase"]
-    ret = [w.strip().lower() for w in only.split(",")]
+    keep = {w.strip().lower() for w in only.split(",") if w}
+    remove = {w.strip().lower() for w in skip.split(",") if w}
+    ret = keep - remove
     if all(w in valid_steps for w in ret):
-        return ret
+        return list(ret)
     raise ValueError(f"--only can only contain values from {valid_steps}")
 
 
@@ -124,11 +126,13 @@ def main():
     )
     parser.add_argument("--stage", default="dev")
     parser.add_argument("--only", default="tf,vite,firebase")
+    parser.add_argument("--skip", default="")
     args = parser.parse_args()
     if args.stage not in ("dev", "prod"):
         raise ValueError("--stage must be dev or prod")
     stage = args.stage
-    only = parse_only_flag(args.only)
+    only = parse_only_flag(args.only, args.skip)
+    print(f"Running steps: {', '.join(only)}")
 
     tf_env = load_tf_env(stage)
 
