@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import contextlib
 import json
 import os
 import subprocess
@@ -16,11 +17,14 @@ def main():
         "VITE_FIREBASE_CONFIG": api_env["FIREBASE_CONFIG"],
     }
 
-    os.chdir("./packages/frontend")
-    proc = subprocess.Popen(["npm", "run", "dev"], env={**os.environ, **frontend_env})
+    with contextlib.chdir("./packages/frontend"):
+        proc = subprocess.Popen(
+            ["npm", "run", "dev"], env={**os.environ, **frontend_env}
+        )
 
-    os.chdir("../backend/api")
-    subprocess.run(["air"], env={**os.environ, **api_env})
+    with contextlib.chdir("./packages/backend/api"):
+        subprocess.run(["air"], env={**os.environ, **api_env})
+
     proc.kill()
     proc.wait()
 

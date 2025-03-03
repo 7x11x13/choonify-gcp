@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
+import argparse
+import contextlib
 import copy
 import json
 import os
 import subprocess
-import sys
+from typing import Literal, TypeAlias
+
+BuildStage: TypeAlias = Literal["dev"] | Literal["prod"]
 
 
 def convert_firebase_config(config: str):
@@ -19,20 +23,27 @@ def convert_firebase_config(config: str):
     return json.dumps(new)
 
 
-def main():
-    stage = "prod" if len(sys.argv) > 1 and sys.argv[1] == "prod" else "dev"
-    tf_env_file = f".env.tf.{stage}.json"
+def parse_only_flag(only: str) -> list[str]:
+    valid_steps = ["tf", "vite", "firebase"]
+    ret = [w.strip().lower() for w in only.split(",")]
+    if all(w in valid_steps for w in ret):
+        return ret
+    raise ValueError(f"--only can only contain values from {valid_steps}")
+
+
+def load_tf_env(stage: BuildStage) -> dict[str, str]:
     # expects:
     # "TF_VAR_billing_account"
     # "TF_VAR_google_client_id"
     # "TF_VAR_google_client_secret"
     # "TF_VAR_stripe_api_key"
     # "TF_VAR_stripe_webhook_secret" (optional)
+    tf_env_file = f".env.tf.{stage}.json"
     with open(tf_env_file, "r") as f:
-        tf_env: dict[str, str] = json.load(f)
+        return json.load(f)
 
-    os.chdir(f"./infra/{stage}")
 
+def deploy_tf(stage: BuildStage, tf_env: dict[str, str]):
     def apply(tf_env: dict[str, str]):
         p = subprocess.run(
             ["terraform", "apply", "-auto-approve"],
@@ -43,37 +54,41 @@ def main():
         )
         p.check_returncode()
 
-    apply(tf_env)
-
-    # hacky fix for circular dependency
-    if not tf_env.get("TF_VAR_stripe_webhook_secret"):
-        p = subprocess.run(
-            ["terraform", "output", "-raw", "STRIPE_WEBHOOK_SECRET"],
-            capture_output=True,
-        )
-        p.check_returncode()
-        tf_env["TF_VAR_stripe_webhook_secret"] = p.stdout.decode()
-        with open(f"../../.env.tf.{stage}.json", "w") as f:
-            json.dump(tf_env, f, sort_keys=True, indent=4)
+    with contextlib.chdir(f"./infra/{stage}"):
         apply(tf_env)
+        # hacky fix for circular dependency
+        if not tf_env.get("TF_VAR_stripe_webhook_secret"):
+            p = subprocess.run(
+                ["terraform", "output", "-raw", "STRIPE_WEBHOOK_SECRET"],
+                capture_output=True,
+            )
+            p.check_returncode()
+            tf_env["TF_VAR_stripe_webhook_secret"] = p.stdout.decode()
+            with open(f"../../.env.tf.{stage}.json", "w") as f:
+                json.dump(tf_env, f, sort_keys=True, indent=4)
+            apply(tf_env)
 
-    p = subprocess.run(["terraform", "output", "-json"], capture_output=True)
+
+def build_api_env(stage: BuildStage, tf_env: dict[str, str]) -> dict[str, str]:
+    with contextlib.chdir(f"./infra/{stage}"):
+        p = subprocess.run(["terraform", "output", "-json"], capture_output=True)
     p.check_returncode()
     tf_outputs = {k: v["value"] for k, v in json.loads(p.stdout).items()}
     api_env = copy.deepcopy(tf_outputs)
-    api_env["GIN_MODE"] = "debug"
-    api_env["GOOGLE_REDIRECT_URL"] = "http://localhost:3000"
+    api_env["GIN_MODE"] = "debug"  # TODO: change for prod
+    api_env["GOOGLE_REDIRECT_URL"] = "http://localhost:3000"  # TODO: change for prod
     for k, v in tf_env.items():
         k = k[len("TF_VAR_") :].upper()
         api_env[k] = v
     api_env["FIREBASE_CONFIG"] = convert_firebase_config(api_env["FIREBASE_CONFIG"])
     # save outputs to env file for local development
     if stage == "dev":
-        with open(f"../../.env.api.{stage}.json", "w") as f:
+        with open(f".env.api.{stage}.json", "w") as f:
             json.dump(api_env, f, sort_keys=True, indent=4)
+    return api_env
 
-    os.chdir("../../packages/frontend")
 
+def build_frontend(api_env: dict[str, str]):
     frontend_env = {
         "NODE_ENV": "production",
         "VITE_LOCAL_BACKEND": "0",
@@ -81,22 +96,52 @@ def main():
         "VITE_FIREBASE_CONFIG": api_env["FIREBASE_CONFIG"],
     }
 
-    p = subprocess.run(
-        ["npm", "run", "build"],
-        env={
-            **os.environ,
-            **frontend_env,
-        },
-    )
-    p.check_returncode()
+    with contextlib.chdir("./packages/frontend"):
+        p = subprocess.run(
+            ["npm", "run", "build"],
+            env={
+                **os.environ,
+                **frontend_env,
+            },
+        )
+        p.check_returncode()
 
-    p = subprocess.run(["firebase", "use", f"choonify-{stage}"])
-    p.check_returncode()
 
-    p = subprocess.run(
-        ["firebase", "deploy", "--only", f"hosting:{stage},firestore:rules,storage"]
+def firebase_deploy(stage: BuildStage):
+    with contextlib.chdir("./packages/frontend"):
+        p = subprocess.run(["firebase", "use", f"choonify-{stage}"])
+        p.check_returncode()
+
+        p = subprocess.run(
+            ["firebase", "deploy", "--only", f"hosting:{stage},firestore:rules,storage"]
+        )
+        p.check_returncode()
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="choonify deploy script",
     )
-    p.check_returncode()
+    parser.add_argument("--stage", default="dev")
+    parser.add_argument("--only", default="tf,vite,firebase")
+    args = parser.parse_args()
+    if args.stage not in ("dev", "prod"):
+        raise ValueError("--stage must be dev or prod")
+    stage = args.stage
+    only = parse_only_flag(args.only)
+
+    tf_env = load_tf_env(stage)
+
+    if "tf" in only:
+        deploy_tf(stage, tf_env)
+
+    api_env = build_api_env(stage, tf_env)
+
+    if "vite" in only:
+        build_frontend(api_env)
+
+    if "firebase" in only:
+        firebase_deploy(stage)
 
 
 if __name__ == "__main__":
