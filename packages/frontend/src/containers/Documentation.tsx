@@ -1,41 +1,37 @@
-import Markdown from "markdown-to-jsx";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { displayError } from "../util/log";
 import { Center, Container, TypographyStylesProvider } from "@mantine/core";
+import { Trans, useTranslation } from "react-i18next";
 import TemplateStringPlayground from "../components/TemplateStringPlayground";
+import { useEffect } from "react";
+import { useHashLocation } from "wouter/use-hash-location";
 
 export default function Documentation() {
-  const { t, i18n } = useTranslation();
-  const [mdString, setMdString] = useState("");
-
-  async function fetchMdString() {
-    const res = await fetch(`/locales/${i18n.language}/Documentation.md`);
-    if (res.ok) {
-      setMdString(await res.text());
-    } else {
-      displayError(`(${res.status}) ${t("api.unknown")}`);
-    }
-  }
+  const { t } = useTranslation("documentation");
+  const [hash, _] = useHashLocation();
 
   useEffect(() => {
-    fetchMdString();
-  }, [i18n.language]);
-
-  if (mdString === "") {
-    return;
-  }
+    const id = hash.substring(1);
+    if (id) {
+      const elem = document.getElementById(id);
+      elem?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [hash]);
 
   return (
     <Center>
-      <Container size="md" m="md">
+      <Container size="md" my="xl" py="xl">
         <TypographyStylesProvider>
-          <Markdown
-            children={mdString}
-            options={{
-              overrides: {
-                TemplateStringPlayground: TemplateStringPlayground,
-              },
+          <Trans
+            t={t}
+            i18nKey="documentation"
+            components={{
+              h1: <h1 />,
+              h2: <h2 />,
+              a: <a target="_blank" />,
+              aself: <a />,
+              code: <code />,
+              ul: <ul />,
+              li: <li />,
+              TemplateStringPlayground: <TemplateStringPlayground />,
             }}
           />
         </TypographyStylesProvider>

@@ -181,7 +181,13 @@ export default function UploadForm({
                     <Trans
                       t={t}
                       i18nKey="upload_form.description.template-string"
-                      components={[<Anchor size="xs" />]}
+                      components={[
+                        <Anchor
+                          size="xs"
+                          href="/documentation#template-strings"
+                          target="_blank"
+                        />,
+                      ]}
                     />
                   </span>
                 }
@@ -210,7 +216,13 @@ export default function UploadForm({
                     <Trans
                       t={t}
                       i18nKey="upload_form.description.template-string"
-                      components={[<Anchor size="xs" />]}
+                      components={[
+                        <Anchor
+                          size="xs"
+                          href="/documentation#template-strings"
+                          target="_blank"
+                        />,
+                      ]}
                     />
                   </span>
                 }

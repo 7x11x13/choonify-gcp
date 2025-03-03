@@ -1,0 +1,40 @@
+{
+  documentation: '<h1 id="features">Features</h1> \
+        <h2 id="free-features">Free features</h2><ul> \
+            <li><strong>Batch upload:</strong> upload multiple songs in one batch</li> \
+            <li><strong>No transcoding:</strong> audio quality will be preserved before uploading to YouTube</li><li> \
+            <strong>Read metadata:</strong> read audio metadata and use the values in <aself href="/documentation#template-strings">template strings</aself> \
+                to set YouTube title and description. Supports any format supported by \
+                <a href="https://www.npmjs.com/package/music-metadata">music-metadata</a></li> \
+            <li><strong>Default values:</strong> save default YouTube upload settings to your account</li></ul> \
+        <h2 id="paid-features">Paid features</h2><ul> \
+            <li><strong>No watermark:</strong> choonify.com watermark can be removed when uploading a song</li> \
+            <li><strong>No ads:</strong> ads will not be displayed on choonify.com</li> \
+            <li><strong>Link multiple channels:</strong> support for linking up to 10 YouTube channels to your account</li> \
+            <li><strong>More video filter options:</strong> support for blurred background and colored background video filters</li></ul> \
+        <h2 id="template-strings">Template strings</h2> \
+            <p>Choonify uses <a href="https://eta.js.org/">eta</a> to render template strings. \
+            You can use template strings as values for your default video title and default video description. \
+            The string formatter is passed the variables <code>metadata</code> of type \
+            <a href="https://github.com/Borewit/music-metadata/blob/71df30da63bed5873110c1f6a54fa7597682d416/lib/type.ts#L51">ICommonTagsResult</a>, \
+            <code>format</code> of type <a href="https://github.com/Borewit/music-metadata/blob/71df30da63bed5873110c1f6a54fa7597682d416/lib/type.ts#L438">IFormat</a>, \
+            and <code>file</code> of type <a href="https://github.com/react-dropzone/file-selector/blob/bcddcb162d40078336d8f5d1d6f2807f648569f6/src/file.ts#L1233">FileWithPath</a>.</p> \
+            <p>You can play around with the syntax here:</p> \
+            <TemplateStringPlayground/> \
+            <p>See the <a href="https://eta.js.org/docs/intro/template-syntax">eta docs</a> for a full description of the template syntax.</p> \
+        <h1 id="limitations">Limitations</h1> \
+        <h2 id="upload-quota">Upload quota</h2> \
+            <p>Choonify limits your uploads by filesize via a daily upload quota, which resets every day at 12 AM (UTC). \
+                You can increase your daily quota by upgrading your <a href="/pricing">plan</a>.</p> \
+        <h2 id="youtube-limitations">YouTube limitations</h2> \
+            <p>Youtube limits your uploads in several ways:</p><ul> \
+                <li>There is an undocumented limit to the number of videos you are allowed to upload every day. \
+                    This may increase over time if your account stays in good standing, or if you verify your \
+                    account with a phone number. It is estimated to max out at around ~100 videos per day.</li> \
+                <li>Videos must be shorter than <a href="https://support.google.com/youtube/answer/71673">15 minutes</a> \
+                    if your account is not verified</li> \
+                <li>Videos must be shorter than <a href="https://support.google.com/youtube/answer/71673">12 hours</a></li></ul> \
+        <h2 id="supported-filetypes">Supported filetypes</h2> \
+        <p>Any format supported by both <a href="https://en.wikipedia.org/wiki/FFmpeg#Supported_codecs_and_formats">FFmpeg</a> \
+            and <a href="https://www.npmjs.com/package/music-metadata">music-metadata</a> is supported by Choonify.</p>',
+}

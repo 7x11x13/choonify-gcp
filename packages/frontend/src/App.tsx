@@ -1,10 +1,9 @@
-import { AppShell, Group } from "@mantine/core";
+import { AppShell } from "@mantine/core";
 import Routes from "./Routes.tsx";
 
-import { Header } from "./components/Header.tsx";
 import { Suspense } from "react";
+import { Header } from "./components/Header.tsx";
 import Loading from "./components/Loading.tsx";
-import AdContainer from "./components/AdContainer.tsx";
 
 function App() {
   return (
