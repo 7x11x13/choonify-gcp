@@ -53,7 +53,8 @@ export function Header() {
               onClick={toggle}
               size="sm"
               hiddenFrom="sm"
-            />{" "}
+              aria-label="Menu"
+            />
             <Title>
               <Link to="/" style={{ textDecoration: "none", color: "black" }}>
                 Choonify
