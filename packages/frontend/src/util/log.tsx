@@ -1,4 +1,5 @@
 import { notifications } from "@mantine/notifications";
+import "@mantine/notifications/styles.css";
 import { t } from "i18next";
 
 export function displayError(message: React.ReactNode) {

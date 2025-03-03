@@ -4,6 +4,8 @@ import AdContainer from "./AdContainer";
 import { useAuth } from "./Auth";
 import Loading from "./Loading";
 
+import "@mantine/core/styles/Affix.css";
+
 export default function AdWrap({ children }: { children: ReactElement }) {
   const { loading, userInfo } = useAuth();
 

@@ -28,6 +28,9 @@ import { CoverArtInput } from "./CoverImageInput";
 import { VideoPreview } from "./VideoPreview";
 import { ChannelSelector } from "./YoutubeChannelSelector";
 
+import "@mantine/core/styles/Checkbox.css";
+import "@mantine/core/styles/ColorInput.css";
+
 export default function UploadForm({
   formCallback,
   disabled,

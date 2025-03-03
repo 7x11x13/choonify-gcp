@@ -22,6 +22,10 @@ import { displayError } from "../util/log";
 import { useAuth, useGSI } from "./Auth";
 import { useTranslation } from "react-i18next";
 
+import "@mantine/core/styles/ActionIcon.css";
+import "@mantine/core/styles/Combobox.css";
+import "@mantine/core/styles/Tooltip.css";
+
 interface ChannelSelectorProps {
   value?: string;
   defaultValue?: string;

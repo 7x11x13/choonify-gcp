@@ -24,6 +24,9 @@ import cx from "clsx";
 import classes from "./Header.module.css";
 import { useLocation } from "wouter";
 
+import "@mantine/core/styles/Menu.css";
+import "@mantine/core/styles/Modal.css";
+
 export default function HeaderLoggedIn() {
   const [userMenuOpened, setUserMenuOpened] = useState(false);
   const [
