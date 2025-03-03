@@ -1,11 +1,4 @@
-import {
-  getAuth,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut,
-  User,
-} from "firebase/auth";
+import type { Auth, User } from "firebase/auth";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import config from "../config";
 import { ChoonifyUserInfo } from "../types/auth";
@@ -37,39 +30,38 @@ export function ProvideAuth({ children }: { children: any }) {
 
 function useProvideAuth() {
   const { t } = useTranslation();
-  const auth = getAuth();
-  auth.useDeviceLanguage();
-  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
   const [userInfo, setUserInfo] = useState<ChoonifyUserInfo | null>(null); // TODO: listen for changes?
   const [loading, setLoading] = useState(true);
+  const [auth, setAuth] = useState<Auth | null>(null);
 
-  // async function handleRedirectResult() {
-  //     const creds = await getRedirectResult(auth);
-  //     console.log("redirect result:", creds);
-  //     if (creds) {
-  //         setUser(creds.user);
-  //         await refreshUserInfo();
-  //     }
-  // }
-
-  useEffect(() => {
-    // handleRedirectResult();
-    const unsub = onAuthStateChanged(auth, async (newUser) => {
+  async function initAuth() {
+    const { getAuth, onAuthStateChanged } = await import("firebase/auth");
+    const auth = getAuth();
+    auth.useDeviceLanguage();
+    setAuth(auth);
+    // setUser(auth.currentUser);
+    onAuthStateChanged(auth, async (newUser) => {
       setLoading(true);
       setUser(newUser);
       await refreshUserInfo(newUser);
       setLoading(false);
     });
-    return unsub;
+  }
+
+  useEffect(() => {
+    initAuth();
   }, []);
 
   async function signIn() {
+    const { GoogleAuthProvider, signInWithPopup } = await import(
+      "firebase/auth"
+    );
     const provider = new GoogleAuthProvider();
     // provider.addScope("https://www.googleapis.com/auth/youtube.readonly");
     // provider.addScope("https://www.googleapis.com/auth/youtube.upload");
-    // await signInWithRedirect(auth, provider);
     try {
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth!, provider);
     } catch (err: any) {
       console.error(err);
       displayError(err.message || err.toString());
@@ -77,7 +69,8 @@ function useProvideAuth() {
   }
 
   async function realSignOut() {
-    await signOut(auth);
+    const { signOut } = await import("firebase/auth");
+    await signOut(auth!);
     displaySuccess(t("api.auth.logged-out"));
   }
 
