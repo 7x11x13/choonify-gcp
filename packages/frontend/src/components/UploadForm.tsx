@@ -129,48 +129,6 @@ export default function UploadForm({
       >
         <Grid>
           <Grid.Col span={{ base: 12, lg: 6 }}>
-            <VideoPreview
-              coverImage={form.getValues().defaults.imageFileBlob!}
-              settings={form.getValues().defaults.settings}
-            />
-            <CoverArtInput form={form} />
-            <Select
-              label={t("upload_form.label.render-type")}
-              key={form.key("defaults.settings.filterType")}
-              {...form.getInputProps("defaults.settings.filterType")}
-              data={getFilterTypeData()}
-              allowDeselect={false}
-            />
-            <Group justify="flex-end" mt="xs">
-              <Checkbox
-                label={t("upload_form.label.enable-watermark")}
-                key={form.key("defaults.settings.watermark")}
-                style={{ flexGrow: 1 }}
-                {...form.getInputProps("defaults.settings.watermark", {
-                  type: "checkbox",
-                })}
-                disabled={isFree}
-                description={t("upload_form.description.watermark")}
-              />
-              <ColorInput
-                key={form.key("defaults.settings.backgroundColor")}
-                size="xs"
-                style={{
-                  ...(form.getValues().defaults.settings.filterType !==
-                  FilterType.COLOR_BACKGROUND
-                    ? { visibility: "hidden" }
-                    : {}),
-                }}
-                {...form.getInputProps("defaults.settings.backgroundColor")}
-              />
-            </Group>
-            {settingsMode === "defaults" && (
-              <ChannelSelector
-                {...form.getInputProps("defaultChannelId")}
-              ></ChannelSelector>
-            )}
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, lg: 6 }}>
             {settingsMode === "regular" ? (
               <TextInput
                 withAsterisk
@@ -277,6 +235,48 @@ export default function UploadForm({
                 type: "checkbox",
               })}
             />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 6 }}>
+            <VideoPreview
+              coverImage={form.getValues().defaults.imageFileBlob!}
+              settings={form.getValues().defaults.settings}
+            />
+            <CoverArtInput form={form} />
+            <Select
+              label={t("upload_form.label.render-type")}
+              key={form.key("defaults.settings.filterType")}
+              {...form.getInputProps("defaults.settings.filterType")}
+              data={getFilterTypeData()}
+              allowDeselect={false}
+            />
+            <Group justify="flex-end" mt="xs">
+              <Checkbox
+                label={t("upload_form.label.enable-watermark")}
+                key={form.key("defaults.settings.watermark")}
+                style={{ flexGrow: 1 }}
+                {...form.getInputProps("defaults.settings.watermark", {
+                  type: "checkbox",
+                })}
+                disabled={isFree}
+                description={t("upload_form.description.watermark")}
+              />
+              <ColorInput
+                key={form.key("defaults.settings.backgroundColor")}
+                size="xs"
+                style={{
+                  ...(form.getValues().defaults.settings.filterType !==
+                  FilterType.COLOR_BACKGROUND
+                    ? { visibility: "hidden" }
+                    : {}),
+                }}
+                {...form.getInputProps("defaults.settings.backgroundColor")}
+              />
+            </Group>
+            {settingsMode === "defaults" && (
+              <ChannelSelector
+                {...form.getInputProps("defaultChannelId")}
+              ></ChannelSelector>
+            )}
           </Grid.Col>
         </Grid>
         <Group justify="flex-end" mt="md">

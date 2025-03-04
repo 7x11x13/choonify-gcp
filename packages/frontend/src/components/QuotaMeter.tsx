@@ -15,7 +15,7 @@ function getColorForProgress(prog: number) {
   return "red";
 }
 
-export default function QuotaMeter() {
+export default function QuotaMeter({ ...props }) {
   // display uploaded bytes today & quota
   const { userInfo } = useAuth();
   const { t } = useTranslation();
@@ -30,7 +30,7 @@ export default function QuotaMeter() {
   const color = getColorForProgress(progress);
 
   return (
-    <Stack gap="0">
+    <Stack gap="0" {...props}>
       <InputLabel>{t("upload.quota.label")}</InputLabel>
       <Progress size="xl" value={progress} color={color}></Progress>
       <Text size="xs">
