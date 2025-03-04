@@ -30,6 +30,7 @@ import "@mantine/core/styles/Button.css";
 import "@mantine/core/styles/Card.css";
 import "@mantine/core/styles/Center.css";
 import "@mantine/core/styles/Container.css";
+import "@mantine/core/styles/Divider.css";
 import "@mantine/core/styles/Fieldset.css";
 import "@mantine/core/styles/Grid.css";
 import "@mantine/core/styles/List.css";

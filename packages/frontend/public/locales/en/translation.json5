@@ -1,84 +1,85 @@
 {
-  "api": {
-    "auth": {
-      "logged-out": "Logged out"
+  api: {
+    auth: {
+      "logged-out": "Logged out",
     },
     "bad-request": "Bad request",
-    "delete": {
-      "user-is-not-logged-in": "User is not logged in"
+    delete: {
+      "user-is-not-logged-in": "User is not logged in",
     },
-    "oauth": {
+    oauth: {
       "channel-already-linked": "Channel already linked",
       "failed-to-get-channels": "Failed to get channels",
-      "too-many-channels": "Too many channels linked! Max: {{maxChannels}}"
+      "too-many-channels": "Too many channels linked! Max: {{maxChannels}}",
     },
-    "presign": {
-      "out-of-storage": "Upload quota exceeded for today. Upgrade for a larger quota or try again tomorrow"
+    presign: {
+      "out-of-storage": "Upload quota exceeded for today. Upgrade for a larger quota or try again tomorrow",
     },
     "remove-channel": {
       "channel-already-unlinked": "Channel already unlinked",
-      "failed-to-unlink-channel": "Failed to unlink channel"
+      "failed-to-unlink-channel": "Failed to unlink channel",
     },
-    "render": {
+    render: {
       "credentials-not-found": "Could not get YouTube credentials",
       "ffmpeg-error": "FFmpeg error: {{msg}}",
       "internal-error": "Internal error",
-      "yt-error": "YouTube error: {{msg}}"
+      "yt-error": "YouTube error: {{msg}}",
     },
-    "unknown": "Unknown"
+    unknown: "Unknown",
   },
-  "button": {
-    "cancel": "Cancel",
-    "save": "Save"
+  button: {
+    cancel: "Cancel",
+    save: "Save",
   },
-  "channel_selector": {
-    "label": "YouTube Channel",
+  channel_selector: {
+    label: "YouTube Channel",
     "link-channel": "Link channel",
     "no-channel-selected": "No channel selected",
-    "unlink-channel": "Unlink channel"
+    "unlink-channel": "Unlink channel",
   },
-  "error": "Error",
-  "format": {
-    "bytes": "{{value, number}} {{unit}}",
-    "units": {
-      "b": "B",
-      "gb": "GB",
-      "kb": "KB",
-      "mb": "MB",
-      "tb": "TB"
-    }
+  error: "Error",
+  format: {
+    bytes: "{{value, number}} {{unit}}",
+    units: {
+      b: "B",
+      gb: "GB",
+      kb: "KB",
+      mb: "MB",
+      tb: "TB",
+    },
   },
-  "header": {
+  header: {
     "account-scheduled-for-deletion": "Account scheduled for deletion",
     "account-settings": "Account settings",
     "danger-zone": "Danger zone",
     "delete-account": "Delete Account",
     "delete-confirmation": "Delete my account",
-    "deletion-warning": "Are you sure? You will not be able to login for 24 hours, and then your account will be deleted.",
+    "deletion-warning": "Are you sure? You will not be able to login for 24 hours, and then your account will be deleted. This will cancel your current subscription.",
     "go-back": "Go back",
-    "label": {
-      "docs": "Docs",
-      "features": "Features",
-      "pricing": "Pricing",
-      "support": "Support"
+    label: {
+      docs: "Docs",
+      features: "Features",
+      pricing: "Pricing",
+      support: "Support",
+      home: "Home",
     },
-    "logout": "Logout"
+    logout: "Logout",
   },
-  "loading": "Loading...",
-  "login_button": {
-    "login": "Login",
-    "login-with-google": "Login with Google"
+  loading: "Loading...",
+  login_button: {
+    login: "Login",
+    "login-with-google": "Login with Google",
   },
-  "metadata": {
-    "file-length-error": "Could not determine length of file: {{name}}"
+  metadata: {
+    "file-length-error": "Could not determine length of file: {{name}}",
   },
-  "product": {
-    "button": {
+  product: {
+    button: {
       "change-plan": "Change plan",
       "current-plan": "Current plan",
-      "get-started": "Get started"
+      "get-started": "Get started",
     },
-    "features": {
+    features: {
       "batch-upload": "Batch upload",
       "link-multiple-channels": "Link multiple channels",
       "more-video-filters": "More video filter options",
@@ -86,116 +87,117 @@
       "no-transcoding": "No transcoding",
       "no-watermark": "No watermark",
       "read-metadata-tags": "Read metadata tags (ID3 & more)",
-      "upload-quota": "{{quota}}† of uploads per day"
+      "upload-quota": "{{quota}}† of uploads per day",
     },
-    "pricing": {
-      "monthly": "Monthly",
+    pricing: {
+      monthly: "Monthly",
       "per-month": "per month",
       "per-year": "per year",
-      "yearly": "Yearly"
+      yearly: "Yearly",
     },
-    "tier0": {
-      "footnote": "†Equivalent to 1.7 hours of 128 kbps MP3 audio",
-      "quota": "100 MB"
+    tier0: {
+      footnote: "†Equivalent to 1.7 hours of 128 kbps MP3 audio",
+      quota: "100 MB",
     },
-    "tier1": {
-      "footnote": "†Equivalent to 3.4 hours of 320 kbps MP3 audio",
-      "quota": "500 MB"
+    tier1: {
+      footnote: "†Equivalent to 3.4 hours of 320 kbps MP3 audio",
+      quota: "500 MB",
     },
-    "tier2": {
-      "footnote": "†Equivalent to 7.8 hours of 1411 kbps WAV audio",
-      "quota": "5 GB"
+    tier2: {
+      footnote: "†Equivalent to 7.8 hours of 1411 kbps WAV audio",
+      quota: "5 GB",
     },
-    "tier3": {
-      "footnote": "†Equivalent to 78 hours of 1411 kbps WAV audio",
-      "quota": "50 GB"
-    }
+    tier3: {
+      footnote: "†Equivalent to 78 hours of 1411 kbps WAV audio",
+      quota: "50 GB",
+    },
   },
-  "settings": {
-    "label": "User settings",
-    "settings-changed": "Settings changed"
+  settings: {
+    label: "User settings",
+    "settings-changed": "Settings changed",
   },
-  "success": "Success",
-  "types": {
-    "categories": {
+  success: "Success",
+  types: {
+    categories: {
       "autos-and-vehicles": "Autos & Vehicles",
-      "comedy": "Comedy",
-      "education": "Education",
-      "entertainment": "Entertainment",
+      comedy: "Comedy",
+      education: "Education",
+      entertainment: "Entertainment",
       "film-and-animation": "Film & Animation",
-      "gaming": "Gaming",
+      gaming: "Gaming",
       "howto-and-style": "Howto & Style",
-      "music": "Music",
+      music: "Music",
       "news-and-politics": "News & Politics",
       "nonprofits-and-activism": "Nonprofits & Activism",
       "people-and-blogs": "People & Blogs",
       "pets-and-animals": "Pets & Animals",
       "science-and-technology": "Science & Technology",
-      "sports": "Sports",
-      "travel-and-events": "Travel & Events"
+      sports: "Sports",
+      "travel-and-events": "Travel & Events",
     },
-    "filtertype": {
+    filtertype: {
       "black-background": "Black background",
       "blurred-background": "Blurred background",
       "blurred-background-premium": "Blurred background (Premium)",
       "colored-background": "Colored background",
-      "colored-background-premium": "Colored background (Premium)"
+      "colored-background-premium": "Colored background (Premium)",
     },
-    "visibility": {
-      "private": "Private",
-      "public": "Public",
-      "unlisted": "Unlisted"
-    }
+    visibility: {
+      private: "Private",
+      public: "Public",
+      unlisted: "Unlisted",
+    },
   },
-  "upload": {
-    "button": {
-      "upload-to-youtube": "Upload to YouTube!"
+  upload: {
+    button: {
+      "upload-to-youtube": "Upload to YouTube!",
     },
-    "dropzone": "Drag songs here or click to select files",
+    dropzone: "Drag songs here or click to select files",
     "loading-session": "Loading session",
     "no-track-selected": "No track selected",
-    "quota": {
-      "description": "Uploaded {{current}} / {{quota}} for today",
-      "label": "Upload quota"
+    quota: {
+      description: "Uploaded {{current}} / {{quota}} for today",
+      label: "Upload quota",
     },
-    "success": "<0>Upload</0> took {{duration, number(maximumFractionDigits: 2)}}s",
+    success: "<0>Upload</0> took {{duration, number(maximumFractionDigits: 2)}}s",
     "upload-status": "Uploading video {{current}} of {{total}}",
     "upload-status-initializing": "Initializing...",
     "upload-status-sending": "Sending upload info...",
-    "warning": {
-      "quota-hit": "Upload quota hit! Only uploading {{uploading}} of {{total}} videos. Upgrade your plan to increase the quota"
-    }
+    warning: {
+      "quota-hit": "Upload quota hit! Only uploading {{uploading}} of {{total}} videos. Upgrade your plan to increase the quota",
+    },
+    "youtube-notice": "<Text>By clicking 'Upload to YouTube,' you certify that the content you are uploading complies with the YouTube Terms of Service (including the YouTube Community Guidelines) at <Anchor>{{url}}</Anchor>. Please be sure not to violate others' copyright or privacy rights.</Text>",
   },
-  "upload_form": {
-    "button": {
-      "reset-defaults": "Reset defaults"
+  upload_form: {
+    button: {
+      "reset-defaults": "Reset defaults",
     },
     "default-settings": "Default settings",
-    "description": {
-      "description1": "Must be at most 5000 characters",
-      "tags": "Must be at most 500 characters",
+    description: {
+      description1: "Must be at most 5000 characters",
+      tags: "Must be at most 500 characters",
       "template-string": "Must be at most 10000 characters. Can be a <0>template string</0>",
-      "title1": "Must be between 1-100 characters and can't contain < or >",
-      "watermark": "Renders choonify.com in the top right corner"
+      title1: "Must be between 1-100 characters and can't contain < or >",
+      watermark: "Renders choonify.com in the top right corner",
     },
-    "label": {
-      "category": "Category",
-      "description": "Description",
+    label: {
+      category: "Category",
+      description: "Description",
       "enable-watermark": "Enable watermark",
       "made-for-kids": "Made for kids",
       "notify-subscribers": "Notify subscribers",
       "render-type": "Render type",
-      "tags": "Tags",
-      "title": "Title",
-      "visibility": "Visibility"
+      tags: "Tags",
+      title: "Title",
+      visibility: "Visibility",
     },
-    "placeholder": {
-      "description": "Video description",
-      "title": "Video title"
+    placeholder: {
+      description: "Video description",
+      title: "Video title",
     },
-    "upload-settings": "Upload settings"
+    "upload-settings": "Upload settings",
   },
-  "validate": {
+  validate: {
     "description-too-long": "Description too long",
     "empty-title": "Title cannot be empty",
     "invalid-audio-path": "Invalid audio path",
@@ -212,11 +214,11 @@
     "stale-session": "Stale session. Please reload page",
     "title-too-long": "Title too long",
     "too-many-tags": "Too many tags",
-    "user-insufficient-access": "User has insufficient access"
+    "user-insufficient-access": "User has insufficient access",
   },
-  "video_preview": {
-    "error": "Error creating preview",
-    "label": "Preview",
-    "loading": ""
-  }
+  video_preview: {
+    error: "Error creating preview",
+    label: "Preview",
+    loading: "",
+  },
 }

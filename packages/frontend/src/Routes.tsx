@@ -10,9 +10,7 @@ const Pricing = React.lazy(() => import("./containers/Pricing.tsx"));
 const Upload = React.lazy(() => import("./containers/Upload.tsx"));
 const Settings = React.lazy(() => import("./containers/Settings.tsx"));
 const Support = React.lazy(() => import("./containers/Support.tsx"));
-const Documentation = React.lazy(
-  () => import("./containers/Documentation.tsx"),
-);
+const Readme = React.lazy(() => import("./containers/Readme.tsx"));
 
 export default function Routes() {
   return (
@@ -34,7 +32,17 @@ export default function Routes() {
       </Route>
       <Route path="/documentation">
         <AdWrap>
-          <Documentation />
+          <Readme namespace="documentation" />
+        </AdWrap>
+      </Route>
+      <Route path="/terms">
+        <AdWrap>
+          <Readme namespace="terms" />
+        </AdWrap>
+      </Route>
+      <Route path="/privacy">
+        <AdWrap>
+          <Readme namespace="privacy" />
         </AdWrap>
       </Route>
       <Route path="/upload">

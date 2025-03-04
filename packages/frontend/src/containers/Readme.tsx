@@ -4,8 +4,8 @@ import TemplateStringPlayground from "../components/TemplateStringPlayground";
 import { useEffect } from "react";
 import { useHashLocation } from "wouter/use-hash-location";
 
-export default function Documentation() {
-  const { t } = useTranslation("documentation");
+export default function Readme({ namespace }: { namespace: string }) {
+  const { t } = useTranslation(namespace);
   const [hash, _] = useHashLocation();
 
   useEffect(() => {
@@ -22,10 +22,14 @@ export default function Documentation() {
         <TypographyStylesProvider>
           <Trans
             t={t}
-            i18nKey="documentation"
+            i18nKey={namespace}
             components={{
               h1: <h1 />,
               h2: <h2 />,
+              h3: <h3 />,
+              h4: <h4 />,
+              h5: <h5 />,
+              h6: <h6 />,
               a: <a target="_blank" />,
               aself: <a />,
               code: <code />,

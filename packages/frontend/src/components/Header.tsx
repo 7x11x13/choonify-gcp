@@ -9,12 +9,13 @@ import classes from "./Header.module.css";
 // split this to reduce bundle size
 const HeaderLoggedIn = React.lazy(() => import("./HeaderLoggedIn.tsx"));
 
-export function Header() {
+export default function Header() {
   const [opened, { toggle }] = useDisclosure(false);
   const { user, loading, signIn } = useAuth();
   const { t } = useTranslation();
 
   const links = [
+    { link: "/", label: t("header.label.home") },
     { link: "/support", label: t("header.label.support") },
     { link: "/documentation", label: t("header.label.docs") },
     { link: "/pricing", label: t("header.label.pricing") },
@@ -32,6 +33,7 @@ export function Header() {
       label={link.label}
       component={Link}
       to={link.link}
+      onClick={toggle}
     />
   ));
 

@@ -361,18 +361,34 @@ export default function Upload() {
           ></ChannelSelector>
           <QuotaMeter />
           {!isVideoUploading && (
-            <Button
-              fullWidth
-              my={"sm"}
-              onClick={beginUpload}
-              disabled={
-                uploadQueue.length === 0 ||
-                selectedChannelId === "" ||
-                sessionLoadProgress < 100
-              }
-            >
-              {t("upload.button.upload-to-youtube")}
-            </Button>
+            <>
+              <Button
+                fullWidth
+                my={"sm"}
+                onClick={beginUpload}
+                disabled={
+                  uploadQueue.length === 0 ||
+                  selectedChannelId === "" ||
+                  sessionLoadProgress < 100
+                }
+              >
+                {t("upload.button.upload-to-youtube")}
+              </Button>
+              <Trans
+                t={t}
+                i18nKey="upload.youtube-notice"
+                components={{
+                  Text: <Text size="xs" mb="xl" c="dimmed" />,
+                  Anchor: (
+                    <Anchor
+                      href="https://www.youtube.com/t/terms"
+                      target="_blank"
+                    />
+                  ),
+                }}
+                values={{ url: "https://www.youtube.com/t/terms" }}
+              />
+            </>
           )}
           {isVideoUploading && (
             <Stack mt="sm" gap="0">
