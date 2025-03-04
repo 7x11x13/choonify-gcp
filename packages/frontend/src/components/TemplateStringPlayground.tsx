@@ -1,9 +1,9 @@
-import { Fieldset, FileInput, Grid, Textarea } from "@mantine/core";
-import { useState } from "react";
-import { TemplateStringInput } from "../types/template";
+import { FileInput, Grid, Textarea } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
-import { getDefaultTitleTemplateString } from "../types/defaults";
 import { Eta } from "eta";
+import { useState } from "react";
+import { getDefaultTitleTemplateString } from "../types/defaults";
+import { TemplateStringInput } from "../types/template";
 import { getFileMetadata, getTemplateStringInput } from "../util/metadata";
 
 const eta = new Eta({ debug: true });
