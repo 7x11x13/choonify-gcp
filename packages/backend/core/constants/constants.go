@@ -6,3 +6,5 @@ var UPLOAD_QUOTA_BYTES = []int64{
 	5 * 1000 * 1000 * 1000,  // tier 2: 5 GB
 	50 * 1000 * 1000 * 1000, // tier 3: 50 GB
 }
+
+var MAX_IMAGE_SIZE_BYTES int64 = 20 * 1000 * 1000 // 20 MB

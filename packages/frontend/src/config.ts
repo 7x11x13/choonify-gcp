@@ -16,6 +16,7 @@ const config = {
       50 * 1000 * 1000 * 1000, // tier 3: 50 GB
     ],
     DISALLOWED_IMG_MIMETYPES: ["image/heif", "image/heic", "image/avif"],
+    MAX_IMAGE_SIZE_BYTES: 20 * 1000 * 1000, // 20 MB,
   },
 };
 

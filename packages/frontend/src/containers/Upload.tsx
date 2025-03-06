@@ -412,13 +412,7 @@ export default function Upload() {
                 </ScrollArea.Autosize>
               </DragDropContext>
               {uploadProgress === 100 && (
-                <Dropzone
-                  accept={{
-                    "audio/*": [],
-                  }}
-                  onDrop={onFilesDropped}
-                  disabled={isVideoUploading}
-                >
+                <Dropzone onDrop={onFilesDropped} disabled={isVideoUploading}>
                   <Center>
                     <LuAudioLines></LuAudioLines>
                     <Space w="sm" />

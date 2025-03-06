@@ -9,6 +9,7 @@ import (
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
+	"choonify.com/backend/core/constants"
 	"choonify.com/backend/core/types"
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/storage"
@@ -75,6 +76,22 @@ func UpdateUserSettingsHandler(ctx *gin.Context) {
 	defaultKey := fmt.Sprintf("default/%s/default", userId)
 	if strings.HasPrefix(body.Defaults.ImageKey, "private") {
 		src := extensions.Bucket.Object(body.Defaults.ImageKey)
+
+		attrs, err := src.Attrs(ctx)
+		if err != nil {
+			util.SendError(ctx, err, "Could not save default image", &map[string]string{
+				"source": body.Defaults.ImageKey,
+				"dest":   defaultKey,
+			}, nil)
+			return
+		}
+		if attrs.Size > constants.MAX_IMAGE_SIZE_BYTES {
+			util.SendErrorNoLog(ctx, &types.ErrorBody{
+				I18NKey: "api.settings.image-too-big",
+			})
+			return
+		}
+
 		dst := extensions.Bucket.Object(defaultKey)
 		err = moveFile(ctx, src, dst)
 		if err != nil {
