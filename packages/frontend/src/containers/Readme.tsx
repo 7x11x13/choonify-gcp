@@ -30,7 +30,7 @@ export default function Readme({ namespace }: { namespace: string }) {
               h4: <h4 />,
               h5: <h5 />,
               h6: <h6 />,
-              a: <a target="_blank" />,
+              a: <a target="_blank" style={{ wordBreak: "break-all" }} />,
               aself: <a />,
               code: <code />,
               ul: <ul />,
