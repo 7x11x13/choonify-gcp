@@ -131,7 +131,7 @@ def firebase_deploy(stage: BuildStage, api_env: dict[str, str]):
                 "firebase",
                 "deploy",
                 "--only",
-                f"hosting:{stage},firestore:rules,storage",
+                f"hosting:{stage},firestore:rules,storage,functions",
             ],
         )
         p.check_returncode()

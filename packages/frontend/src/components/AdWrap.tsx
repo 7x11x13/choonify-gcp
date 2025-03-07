@@ -17,12 +17,13 @@ export default function AdWrap({ children }: { children: ReactElement }) {
     return children;
   }
 
+  // TODO: Ad at bottom of page (wrap children in stack)
   return (
     <>
       <Group
         grow
         preventGrowOverflow={false}
-        align="stretch"
+        align="start"
         wrap="nowrap"
         gap="xs"
       >

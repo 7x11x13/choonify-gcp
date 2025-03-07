@@ -354,6 +354,7 @@ export default function Upload() {
 
   return (
     <Container size="xl">
+      {/* TODO: increase xl container width --container-size-xl */}
       <Grid>
         <Grid.Col span={{ base: 12, sm: 6, lg: 4 }}>
           <Stack gap="0">

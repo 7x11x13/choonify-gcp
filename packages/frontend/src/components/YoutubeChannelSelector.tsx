@@ -92,7 +92,7 @@ export function ChannelSelector({
 
   async function authNewChannel() {
     if (!user || !gsiLoaded) {
-      console.error("user not logged in or gsi not loaded"); // TODO - better error handleing/gray out gsiloaded
+      console.error("user not logged in or gsi not loaded");
       return;
     }
     setLoading(true);
@@ -188,7 +188,7 @@ export function ChannelSelector({
             size="lg"
             color="green"
             onClick={authNewChannel}
-            disabled={isFull}
+            disabled={isFull || !gsiLoaded}
           >
             <BsPlus size="2rem"></BsPlus>
           </ActionIcon>

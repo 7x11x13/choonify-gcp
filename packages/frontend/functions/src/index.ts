@@ -55,6 +55,9 @@ export const beforecreated = beforeUserCreated(
       scope:
         "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
     });
+    // TODO: verify scopes
+    // const info = await client.getTokenInfo(accessToken!);
+    // info.scopes
 
     const youtube = google.youtube("v3");
     const response = await youtube.channels.list({
@@ -86,14 +89,11 @@ export const beforecreated = beforeUserCreated(
         {
           userId: user.uid,
           token: {
-            access_token: accessToken,
-            refresh_token: refreshToken,
+            AccessToken: accessToken,
+            RefreshToken: refreshToken,
           },
         },
       );
     });
   },
 );
-
-// deploy with firebase deploy --only functions
-// then go to console and set blocking function
