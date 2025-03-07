@@ -70,6 +70,7 @@ func UploadRequestHandler(ctx *gin.Context) {
 			"body":   fmt.Sprintf("%+v", body),
 			"userId": userId,
 		}, nil)
+		return
 	}
 	body.Videos = body.Videos[:uploadCount]
 

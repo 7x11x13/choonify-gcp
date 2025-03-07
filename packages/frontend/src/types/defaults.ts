@@ -1,4 +1,3 @@
-import { randomId } from "@mantine/hooks";
 import { ChoonifyUserInfo, UserSettings } from "./auth";
 import { FilterType, UploadItem } from "./upload";
 import { defaultImageB64, defaultImageType } from "./default-image";
@@ -36,7 +35,7 @@ export function getDefaultTitleTemplateString(): string {
 export function getDefaultUploadItem(): UploadItem {
   const defaultImage = getDefaultImageFile();
   return {
-    id: randomId(),
+    id: "",
     createdAt: 0,
     originalAudioFileName: "",
     audioFile: "",

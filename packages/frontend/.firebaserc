@@ -1,18 +1,21 @@
 {
-    "targets": {
-        "choonify": {
-            "hosting": {
-                "prod": [
-                    "choonify-prod"
-                ]
-            }
-        },
-        "choonify-dev": {
-            "hosting": {
-                "dev": [
-                    "choonify-dev"
-                ]
-            }
-        }
+  "targets": {
+    "choonify": {
+      "hosting": {
+        "prod": [
+          "choonify-prod"
+        ]
+      }
+    },
+    "choonify-dev": {
+      "hosting": {
+        "dev": [
+          "choonify-dev"
+        ]
+      }
     }
+  },
+  "projects": {
+    "default": "choonify-dev"
+  }
 }

@@ -5,6 +5,7 @@ import {
   Anchor,
   Button,
   Center,
+  Container,
   Grid,
   Progress,
   RingProgress,
@@ -352,145 +353,147 @@ export default function Upload() {
   ));
 
   return (
-    <Grid>
-      <Grid.Col span={{ base: 12, sm: 6, lg: 4 }}>
-        <Stack gap="0">
-          <ChannelSelector
-            onChange={setSelectedChannelId}
-            value={selectedChannelId}
-          ></ChannelSelector>
-          <QuotaMeter mb="sm" />
-          {sessionLoadProgress < 100 && (
-            <>
-              <Center>
-                <RingProgress
-                  transitionDuration={200}
-                  label={
-                    <Text ta="center">{`${sessionLoadProgress.toFixed(1)}%`}</Text>
+    <Container size="xl">
+      <Grid>
+        <Grid.Col span={{ base: 12, sm: 6, lg: 4 }}>
+          <Stack gap="0">
+            <ChannelSelector
+              onChange={setSelectedChannelId}
+              value={selectedChannelId}
+            ></ChannelSelector>
+            <QuotaMeter mb="sm" />
+            {sessionLoadProgress < 100 && (
+              <>
+                <Center>
+                  <RingProgress
+                    transitionDuration={200}
+                    label={
+                      <Text ta="center">{`${sessionLoadProgress.toFixed(1)}%`}</Text>
+                    }
+                    sections={[{ value: sessionLoadProgress, color: "blue" }]}
+                  ></RingProgress>
+                </Center>
+                <Center>
+                  <Text c="dimmed" size="sm">
+                    {t("upload.loading-session")}
+                  </Text>
+                </Center>
+              </>
+            )}
+            {sessionLoadProgress === 100 && (
+              <>
+                <DragDropContext
+                  onDragEnd={({ destination, source }) =>
+                    queueHandlers.reorder({
+                      from: source.index,
+                      to: destination?.index || 0,
+                    })
                   }
-                  sections={[{ value: sessionLoadProgress, color: "blue" }]}
-                ></RingProgress>
-              </Center>
-              <Center>
-                <Text c="dimmed" size="sm">
-                  {t("upload.loading-session")}
-                </Text>
-              </Center>
-            </>
-          )}
-          {sessionLoadProgress === 100 && (
-            <>
-              <DragDropContext
-                onDragEnd={({ destination, source }) =>
-                  queueHandlers.reorder({
-                    from: source.index,
-                    to: destination?.index || 0,
-                  })
-                }
-              >
-                <ScrollArea.Autosize
-                  w="100%"
-                  maw="100%"
-                  mah="50vh"
-                  type="auto"
-                  scrollbars="y"
                 >
-                  <Droppable droppableId="dnd-list" direction="vertical">
-                    {(provided) => (
-                      <div
-                        style={
-                          isVideoUploading ? { pointerEvents: "none" } : {}
-                        }
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                      >
-                        {items}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                </ScrollArea.Autosize>
-              </DragDropContext>
-              {uploadProgress === 100 && (
-                <Dropzone onDrop={onFilesDropped} disabled={isVideoUploading}>
-                  <Center>
-                    <LuAudioLines></LuAudioLines>
-                    <Space w="sm" />
-                    <Text>{t("upload.dropzone")}</Text>
-                  </Center>
-                </Dropzone>
-              )}
-              {uploadProgress < 100 && (
+                  <ScrollArea.Autosize
+                    w="100%"
+                    maw="100%"
+                    mah="50vh"
+                    type="auto"
+                    scrollbars="y"
+                  >
+                    <Droppable droppableId="dnd-list" direction="vertical">
+                      {(provided) => (
+                        <div
+                          style={
+                            isVideoUploading ? { pointerEvents: "none" } : {}
+                          }
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
+                          {items}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </ScrollArea.Autosize>
+                </DragDropContext>
+                {uploadProgress === 100 && (
+                  <Dropzone onDrop={onFilesDropped} disabled={isVideoUploading}>
+                    <Center>
+                      <LuAudioLines></LuAudioLines>
+                      <Space w="sm" />
+                      <Text>{t("upload.dropzone")}</Text>
+                    </Center>
+                  </Dropzone>
+                )}
+                {uploadProgress < 100 && (
+                  <Progress
+                    animated
+                    value={uploadProgress}
+                    size="lg"
+                    transitionDuration={200}
+                  />
+                )}
+              </>
+            )}
+            {!isVideoUploading && (
+              <>
+                <Button
+                  fullWidth
+                  my={"sm"}
+                  onClick={beginUpload}
+                  disabled={
+                    uploadQueue.length === 0 ||
+                    selectedChannelId === "" ||
+                    sessionLoadProgress < 100
+                  }
+                >
+                  {t("upload.button.upload-to-youtube")}
+                </Button>
+                <Trans
+                  t={t}
+                  i18nKey="upload.youtube-notice"
+                  components={{
+                    Text: <Text size="xs" mb="xl" c="dimmed" />,
+                    Anchor: (
+                      <Anchor
+                        href="https://www.youtube.com/t/terms"
+                        target="_blank"
+                      />
+                    ),
+                  }}
+                  values={{ url: "https://www.youtube.com/t/terms" }}
+                />
+              </>
+            )}
+            {isVideoUploading && (
+              <Stack mt="sm" gap="0">
                 <Progress
                   animated
-                  value={uploadProgress}
+                  value={videoUploadProgress}
                   size="lg"
                   transitionDuration={200}
                 />
-              )}
-            </>
+                <Text c="dimmed" ta="center" size="sm">
+                  {uploadingStatus}
+                </Text>
+              </Stack>
+            )}
+          </Stack>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, sm: 6, lg: 8 }}>
+          {selectedIndex !== null && selectedIndex < uploadQueue.length && (
+            <UploadForm
+              settingsMode="regular"
+              disabled={isVideoUploading}
+              initialItemData={{
+                ...userInfo!.settings,
+                defaults: uploadQueue[selectedIndex],
+              }}
+              formCallback={formCallback}
+            ></UploadForm>
           )}
-          {!isVideoUploading && (
-            <>
-              <Button
-                fullWidth
-                my={"sm"}
-                onClick={beginUpload}
-                disabled={
-                  uploadQueue.length === 0 ||
-                  selectedChannelId === "" ||
-                  sessionLoadProgress < 100
-                }
-              >
-                {t("upload.button.upload-to-youtube")}
-              </Button>
-              <Trans
-                t={t}
-                i18nKey="upload.youtube-notice"
-                components={{
-                  Text: <Text size="xs" mb="xl" c="dimmed" />,
-                  Anchor: (
-                    <Anchor
-                      href="https://www.youtube.com/t/terms"
-                      target="_blank"
-                    />
-                  ),
-                }}
-                values={{ url: "https://www.youtube.com/t/terms" }}
-              />
-            </>
+          {selectedIndex === null && (
+            <Text ta="center">{t("upload.no-track-selected")}</Text>
           )}
-          {isVideoUploading && (
-            <Stack mt="sm" gap="0">
-              <Progress
-                animated
-                value={videoUploadProgress}
-                size="lg"
-                transitionDuration={200}
-              />
-              <Text c="dimmed" ta="center" size="sm">
-                {uploadingStatus}
-              </Text>
-            </Stack>
-          )}
-        </Stack>
-      </Grid.Col>
-      <Grid.Col span={{ base: 12, sm: 6, lg: 8 }}>
-        {selectedIndex !== null && selectedIndex < uploadQueue.length && (
-          <UploadForm
-            settingsMode="regular"
-            disabled={isVideoUploading}
-            initialItemData={{
-              ...userInfo!.settings,
-              defaults: uploadQueue[selectedIndex],
-            }}
-            formCallback={formCallback}
-          ></UploadForm>
-        )}
-        {selectedIndex === null && (
-          <Text ta="center">{t("upload.no-track-selected")}</Text>
-        )}
-      </Grid.Col>
-    </Grid>
+        </Grid.Col>
+      </Grid>
+    </Container>
   );
 }

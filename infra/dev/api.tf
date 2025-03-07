@@ -148,6 +148,7 @@ resource "google_cloudfunctions2_function" "render" {
       GOOGLE_CLIENT_ID        = var.google_client_id
       GOOGLE_CLIENT_SECRET    = var.google_client_secret
       GOOGLE_REDIRECT_URL     = google_firebase_hosting_site.dev.default_url
+      PROJECT_ID              = google_firebase_project.dev.project
     }
   }
 }
@@ -194,6 +195,7 @@ resource "google_cloudfunctions2_function" "delete" {
     environment_variables = {
       FIREBASE_STORAGE_BUCKET = google_storage_bucket.dev.name
       STRIPE_API_KEY          = var.stripe_api_key
+      PROJECT_ID              = google_firebase_project.dev.project
     }
   }
 }

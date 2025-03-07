@@ -109,13 +109,30 @@ def build_frontend(api_env: dict[str, str]):
         p.check_returncode()
 
 
-def firebase_deploy(stage: BuildStage):
+def firebase_deploy(stage: BuildStage, api_env: dict[str, str]):
     with contextlib.chdir("./packages/frontend"):
         p = subprocess.run(["firebase", "use", f"choonify-{stage}"])
         p.check_returncode()
 
+        with open("./functions/.env", "w") as f:
+            f.write(
+                "\n".join(
+                    f"{k}={api_env[k]}"
+                    for k in (
+                        "GOOGLE_CLIENT_ID",
+                        "GOOGLE_CLIENT_SECRET",
+                        "GOOGLE_REDIRECT_URL",
+                    )
+                )
+            )
+
         p = subprocess.run(
-            ["firebase", "deploy", "--only", f"hosting:{stage},firestore:rules,storage"]
+            [
+                "firebase",
+                "deploy",
+                "--only",
+                f"hosting:{stage},firestore:rules,storage",
+            ],
         )
         p.check_returncode()
 
@@ -145,7 +162,7 @@ def main():
         build_frontend(api_env)
 
     if "firebase" in only:
-        firebase_deploy(stage)
+        firebase_deploy(stage, api_env)
 
 
 if __name__ == "__main__":

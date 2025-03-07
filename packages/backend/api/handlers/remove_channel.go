@@ -42,6 +42,13 @@ func RemoveChannelHandler(ctx *gin.Context) {
 		})
 		return
 	}
+	if user.Channels[chanIdx].Primary {
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.remove-channel.primary-channel",
+		})
+		return
+	}
 	userRef := extensions.Firestore.Collection("users").Doc(userId)
 	channelRef := extensions.Firestore.Collection("yt_channel_credentials").Doc(body.ChannelId)
 	err = extensions.Firestore.RunTransaction(ctx, func(c context.Context, tx *firestore.Transaction) error {

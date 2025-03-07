@@ -9,6 +9,7 @@ export type YTChannel = {
   channelId: string;
   picture: string;
   name: string;
+  primary: boolean;
 };
 
 export type ChoonifyUserInfo = {

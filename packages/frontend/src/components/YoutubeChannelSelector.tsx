@@ -92,7 +92,7 @@ export function ChannelSelector({
 
   async function authNewChannel() {
     if (!user || !gsiLoaded) {
-      console.error("user not logged in or gsi not loaded");
+      console.error("user not logged in or gsi not loaded"); // TODO - better error handleing/gray out gsiloaded
       return;
     }
     setLoading(true);
@@ -101,8 +101,8 @@ export function ChannelSelector({
       scope:
         "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
       ux_mode: "popup",
-      login_hint: user.providerData[0].uid,
       callback: async (response) => {
+        // TODO - handle missing scopes
         const r = await apiPost("/oauth", { code: response.code });
         if (r !== undefined) {
           await refreshUserInfo();
@@ -198,7 +198,7 @@ export function ChannelSelector({
             size="lg"
             color="red"
             onClick={removeChannel}
-            disabled={!_value}
+            disabled={!_value || getSelectedItem()?.primary}
           >
             <BsDash size="2rem"></BsDash>
           </ActionIcon>

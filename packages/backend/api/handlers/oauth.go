@@ -100,6 +100,7 @@ func AuthCallbackHandler(ctx *gin.Context) {
 					ChannelId: channel.Id,
 					Picture:   channel.Snippet.Thumbnails.Default.Url,
 					Name:      channel.Snippet.Title,
+					Primary:   false,
 				})
 			}
 		}

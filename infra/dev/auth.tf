@@ -4,7 +4,7 @@ resource "google_identity_platform_config" "dev" {
   autodelete_anonymous_users = true
   sign_in {
     anonymous {
-      enabled = true
+      enabled = false
     }
     email {
       enabled = false

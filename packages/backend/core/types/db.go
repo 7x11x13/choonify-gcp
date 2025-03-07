@@ -11,6 +11,7 @@ type YTChannelInfo struct {
 	ChannelId string `json:"channelId" firestore:"channelId"`
 	Picture   string `json:"picture" firestore:"picture"`
 	Name      string `json:"name" firestore:"name"`
+	Primary   bool   `json:"primary" firestore:"primary"`
 }
 
 // Channel creds & ownership info

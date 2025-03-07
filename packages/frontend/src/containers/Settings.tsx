@@ -23,7 +23,7 @@ export default function Settings() {
     setSending(false);
   }
   return (
-    <Container title={t("settings.label")}>
+    <Container title={t("settings.label")} size="lg">
       <UploadForm
         settingsMode="defaults"
         disabled={sending}

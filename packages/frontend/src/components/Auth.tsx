@@ -58,8 +58,12 @@ function useProvideAuth() {
       "firebase/auth"
     );
     const provider = new GoogleAuthProvider();
-    // provider.addScope("https://www.googleapis.com/auth/youtube.readonly");
-    // provider.addScope("https://www.googleapis.com/auth/youtube.upload");
+    provider.addScope("https://www.googleapis.com/auth/youtube.readonly");
+    provider.addScope("https://www.googleapis.com/auth/youtube.upload");
+    provider.setCustomParameters({
+      access_type: "offline",
+      prompt: "consent",
+    });
     try {
       await signInWithPopup(auth!, provider);
     } catch (err: any) {
