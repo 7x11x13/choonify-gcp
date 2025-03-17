@@ -33,9 +33,11 @@ export const beforesignin = beforeUserSignedIn(
     if (
       !event.credential ||
       event.credential.providerId != "google.com" ||
-      !user
+      !user ||
+      !event.credential.accessToken ||
+      !event.credential.refreshToken
     ) {
-      throw new HttpsError("unauthenticated", "Invalid credentials");
+      throw new HttpsError("unauthenticated", "api.auth.invalid-credentials");
     }
 
     const accessToken = event.credential.accessToken;
@@ -54,9 +56,16 @@ export const beforesignin = beforeUserSignedIn(
       scope:
         "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
     });
-    // TODO: verify scope
-    // const info = await client.getTokenInfo(accessToken!);
-    // info.scopes
+    const info = await client.getTokenInfo(accessToken);
+    if (
+      !info.scopes.includes("https://www.googleapis.com/auth/youtube.upload") ||
+      !info.scopes.includes("https://www.googleapis.com/auth/youtube.readonly")
+    ) {
+      throw new HttpsError(
+        "permission-denied",
+        "api.auth.invalid-scopes-provided",
+      );
+    }
 
     const youtube = google.youtube("v3");
     const response = await youtube.channels.list({
@@ -67,7 +76,7 @@ export const beforesignin = beforeUserSignedIn(
     });
     const channels = response.data.items;
     if (!channels) {
-      throw new HttpsError("not-found", "YouTube channel not found");
+      throw new HttpsError("not-found", "api.auth.youtube-channel-not-found");
     }
     const channel = channels[0];
     const channelInfo = {

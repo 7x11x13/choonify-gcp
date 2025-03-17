@@ -2,7 +2,11 @@ import type { Auth, User } from "firebase/auth";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import config from "../config";
 import { ChoonifyUserInfo } from "../types/auth";
-import { displayError, displaySuccess } from "../util/log";
+import {
+  displayError,
+  displaySuccess,
+  firebaseErrorToString,
+} from "../util/log";
 import { useTranslation } from "react-i18next";
 
 const AuthContext = createContext<{
@@ -67,8 +71,7 @@ function useProvideAuth() {
     try {
       await signInWithPopup(auth!, provider);
     } catch (err: any) {
-      console.error(err);
-      displayError(err.message || err.toString());
+      displayError(firebaseErrorToString(err));
     }
   }
 
