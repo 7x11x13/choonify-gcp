@@ -7,8 +7,8 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import { beforeUserCreated, HttpsError } from "firebase-functions/v2/identity";
-import { Firestore } from "@google-cloud/firestore";
+import { HttpsError, beforeUserSignedIn } from "firebase-functions/v2/identity";
+import { Firestore, FieldValue } from "@google-cloud/firestore";
 import { getDefaultUserInfo } from "./defaults";
 
 import { OAuth2Client } from "google-auth-library";
@@ -21,7 +21,7 @@ const CLIENT_ID = defineString("GOOGLE_CLIENT_ID");
 const CLIENT_SECRET = defineString("GOOGLE_CLIENT_SECRET");
 const REDIRECT_URL = defineString("GOOGLE_REDIRECT_URL");
 
-export const beforecreated = beforeUserCreated(
+export const beforesignin = beforeUserSignedIn(
   {
     region: "us-west1",
     refreshToken: true,
@@ -29,7 +29,6 @@ export const beforecreated = beforeUserCreated(
     idToken: true,
   },
   async (event) => {
-    console.log(event);
     const user = event.data;
     if (
       !event.credential ||
@@ -55,7 +54,7 @@ export const beforecreated = beforeUserCreated(
       scope:
         "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
     });
-    // TODO: verify scopes
+    // TODO: verify scope
     // const info = await client.getTokenInfo(accessToken!);
     // info.scopes
 
@@ -81,19 +80,58 @@ export const beforecreated = beforeUserCreated(
     userInfo.channels = [channelInfo] as never[];
 
     await firestore.runTransaction(async (tx) => {
-      tx.set(firestore.collection("users").doc(user.uid), userInfo);
-      tx.set(
-        firestore
-          .collection("yt_channel_credentials")
-          .doc(channelInfo.channelId),
-        {
-          userId: user.uid,
-          token: {
-            AccessToken: accessToken,
-            RefreshToken: refreshToken,
-          },
-        },
+      const userRef = firestore.collection("users").doc(user.uid);
+      const credsRef = firestore
+        .collection("yt_channel_credentials")
+        .doc(channelInfo.channelId);
+      const userDoc = await tx.get(userRef);
+      const credsDoc = await tx.get(credsRef);
+      if (credsDoc.exists) {
+        const otherUserId = credsDoc.get("userId") as string;
+        // if channel linked to another user already,
+        // remove it from their linked channels
+        if (otherUserId != user.uid) {
+          const otherUserRef = firestore.collection("users").doc(otherUserId);
+          const otherUserInfo = await tx.get(otherUserRef);
+          const otherUserChannelInfo = otherUserInfo
+            .get("channels")!
+            .find(
+              (channel: any) => channel.channelId === channelInfo.channelId,
+            );
+          tx.update(otherUserRef, {
+            channels: FieldValue.arrayRemove(otherUserChannelInfo),
+          });
+          if (
+            otherUserInfo.get("settings.defaultChannelId") ===
+            channelInfo.channelId
+          ) {
+            tx.update(otherUserRef, {
+              "settings.defaultChannelId": "",
+            });
+          }
+        }
+      }
+      if (!userDoc.exists) {
+        tx.set(firestore.collection("users").doc(user.uid), userInfo);
+      }
+      let oldChannels = [];
+      if (userDoc.exists) {
+        oldChannels = userDoc.get("channels");
+      }
+      const newChannels = oldChannels.filter(
+        (channel: any) => channel.channelId != channelInfo.channelId,
       );
+      newChannels.unshift(channelInfo);
+      tx.update(userRef, {
+        channels: newChannels,
+      });
+      tx.set(credsRef, {
+        userId: user.uid,
+        token: {
+          AccessToken: accessToken,
+          RefreshToken: refreshToken,
+        },
+      });
     });
   },
 );

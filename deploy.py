@@ -126,6 +126,8 @@ def firebase_deploy(stage: BuildStage, api_env: dict[str, str]):
                 )
             )
 
+        # gcloud config set billing/quota_project YOUR_PROJECT ?
+
         p = subprocess.run(
             [
                 "firebase",

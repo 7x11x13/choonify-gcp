@@ -187,10 +187,10 @@ resource "google_cloudfunctions2_function" "delete" {
   }
 
   service_config {
-    service_account_email = google_service_account.backend_admin.email
-    max_instance_count    = 1
-    available_memory      = "256M"
-    timeout_seconds       = 60
+    service_account_email            = google_service_account.backend_admin.email
+    max_instance_request_concurrency = 50
+    available_memory                 = "512M"
+    timeout_seconds                  = 600
 
     environment_variables = {
       FIREBASE_STORAGE_BUCKET = google_storage_bucket.dev.name
