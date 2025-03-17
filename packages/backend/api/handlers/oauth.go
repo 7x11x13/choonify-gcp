@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"strings"
 
 	"choonify.com/backend/api/extensions"
 	"choonify.com/backend/api/util"
@@ -51,6 +52,23 @@ func AuthCallbackHandler(ctx *gin.Context) {
 		Scopes:       []string{"https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/youtube.readonly"},
 	}
 	token, err := cfg.Exchange(ctx, body.Code)
+	scopesString, ok := token.Extra("scope").(string)
+	if !ok {
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.auth.invalid-scopes-provided",
+		})
+		return
+	}
+	scopes := strings.Split(scopesString, " ")
+	if !slices.Contains(scopes, "https://www.googleapis.com/auth/youtube.upload") || !slices.Contains(scopes, "https://www.googleapis.com/auth/youtube.readonly") {
+		util.SendErrorNoLog(ctx, &types.ErrorBody{
+			StatusCode: http.StatusBadRequest,
+			I18NKey:    "api.auth.invalid-scopes-provided",
+		})
+		return
+	}
+
 	if err != nil {
 		util.SendError(ctx, err, "Failed to exchange code", nil, nil)
 		return
