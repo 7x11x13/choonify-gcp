@@ -126,8 +126,6 @@ def firebase_deploy(stage: BuildStage, api_env: dict[str, str]):
                 )
             )
 
-        # gcloud config set billing/quota_project YOUR_PROJECT ?
-
         p = subprocess.run(
             [
                 "firebase",
@@ -137,6 +135,8 @@ def firebase_deploy(stage: BuildStage, api_env: dict[str, str]):
             ],
         )
         p.check_returncode()
+        # for functions, go to firebase console -> authentication -> blocking functions
+        # no way to automate afaict
 
 
 def main():
