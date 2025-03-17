@@ -32,12 +32,18 @@ provider "stripe" {
   api_key = var.stripe_api_key
 }
 
+data "google_organization" "org" {
+  provider = google-beta
+  domain   = "choonify.com"
+}
+
 resource "google_project" "dev" {
   provider = google-beta.no_user_project_override
 
   name            = "Choonify Dev"
   project_id      = "choonify-dev"
   billing_account = var.billing_account
+  org_id          = data.google_organization.org.org_id
 
   labels = {
     "firebase" = "enabled"

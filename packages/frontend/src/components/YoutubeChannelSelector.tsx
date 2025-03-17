@@ -102,7 +102,6 @@ export function ChannelSelector({
         "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
       ux_mode: "popup",
       callback: async (response) => {
-        // TODO - handle missing scopes
         const r = await apiPost("/oauth", { code: response.code });
         if (r !== undefined) {
           await refreshUserInfo();
