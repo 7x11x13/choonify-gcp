@@ -18,6 +18,7 @@
     presign: {
       "out-of-storage": "Upload quota exceeded for today. Upgrade for a larger quota or try again tomorrow",
     },
+    "rate-limited": "Too many requests. Try again in a few seconds",
     "remove-channel": {
       "channel-already-unlinked": "Channel already unlinked",
       "failed-to-unlink-channel": "Failed to unlink channel",
