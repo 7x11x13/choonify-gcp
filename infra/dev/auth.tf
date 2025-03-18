@@ -13,6 +13,20 @@ resource "google_identity_platform_config" "dev" {
       enabled = false
     }
   }
+
+  blocking_functions {
+    forward_inbound_credentials {
+      access_token  = true
+      id_token      = true
+      refresh_token = true
+    }
+
+    triggers {
+      event_type   = "beforeSignIn"
+      function_uri = google_cloudfunctions2_function.before_sign_in.url
+    }
+  }
+
   depends_on = [google_firebase_project.dev]
 }
 

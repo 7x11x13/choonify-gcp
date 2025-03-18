@@ -1,35 +1,20 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
-import { HttpsError, beforeUserSignedIn } from "firebase-functions/v2/identity";
 import { Firestore, FieldValue } from "@google-cloud/firestore";
 import { getDefaultUserInfo } from "./defaults";
 
 import { OAuth2Client } from "google-auth-library";
-import { defineString } from "firebase-functions/params";
 import { google } from "googleapis";
+import { Auth, https } from "gcip-cloud-functions";
 
 const firestore = new Firestore();
+const authClient = new Auth();
 
-const CLIENT_ID = defineString("GOOGLE_CLIENT_ID");
-const CLIENT_SECRET = defineString("GOOGLE_CLIENT_SECRET");
-const REDIRECT_URL = defineString("GOOGLE_REDIRECT_URL");
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const REDIRECT_URL = process.env.GOOGLE_REDIRECT_URL;
 
-export const beforesignin = beforeUserSignedIn(
-  {
-    region: "us-west1",
-    refreshToken: true,
-    accessToken: true,
-    idToken: true,
-  },
-  async (event) => {
-    const user = event.data;
+export const beforesignin = authClient
+  .functions()
+  .beforeSignInHandler(async (user, event) => {
     if (
       !event.credential ||
       event.credential.providerId != "google.com" ||
@@ -37,18 +22,17 @@ export const beforesignin = beforeUserSignedIn(
       !event.credential.accessToken ||
       !event.credential.refreshToken
     ) {
-      throw new HttpsError("unauthenticated", "api.auth.invalid-credentials");
+      throw new https.HttpsError(
+        "unauthenticated",
+        "api.auth.invalid-credentials"
+      );
     }
 
     const accessToken = event.credential.accessToken;
     const refreshToken = event.credential.refreshToken;
 
     // get channel info
-    const client = new OAuth2Client(
-      CLIENT_ID.value(),
-      CLIENT_SECRET.value(),
-      REDIRECT_URL.value(),
-    );
+    const client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 
     client.setCredentials({
       refresh_token: refreshToken,
@@ -61,9 +45,9 @@ export const beforesignin = beforeUserSignedIn(
       !info.scopes.includes("https://www.googleapis.com/auth/youtube.upload") ||
       !info.scopes.includes("https://www.googleapis.com/auth/youtube.readonly")
     ) {
-      throw new HttpsError(
+      throw new https.HttpsError(
         "permission-denied",
-        "api.auth.invalid-scopes-provided",
+        "api.auth.invalid-scopes-provided"
       );
     }
 
@@ -76,7 +60,10 @@ export const beforesignin = beforeUserSignedIn(
     });
     const channels = response.data.items;
     if (!channels) {
-      throw new HttpsError("not-found", "api.auth.youtube-channel-not-found");
+      throw new https.HttpsError(
+        "not-found",
+        "api.auth.youtube-channel-not-found"
+      );
     }
     const channel = channels[0];
     const channelInfo = {
@@ -105,7 +92,7 @@ export const beforesignin = beforeUserSignedIn(
           const otherUserChannelInfo = otherUserInfo
             .get("channels")!
             .find(
-              (channel: any) => channel.channelId === channelInfo.channelId,
+              (channel: any) => channel.channelId === channelInfo.channelId
             );
           tx.update(otherUserRef, {
             channels: FieldValue.arrayRemove(otherUserChannelInfo),
@@ -128,7 +115,7 @@ export const beforesignin = beforeUserSignedIn(
         oldChannels = userDoc.get("channels");
       }
       const newChannels = oldChannels.filter(
-        (channel: any) => channel.channelId != channelInfo.channelId,
+        (channel: any) => channel.channelId != channelInfo.channelId
       );
       newChannels.unshift(channelInfo);
       tx.update(userRef, {
@@ -142,5 +129,5 @@ export const beforesignin = beforeUserSignedIn(
         },
       });
     });
-  },
-);
+    return {};
+  });

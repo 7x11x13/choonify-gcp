@@ -200,6 +200,61 @@ resource "google_cloudfunctions2_function" "delete" {
   }
 }
 
+data "archive_file" "before_sign_in_source" {
+  type             = "zip"
+  source_dir       = "${path.module}/../../packages/backend/functions/before_sign_in"
+  output_file_mode = "0666"
+  output_path      = "${path.module}/../../packages/backend/functions/dist/before_sign_in.zip"
+}
+
+resource "google_storage_bucket_object" "before_sign_in_source" {
+  provider = google-beta
+  name     = "before_sign_in-${data.archive_file.before_sign_in_source.output_md5}.zip"
+  bucket   = google_storage_bucket.gcf_source.name
+  source   = data.archive_file.before_sign_in_source.output_path
+}
+
+resource "google_cloudfunctions2_function" "before_sign_in" {
+  provider    = google-beta
+  project     = google_firebase_project.dev.project
+  location    = var.region
+  name        = "before-sign-in"
+  description = "User before sign-in function"
+
+  build_config {
+    runtime     = "nodejs22"
+    entry_point = "beforesignin"
+
+    source {
+      storage_source {
+        bucket = google_storage_bucket_object.before_sign_in_source.bucket
+        object = google_storage_bucket_object.before_sign_in_source.name
+      }
+    }
+  }
+
+  service_config {
+    service_account_email = google_service_account.backend_admin.email
+    max_instance_count    = 50
+    available_memory      = "256M"
+    timeout_seconds       = 60
+
+    environment_variables = {
+      GOOGLE_CLIENT_ID     = var.google_client_id
+      GOOGLE_CLIENT_SECRET = var.google_client_secret
+      GOOGLE_REDIRECT_URL  = google_firebase_hosting_site.dev.default_url
+    }
+  }
+}
+
+# https://github.com/hashicorp/terraform-provider-google/issues/15264
+resource "google_cloud_run_v2_service_iam_policy" "invoker" {
+  project     = google_cloudfunctions2_function.before_sign_in.project
+  location    = google_cloudfunctions2_function.before_sign_in.location
+  name        = google_cloudfunctions2_function.before_sign_in.name
+  policy_data = data.google_iam_policy.noauth.policy_data
+}
+
 resource "google_cloud_tasks_queue" "dev" {
   provider = google-beta
   project  = google_firebase_project.dev.project
