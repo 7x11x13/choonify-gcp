@@ -5,9 +5,14 @@ import { useAuth } from "./Auth";
 import Loading from "./Loading";
 
 import "@mantine/core/styles/Affix.css";
+import config from "../config";
 
 export default function AdWrap({ children }: { children: ReactElement }) {
   const { loading, userInfo } = useAuth();
+
+  if (!config.ads.ENABLED) {
+    return children;
+  }
 
   if (loading) {
     return <Loading />;

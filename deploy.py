@@ -92,6 +92,7 @@ def build_frontend(api_env: dict[str, str]):
         "VITE_LOCAL_BACKEND": "0",
         "VITE_GOOGLE_CLIENT_ID": api_env["GOOGLE_CLIENT_ID"],
         "VITE_FIREBASE_CONFIG": api_env["FIREBASE_CONFIG"],
+        "VITE_ENABLE_ADS": "1",  # TODO: disable for prod until ads are working
     }
 
     with contextlib.chdir("./packages/frontend"):

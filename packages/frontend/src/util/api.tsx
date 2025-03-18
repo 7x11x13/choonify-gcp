@@ -31,7 +31,7 @@ async function getToken() {
 }
 
 function getAPIBase() {
-  return config.api.LOCAL === "1" ? "http://localhost:8080/api" : "/api";
+  return config.api.LOCAL ? "http://localhost:8080/api" : "/api";
 }
 
 export async function apiPost(path: string, body: any) {

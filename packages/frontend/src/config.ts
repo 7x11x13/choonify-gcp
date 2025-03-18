@@ -6,7 +6,10 @@ const config = {
     CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID,
   },
   api: {
-    LOCAL: import.meta.env.VITE_LOCAL_BACKEND,
+    LOCAL: import.meta.env.VITE_LOCAL_BACKEND === "1",
+  },
+  ads: {
+    ENABLED: import.meta.env.VITE_ENABLE_ADS === "1",
   },
   const: {
     UPLOAD_QUOTA_BYTES: [
