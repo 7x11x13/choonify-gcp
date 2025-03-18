@@ -6,9 +6,8 @@ import copy
 import json
 import os
 import subprocess
-from typing import Literal, TypeAlias
 
-BuildStage: TypeAlias = Literal["dev"] | Literal["prod"]
+from core import BuildStage, get_tf_output
 
 
 def convert_firebase_config(config: str):
@@ -60,12 +59,9 @@ def deploy_tf(stage: BuildStage, tf_env: dict[str, str]):
         apply(tf_env)
         # hacky fix for circular dependency
         if not tf_env.get("TF_VAR_stripe_webhook_secret"):
-            p = subprocess.run(
-                ["terraform", "output", "-raw", "STRIPE_WEBHOOK_SECRET"],
-                capture_output=True,
+            tf_env["TF_VAR_stripe_webhook_secret"] = get_tf_output(
+                "STRIPE_WEBHOOK_SECRET"
             )
-            p.check_returncode()
-            tf_env["TF_VAR_stripe_webhook_secret"] = p.stdout.decode()
             with open(f"../../.env.tf.{stage}.json", "w") as f:
                 json.dump(tf_env, f, sort_keys=True, indent=4)
             apply(tf_env)
@@ -129,13 +125,13 @@ def main():
     parser = argparse.ArgumentParser(
         prog="choonify deploy script",
     )
-    parser.add_argument("--stage", default="dev")
+    parser.add_argument("--stage", default="dev", choices=("dev", "prod"))
     parser.add_argument("--only", default="tf,vite,firebase")
     parser.add_argument("--skip", default="")
     args = parser.parse_args()
-    if args.stage not in ("dev", "prod"):
-        raise ValueError("--stage must be dev or prod")
     stage = args.stage
+    p = subprocess.run(["gcloud", "config", "set", "project", f"choonify-{stage}"])
+    p.check_returncode()
     only = parse_only_flag(args.only, args.skip)
     print(f"Running steps: {', '.join(only)}")
 

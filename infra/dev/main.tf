@@ -111,3 +111,7 @@ output "FIREBASE_CONFIG" {
 output "PROJECT_ID" {
   value = google_firebase_project.dev.id
 }
+
+output "REGION" {
+  value = var.region
+}
