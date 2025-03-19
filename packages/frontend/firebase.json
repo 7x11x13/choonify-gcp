@@ -37,6 +37,44 @@
           ]
         }
       ]
+    },
+    {
+      "target": "prod",
+      "public": "dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "/api/**",
+          "run": {
+            "serviceId": "api",
+            "region": "us-west1"
+          }
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "max-age=31536000"
+            }
+          ]
+        },
+        {
+          "source": "**/*.@(jpg|jpeg|gif|png)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "max-age=31536000"
+            }
+          ]
+        }
+      ]
     }
   ],
   "firestore": {
@@ -46,6 +84,10 @@
     {
       "rules": "storage.rules",
       "bucket": "choonify-dev-ffmpeg-input"
+    },
+    {
+      "rules": "storage.rules",
+      "bucket": "choonify-production-ffmpeg-input"
     }
   ]
 }

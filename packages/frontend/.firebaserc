@@ -1,9 +1,9 @@
 {
   "targets": {
-    "choonify": {
+    "choonify-production": {
       "hosting": {
         "prod": [
-          "choonify-prod"
+          "choonify-production"
         ]
       }
     },

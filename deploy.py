@@ -7,7 +7,7 @@ import json
 import os
 import subprocess
 
-from core import BuildStage, get_tf_output
+from core import BuildStage, get_project_id, get_tf_output
 
 
 def convert_firebase_config(config: str):
@@ -60,7 +60,7 @@ def deploy_tf(stage: BuildStage, tf_env: dict[str, str]):
         # hacky fix for circular dependency
         if not tf_env.get("TF_VAR_stripe_webhook_secret"):
             tf_env["TF_VAR_stripe_webhook_secret"] = get_tf_output(
-                "STRIPE_WEBHOOK_SECRET"
+                stage, "STRIPE_WEBHOOK_SECRET"
             )
             with open(f"../../.env.tf.{stage}.json", "w") as f:
                 json.dump(tf_env, f, sort_keys=True, indent=4)
@@ -73,8 +73,8 @@ def build_api_env(stage: BuildStage, tf_env: dict[str, str]) -> dict[str, str]:
     p.check_returncode()
     tf_outputs = {k: v["value"] for k, v in json.loads(p.stdout).items()}
     api_env = copy.deepcopy(tf_outputs)
-    api_env["GIN_MODE"] = "debug"  # TODO: change for prod
-    api_env["GOOGLE_REDIRECT_URL"] = "http://localhost:3000"  # TODO: change for prod
+    api_env["GIN_MODE"] = "debug"
+    api_env["GOOGLE_REDIRECT_URL"] = "http://localhost:3000"
     for k, v in tf_env.items():
         k = k[len("TF_VAR_") :].upper()
         api_env[k] = v
@@ -92,7 +92,7 @@ def build_frontend(api_env: dict[str, str]):
         "VITE_LOCAL_BACKEND": "0",
         "VITE_GOOGLE_CLIENT_ID": api_env["GOOGLE_CLIENT_ID"],
         "VITE_FIREBASE_CONFIG": api_env["FIREBASE_CONFIG"],
-        "VITE_ENABLE_ADS": "1",  # TODO: disable for prod until ads are working
+        "VITE_ENABLE_ADS": "1",
     }
 
     with contextlib.chdir("./packages/frontend"):
@@ -108,7 +108,7 @@ def build_frontend(api_env: dict[str, str]):
 
 def firebase_deploy(stage: BuildStage):
     with contextlib.chdir("./packages/frontend"):
-        p = subprocess.run(["firebase", "use", f"choonify-{stage}"])
+        p = subprocess.run(["firebase", "use", get_project_id(stage)])
         p.check_returncode()
 
         p = subprocess.run(
@@ -131,8 +131,6 @@ def main():
     parser.add_argument("--skip", default="")
     args = parser.parse_args()
     stage = args.stage
-    p = subprocess.run(["gcloud", "config", "set", "project", f"choonify-{stage}"])
-    p.check_returncode()
     only = parse_only_flag(args.only, args.skip)
     print(f"Running steps: {', '.join(only)}")
 
@@ -140,6 +138,19 @@ def main():
 
     if "tf" in only:
         deploy_tf(stage, tf_env)
+
+    p = subprocess.run(["gcloud", "config", "set", "project", get_project_id(stage)])
+    p.check_returncode()
+    p = subprocess.run(
+        [
+            "gcloud",
+            "auth",
+            "application-default",
+            "set-quota-project",
+            get_project_id(stage),
+        ]
+    )
+    p.check_returncode()
 
     api_env = build_api_env(stage, tf_env)
 

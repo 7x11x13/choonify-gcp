@@ -5,7 +5,7 @@ import argparse
 import json
 import subprocess
 
-from core import BuildStage, get_tf_output
+from core import BuildStage, get_project_id, get_tf_output
 
 
 def delete_user(stage: BuildStage, uid: str):
@@ -35,7 +35,7 @@ def main():
     parser_delete.add_argument("uid")
     args = parser.parse_args()
     stage = args.stage
-    p = subprocess.run(["gcloud", "config", "set", "project", f"choonify-{stage}"])
+    p = subprocess.run(["gcloud", "config", "set", "project", get_project_id(stage)])
     p.check_returncode()
 
     match args.cmd:

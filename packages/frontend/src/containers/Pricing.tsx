@@ -14,10 +14,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../components/Auth";
 
-import config from "../config";
+import Loading from "../components/Loading";
 import { apiPost } from "../util/api";
 import classes from "./Pricing.module.css";
-import Loading from "../components/Loading";
 
 type SubscriptionTierInfo = {
   name: string;
@@ -41,9 +40,7 @@ export default function Pricing() {
 
   async function createPortalSession() {
     const url = await apiPost("/create-customer-portal-session", {
-      returnUrl: config.api.LOCAL
-        ? "http://localhost:3000/pricing"
-        : "https://choonify-dev.web.app/pricing", // TODO: set based on config
+      returnUrl: new URL("/pricing", window.location.href),
     });
     setPortalSessionURL(url ?? "");
   }
