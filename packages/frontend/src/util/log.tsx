@@ -17,6 +17,7 @@ export function displayError(message: React.ReactNode) {
     title: t("error"),
     message: message,
     color: "red",
+    autoClose: 10000,
   });
 }
 

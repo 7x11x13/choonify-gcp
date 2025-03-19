@@ -45,7 +45,7 @@ async function renderTemplateString(
     return eta.renderString(template, input);
   } catch (err: any) {
     console.error(err);
-    displayError("Invalid template string");
+    displayError(t("metadata.invalid-template-string"));
     return "N/A";
   }
 }

@@ -71,6 +71,7 @@ function useProvideAuth() {
       setLoading(true);
       await signInWithPopup(auth!, provider);
     } catch (err: any) {
+      console.error(err);
       displayError(firebaseErrorToString(err));
       setLoading(false);
     }
