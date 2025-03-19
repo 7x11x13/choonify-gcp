@@ -9,7 +9,6 @@ import AdWrap from "./components/AdWrap.tsx";
 const Pricing = React.lazy(() => import("./containers/Pricing.tsx"));
 const Upload = React.lazy(() => import("./containers/Upload.tsx"));
 const Settings = React.lazy(() => import("./containers/Settings.tsx"));
-const Support = React.lazy(() => import("./containers/Support.tsx"));
 const Readme = React.lazy(() => import("./containers/Readme.tsx"));
 
 export default function Routes() {
@@ -27,7 +26,7 @@ export default function Routes() {
       </Route>
       <Route path="/support">
         <AdWrap>
-          <Support />
+          <Readme namespace="support" />
         </AdWrap>
       </Route>
       <Route path="/documentation">
