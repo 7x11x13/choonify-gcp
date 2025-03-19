@@ -46,7 +46,6 @@ function useProvideAuth() {
     setAuth(auth);
     // setUser(auth.currentUser);
     onAuthStateChanged(auth, async (newUser) => {
-      setLoading(true);
       setUser(newUser);
       await refreshUserInfo(newUser);
       setLoading(false);
@@ -69,9 +68,11 @@ function useProvideAuth() {
       prompt: "consent",
     });
     try {
+      setLoading(true);
       await signInWithPopup(auth!, provider);
     } catch (err: any) {
       displayError(firebaseErrorToString(err));
+      setLoading(false);
     }
   }
 
