@@ -1,7 +1,7 @@
 import config from "./config";
 
 function getDefaultTitleTemplateString(): string {
-  return "<% if(it.metadata.title && it.metadata.artist) { %>\n    <%_ = it.metadata.artist %> - <% = it.metadata.title %>\n<% } else { %>\n    <%_ = it.file.name %>\n<% } %>";
+  return "<% if(it.metadata.title && it.metadata.artist) { %>\n    <%_ ~ it.metadata.artist %> - <% ~ it.metadata.title %>\n<% } else { %>\n    <%_ ~ it.file.name %>\n<% } %>";
 }
 
 function getDefaultUploadItem() {

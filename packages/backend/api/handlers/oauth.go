@@ -123,6 +123,10 @@ func AuthCallbackHandler(ctx *gin.Context) {
 			}
 		}
 		if !anyAdded {
+			util.SendErrorNoLog(ctx, &types.ErrorBody{
+				StatusCode: http.StatusInternalServerError,
+				I18NKey:    "api.oauth.channel-already-linked",
+			})
 			return fmt.Errorf("channel already linked")
 		}
 		slices.SortFunc(user.Channels, func(a types.YTChannelInfo, b types.YTChannelInfo) int {
@@ -135,7 +139,7 @@ func AuthCallbackHandler(ctx *gin.Context) {
 			user.Settings.DefaultChannelId = user.Channels[0].ChannelId
 		}
 		userRef := extensions.Firestore.Collection("users").Doc(userId)
-		return tx.Update(userRef, []firestore.Update{
+		err = tx.Update(userRef, []firestore.Update{
 			{
 				Path:  "channels",
 				Value: user.Channels,
@@ -145,12 +149,14 @@ func AuthCallbackHandler(ctx *gin.Context) {
 				Value: user.Settings.DefaultChannelId,
 			},
 		})
+		if err != nil {
+			util.SendError(ctx, err, "Could not update user channels", &map[string]string{
+				"userId": userId,
+			}, nil)
+		}
+		return err
 	})
 	if err != nil {
-		util.SendErrorNoLog(ctx, &types.ErrorBody{
-			StatusCode: http.StatusInternalServerError,
-			I18NKey:    "api.oauth.channel-already-linked",
-		})
 		return
 	}
 	ctx.JSON(http.StatusOK, nil)

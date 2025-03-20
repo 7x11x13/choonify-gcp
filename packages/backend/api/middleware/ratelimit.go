@@ -8,6 +8,8 @@ import (
 	"choonify.com/backend/core/types"
 	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type rateLimitData struct {
@@ -32,7 +34,7 @@ func Ratelimit(ipBased bool, collectionName string, delayMs int64) gin.HandlerFu
 		defer updateTimestamp()
 
 		doc, err := extensions.Firestore.Collection(collectionName).Doc(identifier).Get(ctx)
-		if !doc.Exists() {
+		if err != nil && status.Code(err) == codes.NotFound {
 			ctx.Next()
 			return
 		}

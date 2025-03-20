@@ -270,13 +270,23 @@ func sendMessage(ctx context.Context, userId string, msg any) {
 	}
 }
 
+func setNotUploading(ctx context.Context, userId string) {
+	_, err := Firestore.Collection("is_rendering").Doc(userId).Delete(ctx)
+	if err != nil {
+		log.LogError(logging.Alert, "Failed to delete is_rendering", err, &map[string]string{
+			"userId": userId,
+		})
+	}
+}
+
 func Render(w http.ResponseWriter, r *http.Request) {
 	var request types.UploadBatchRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		log.LogError(logging.Error, "Failed to decode body", err, nil)
+		log.LogError(logging.Alert, "Failed to decode body", err, nil)
 		return
 	}
 	ctx := r.Context()
+	defer setNotUploading(ctx, request.UserId)
 	youtube, msg, err := getYouTubeClient(ctx, request.ChannelId)
 	if err != nil {
 		log.LogError(logging.Error, "Failed to get youtube client", err, nil)

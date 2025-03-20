@@ -48,7 +48,7 @@ resource "google_cloud_run_v2_service" "dev" {
       image = ko_build.api.image_ref
       env {
         name  = "GIN_MODE"
-        value = "release"
+        value = "debug"
       }
       env {
         name  = "GOOGLE_CLIENT_ID"
@@ -67,8 +67,12 @@ resource "google_cloud_run_v2_service" "dev" {
         value = google_cloud_tasks_queue.dev.id
       }
       env {
-        name  = "RENDER_FUNCTION_URL"
-        value = google_cloudfunctions2_function.render.url
+        name  = "RENDER_FUNCTION_LOW_URL"
+        value = google_cloudfunctions2_function.render_low.url
+      }
+      env {
+        name  = "RENDER_FUNCTION_HIGH_URL"
+        value = google_cloudfunctions2_function.render_high.url
       }
       env {
         name  = "DELETE_FUNCTION_URL"
@@ -118,12 +122,12 @@ resource "google_storage_bucket_object" "render_source" {
   source   = data.archive_file.render_source.output_path
 }
 
-resource "google_cloudfunctions2_function" "render" {
+resource "google_cloudfunctions2_function" "render_low" {
   provider    = google-beta
   project     = google_firebase_project.dev.project
   location    = var.region
   name        = "render"
-  description = "Render and upload function"
+  description = "Render and upload function (low power)"
 
   build_config {
     runtime     = "go123"
@@ -139,7 +143,44 @@ resource "google_cloudfunctions2_function" "render" {
 
   service_config {
     service_account_email = google_service_account.backend_admin.email
-    available_memory      = "4096M"
+    available_cpu         = "1"
+    available_memory      = "512M"
+    timeout_seconds       = 1800
+
+    environment_variables = {
+      SERVICE_ACCOUNT_EMAIL   = google_service_account.backend_admin.email
+      FIREBASE_STORAGE_BUCKET = google_storage_bucket.dev.name
+      GOOGLE_CLIENT_ID        = var.google_client_id
+      GOOGLE_CLIENT_SECRET    = var.google_client_secret
+      GOOGLE_REDIRECT_URL     = google_firebase_hosting_site.dev.default_url
+      PROJECT_ID              = google_firebase_project.dev.project
+    }
+  }
+}
+
+resource "google_cloudfunctions2_function" "render_high" {
+  provider    = google-beta
+  project     = google_firebase_project.dev.project
+  location    = var.region
+  name        = "render-high"
+  description = "Render and upload function (high power)"
+
+  build_config {
+    runtime     = "go123"
+    entry_point = "Render"
+
+    source {
+      storage_source {
+        bucket = google_storage_bucket_object.render_source.bucket
+        object = google_storage_bucket_object.render_source.name
+      }
+    }
+  }
+
+  service_config {
+    service_account_email = google_service_account.backend_admin.email
+    available_cpu         = "4"
+    available_memory      = "2148M"
     timeout_seconds       = 1800
 
     environment_variables = {
@@ -295,8 +336,12 @@ output "TASK_QUEUE_NAME" {
   value = google_cloud_tasks_queue.dev.id
 }
 
-output "RENDER_FUNCTION_URL" {
-  value = google_cloudfunctions2_function.render.url
+output "RENDER_FUNCTION_LOW_URL" {
+  value = google_cloudfunctions2_function.render_low.url
+}
+
+output "RENDER_FUNCTION_HIGH_URL" {
+  value = google_cloudfunctions2_function.render_high.url
 }
 
 output "DELETE_FUNCTION_URL" {
