@@ -24,6 +24,11 @@ export default function AdWrap({ children }: { children: ReactElement }) {
 
   return (
     <>
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1224341527846653"
+        crossOrigin="anonymous"
+      ></script>
       <Stack>
         <Group
           grow
@@ -32,17 +37,50 @@ export default function AdWrap({ children }: { children: ReactElement }) {
           wrap="nowrap"
           gap="xs"
         >
-          <AdContainer miw={160} w={160} h={600} visibleFrom="md" />
+          <AdContainer
+            name="sidebar-left"
+            miw={160}
+            w={160}
+            h={600}
+            visibleFrom="md"
+          />
           {children}
-          <AdContainer miw={160} w={160} h={600} visibleFrom="md" />
+          <AdContainer
+            name="sidebar-right"
+            miw={160}
+            w={160}
+            h={600}
+            visibleFrom="md"
+          />
         </Group>
         <Center>
-          <AdContainer mt="xl" miw={728} w={728} h={90} visibleFrom="md" />
-          <AdContainer mt="xl" miw={300} w={300} h={250} hiddenFrom="md" />
+          <AdContainer
+            name="bottom-desktop"
+            mt="xl"
+            miw={728}
+            w={728}
+            h={90}
+            visibleFrom="md"
+          />
+          <AdContainer
+            name="bottom-mobile"
+            mt="xl"
+            miw={300}
+            w={300}
+            h={250}
+            hiddenFrom="md"
+          />
         </Center>
       </Stack>
       <Affix position={{ bottom: 0 }} w="100%">
-        <AdContainer miw={300} w="100%" mih={50} h={50} hiddenFrom="md" />
+        <AdContainer
+          name="overlay-mobile"
+          miw={300}
+          w="100%"
+          mih={50}
+          h={50}
+          hiddenFrom="md"
+        />
       </Affix>
     </>
   );

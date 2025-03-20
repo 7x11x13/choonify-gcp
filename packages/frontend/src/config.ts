@@ -10,6 +10,14 @@ const config = {
   },
   ads: {
     ENABLED: import.meta.env.VITE_ENABLE_ADS === "1",
+    CLIENT_ID: "ca-pub-1224341527846653",
+    UNITS: {
+      "overlay-mobile": "7142464161",
+      "sidebar-right": "5980924720",
+      "sidebar-left": "8607627069",
+      "bottom-desktop": "9768627505",
+      "bottom-mobile": "8120002901",
+    },
   },
   const: {
     UPLOAD_QUOTA_BYTES: [
