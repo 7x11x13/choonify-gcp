@@ -30,12 +30,12 @@ resource "google_monitoring_alert_policy" "loglevel" {
 
 resource "google_monitoring_alert_policy" "tasks" {
   project      = google_firebase_project.dev.project
-  display_name = "Tasks alert policy"
+  display_name = "Task ratelimit alert policy"
   combiner     = "OR"
   conditions {
-    display_name = "Failed tasks"
+    display_name = "Ratelimited"
     condition_matched_log {
-      filter = "resource.type=cloud_run_revision severity>=WARNING"
+      filter = "httpRequest.status=429"
     }
   }
 
