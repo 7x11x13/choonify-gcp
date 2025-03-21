@@ -143,7 +143,10 @@ func getYouTubeClient(ctx context.Context, channelId string) (*youtube.Service, 
 	var item types.YTChannelCreds
 	err = channel.DataTo(&item)
 	if err != nil {
-		return nil, "api.render.credentials-not-found", err
+		log.LogError(logging.Error, "Failed to convert credentials item", err, &map[string]string{
+			"channelId": channelId,
+		})
+		return nil, "api.render.internal-error", err
 	}
 	cfg := oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
@@ -157,7 +160,11 @@ func getYouTubeClient(ctx context.Context, channelId string) (*youtube.Service, 
 	client := cfg.Client(ctx, &token)
 	service, err := youtube.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.LogError(logging.Error, "Failed to make youtube client", err, nil)
+		log.LogError(logging.Error, "Failed to make youtube client", err, &map[string]string{
+			"channelId": channelId,
+			"config":    fmt.Sprintf("%+v", cfg),
+			"token":     fmt.Sprintf("%+v", token),
+		})
 		return nil, "api.render.internal-error", err
 	}
 	return service, "", nil
@@ -204,10 +211,13 @@ func updateUserTable(ctx context.Context, userId string, uploadedBytes int64) er
 	return err
 }
 
-func deleteYTChannelInfo(ctx context.Context, userId string, channelId string) {
+func handleInvalidCredentials(ctx context.Context, userId string, channelId string) bool {
+	// if primary channel, do nothing and tell them to re-log
+	// otherwise, unlink channel and tell them to link it again
 	ref := Firestore.Collection("users").Doc(userId)
 	credsRef := Firestore.Collection("yt_channel_credentials").Doc(channelId)
-	err := Firestore.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+	var isPrimary bool
+	err := Firestore.RunTransaction(ctx, func(c context.Context, tx *firestore.Transaction) error {
 		doc, err := tx.Get(ref)
 		if err != nil {
 			return err
@@ -223,25 +233,33 @@ func deleteYTChannelInfo(ctx context.Context, userId string, channelId string) {
 		if channelIdx == -1 {
 			return nil
 		}
-		err = tx.Update(ref,
-			[]firestore.Update{
-				{
-					Path:  "channels",
-					Value: firestore.ArrayRemove(user.Channels[channelIdx]),
+		isPrimary = user.Channels[channelIdx].Primary
+		if !isPrimary {
+			err = tx.Update(ref,
+				[]firestore.Update{
+					{
+						Path:  "channels",
+						Value: firestore.ArrayRemove(user.Channels[channelIdx]),
+					},
 				},
-			},
-		)
-		if err != nil {
-			return err
+			)
+			if err != nil {
+				return err
+			}
+			err = tx.Delete(credsRef)
+			if err != nil {
+				return err
+			}
 		}
-		return tx.Delete(credsRef)
+		return nil
 	})
 	if err != nil {
-		log.LogError(logging.Error, "Failed to delete youtube channel", err, &map[string]string{
+		log.LogError(logging.Alert, "Failed to handle invalid credentials", err, &map[string]string{
 			"userId":    userId,
 			"channelId": channelId,
 		})
 	}
+	return isPrimary
 }
 
 func presignGet(ctx context.Context, key string) (*string, *int64, error) {
@@ -294,8 +312,11 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	if youtube == nil {
 		reloadUsers := false
 		if msg == "api.render.credentials-not-found" {
-			deleteYTChannelInfo(ctx, request.UserId, request.ChannelId)
-			reloadUsers = true
+			isPrimary := handleInvalidCredentials(ctx, request.UserId, request.ChannelId)
+			if isPrimary {
+				msg = "api.render.credentials-not-found-primary"
+			}
+			reloadUsers = !isPrimary
 		}
 		sendMessage(ctx, request.UserId, &types.ErrorMessage{
 			BaseMessage: types.BaseMessage{
@@ -319,13 +340,18 @@ func Render(w http.ResponseWriter, r *http.Request) {
 		log.LogError(logging.Error, "Could not upload video", err, &map[string]string{
 			"request": fmt.Sprintf("%+v", req),
 		})
-		reloadUser := false
+		reloadUsers := false
 		gerr, ok := err.(*googleapi.Error)
 		if ok {
 			log.LogError(logging.Error, "googleapi error", err, nil)
 			if gerr.Code == 401 || gerr.Code == 403 {
-				deleteYTChannelInfo(ctx, request.UserId, request.ChannelId)
-				reloadUser = true
+				isPrimary := handleInvalidCredentials(ctx, request.UserId, request.ChannelId)
+				if isPrimary {
+					errMessage.I18NKey = "api.render.yt-auth-error-primary"
+				} else {
+					errMessage.I18NKey = "api.render.yt-auth-error"
+				}
+				reloadUsers = !isPrimary
 			}
 		}
 		sendMessage(ctx, request.UserId, &types.ErrorMessage{
@@ -335,7 +361,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 				Timestamp: time.Now().UnixMilli(),
 			},
 			Message:     *errMessage,
-			ReloadUsers: reloadUser,
+			ReloadUsers: reloadUsers,
 		})
 		return
 	}
