@@ -36,6 +36,10 @@ resource "google_storage_bucket" "dev" {
     response_header = ["Content-Type"]
     max_age_seconds = 3600
   }
+
+  soft_delete_policy {
+    retention_duration_seconds = 0
+  }
 }
 
 resource "google_firebase_storage_bucket" "dev" {
@@ -52,6 +56,13 @@ resource "google_storage_bucket" "gcf_source" {
   name                        = "${google_firebase_project.dev.project}-gcf-source"
   location                    = var.region
   uniform_bucket_level_access = true
+}
+
+resource "google_storage_bucket_object" "default_image" {
+  name         = "public/default-image"
+  source       = "../../default.png"
+  content_type = "image/png"
+  bucket       = google_storage_bucket.dev.id
 }
 
 output "FIREBASE_STORAGE_BUCKET" {
