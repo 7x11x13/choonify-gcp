@@ -53,7 +53,9 @@ export default function HeaderLoggedIn() {
         <Stack>
           <Text>{t("header.deletion-warning")}</Text>
           <Group justify="right">
-            <Button onClick={deleteModalClose}>{t("header.go-back")}</Button>
+            <Button onClick={deleteModalClose} color="gray">
+              {t("header.go-back")}
+            </Button>
             <Button onClick={deleteUserAccount}>
               {t("header.delete-confirmation")}
             </Button>
