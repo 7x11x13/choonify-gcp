@@ -57,7 +57,9 @@ const firebaseConfig: Record<string, string> = JSON.parse(
 initializeApp(firebaseConfig);
 
 const theme = createTheme({
-  /** Put your mantine theme override here */
+  white: "#FFFFFF",
+  black: "#282828",
+  primaryColor: "red",
 });
 
 createRoot(document.getElementById("root")!).render(

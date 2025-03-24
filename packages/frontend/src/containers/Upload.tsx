@@ -142,7 +142,10 @@ export default function Upload() {
     if (selectedIndex !== null && selectedIndex >= uploadQueue.length) {
       setSelectedIndex(null);
     }
-    if (uploadQueue.length === 0) {
+    if (
+      uploadQueue.length === 0 ||
+      currentVideoUpload.current > totalVideoUpload.current
+    ) {
       setVideoUploading(false);
     }
   }, [uploadQueue]);
@@ -442,7 +445,8 @@ export default function Upload() {
                   disabled={
                     uploadQueue.length === 0 ||
                     selectedChannelId === "" ||
-                    sessionLoadProgress < 100
+                    sessionLoadProgress < 100 ||
+                    uploadProgress < 100
                   }
                 >
                   {t("upload.button.upload-to-youtube")}
@@ -482,7 +486,7 @@ export default function Upload() {
           {selectedIndex !== null && selectedIndex < uploadQueue.length && (
             <UploadForm
               settingsMode="regular"
-              disabled={isVideoUploading}
+              disabled={isVideoUploading || uploadProgress < 100}
               initialItemData={{
                 ...userInfo!.settings,
                 defaults: uploadQueue[selectedIndex],

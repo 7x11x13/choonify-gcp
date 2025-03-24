@@ -452,7 +452,7 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 	progReader := &ProgressPipeReader{pr, 0, *audioSize + *imageSize, 0, 0, progressChannel}
 	go relayProgress(ctx, request.Id, userId, progressChannel)
 
-	// TODO: check if accesstoken changes and store it
+	// TODO: check if accesstoken changes and store it?
 	response, err := call.Media(progReader).Do()
 	if err != nil {
 		msg := fmt.Sprintf("%s", err)

@@ -1,4 +1,12 @@
-import { Burger, Group, NavLink, Skeleton, Stack, Title } from "@mantine/core";
+import {
+  Burger,
+  Group,
+  NavLink,
+  Skeleton,
+  Stack,
+  Title,
+  Image,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -49,7 +57,7 @@ export default function Header() {
     <header className={classes.header}>
       <Stack gap="0">
         <div className={classes.inner}>
-          <Group>
+          <Group justify="center">
             <Burger
               opened={opened}
               onClick={toggle}
@@ -57,11 +65,18 @@ export default function Header() {
               hiddenFrom="sm"
               aria-label="Menu"
             />
-            <Title>
-              <Link to="/" style={{ textDecoration: "none", color: "black" }}>
-                Choonify
-              </Link>
-            </Title>
+            <Link
+              to="/"
+              style={{
+                textDecoration: "none",
+                color: "#282828",
+              }}
+            >
+              <Group gap="xs">
+                <Image src="/favicon-32x32.png" h="36px" w="36px" />
+                <Title>Choonify</Title>
+              </Group>
+            </Link>
           </Group>
           <Group>
             <Group ml={50} gap={5} className={classes.links} visibleFrom="sm">
