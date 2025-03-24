@@ -73,7 +73,7 @@ export default function Header() {
               }}
             >
               <Group gap="xs">
-                <Image src="/favicon-32x32.png" h="36px" w="36px" />
+                <Image src="/logo.webp" alt="Logo" h="36px" w="36px" />
                 <Title>Choonify</Title>
               </Group>
             </Link>

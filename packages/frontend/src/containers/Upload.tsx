@@ -247,7 +247,7 @@ export default function Upload() {
             uploading,
             total: uploadQueue.length,
           }),
-          color: "orange",
+          color: "yellow",
         });
       }
       totalVideoUpload.current = uploading;
@@ -373,7 +373,7 @@ export default function Upload() {
                     label={
                       <Text ta="center">{`${sessionLoadProgress.toFixed(1)}%`}</Text>
                     }
-                    sections={[{ value: sessionLoadProgress, color: "blue" }]}
+                    sections={[{ value: sessionLoadProgress, color: "red" }]}
                   ></RingProgress>
                 </Center>
                 <Center>
@@ -417,7 +417,11 @@ export default function Upload() {
                   </ScrollArea.Autosize>
                 </DragDropContext>
                 {uploadProgress === 100 && (
-                  <Dropzone onDrop={onFilesDropped} disabled={isVideoUploading}>
+                  <Dropzone
+                    accept={config.const.ALLOWED_AUDIO_MIMETYPES}
+                    onDrop={onFilesDropped}
+                    disabled={isVideoUploading}
+                  >
                     <Center>
                       <LuAudioLines></LuAudioLines>
                       <Space w="sm" />

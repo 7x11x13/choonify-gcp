@@ -7,10 +7,10 @@ import config from "../config";
 
 function getColorForProgress(prog: number) {
   if (prog < 50) {
-    return "blue";
+    return "gray";
   }
   if (prog < 80) {
-    return "orange";
+    return "yellow";
   }
   return "red";
 }

@@ -13,6 +13,7 @@ export function firebaseErrorToString(err: any): string {
 }
 
 export function displayError(message: React.ReactNode) {
+  console.log("Error: " + JSON.stringify(message));
   notifications.show({
     title: t("error"),
     message: message,
@@ -22,6 +23,7 @@ export function displayError(message: React.ReactNode) {
 }
 
 export function displaySuccess(message: React.ReactNode) {
+  console.log("Success: " + JSON.stringify(message));
   notifications.show({
     title: t("success"),
     message: message,

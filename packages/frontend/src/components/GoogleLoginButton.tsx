@@ -3,11 +3,12 @@ import { useAuth } from "./Auth";
 import { GoogleIcon } from "./GoogleIcon";
 import { useTranslation } from "react-i18next";
 
-export default function GoogleLoginButton() {
+export default function GoogleLoginButton({ props }: any) {
   const { user, signIn } = useAuth();
   const { t } = useTranslation();
   return (
     <Button
+      {...props}
       onClick={signIn}
       disabled={user !== null}
       leftSection={<GoogleIcon />}

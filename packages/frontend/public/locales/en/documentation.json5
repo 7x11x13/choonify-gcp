@@ -35,6 +35,6 @@
                 if your account is not verified</li> \
             <li>Videos must be shorter than <a href="https://support.google.com/youtube/answer/71673">12 hours</a></li></ul> \
     <h2 id="supported-filetypes">Supported filetypes</h2> \
-    <p>Any format supported by both <a href="https://en.wikipedia.org/wiki/FFmpeg#Supported_codecs_and_formats">FFmpeg</a> \
+    <p>Any audio/image format supported by both <a href="https://en.wikipedia.org/wiki/FFmpeg#Supported_codecs_and_formats">FFmpeg</a> \
         and <a href="https://www.npmjs.com/package/music-metadata">music-metadata</a> is supported by Choonify.</p>',
 }
