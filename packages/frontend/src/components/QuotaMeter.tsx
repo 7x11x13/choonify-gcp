@@ -9,7 +9,7 @@ function getColorForProgress(prog: number) {
   if (prog < 50) {
     return "blue";
   }
-  if (prog < 85) {
+  if (prog < 80) {
     return "orange";
   }
   return "red";

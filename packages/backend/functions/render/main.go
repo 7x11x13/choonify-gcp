@@ -155,7 +155,6 @@ func getYouTubeClient(ctx context.Context, channelId string) (*youtube.Service, 
 		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
 		Scopes:       []string{"https://www.googleapis.com/auth/youtube.upload"},
 	}
-	// TODO: store token after if refreshed
 	token := item.Token
 	client := cfg.Client(ctx, &token)
 	service, err := youtube.NewService(ctx, option.WithHTTPClient(client))
@@ -453,6 +452,7 @@ func handleRequest(ctx context.Context, yt *youtube.Service, request types.Uploa
 	progReader := &ProgressPipeReader{pr, 0, *audioSize + *imageSize, 0, 0, progressChannel}
 	go relayProgress(ctx, request.Id, userId, progressChannel)
 
+	// TODO: check if accesstoken changes and store it
 	response, err := call.Media(progReader).Do()
 	if err != nil {
 		msg := fmt.Sprintf("%s", err)

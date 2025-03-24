@@ -9,7 +9,7 @@ export default function AdContainer({
 } & PaperProps) {
   return (
     <>
-      <Paper {...props} withBorder style={{ flexGrow: 0 }}>
+      <Paper {...props} style={{ flexGrow: 0 }}>
         <ins
           className="adsbygoogle"
           style={{ display: "inline-block", width: "100%", height: "100%" }}
