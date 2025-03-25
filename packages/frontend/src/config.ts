@@ -57,6 +57,7 @@ const config = {
         ".webm",
         ".wv",
         ".wma",
+        ".wmv",
       ],
     },
     MAX_IMAGE_SIZE_BYTES: 20 * 1000 * 1000, // 20 MB,
