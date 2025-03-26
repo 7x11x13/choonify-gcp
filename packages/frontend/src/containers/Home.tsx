@@ -20,6 +20,7 @@ export default function Home() {
             width="100%"
             height="100%"
             src="https://www.youtube-nocookie.com/embed/H24rG_eNp5U?si=LYASN6GiTbAPQzqT&cc_load_policy=1&rel=0"
+            srcDoc="<style>*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img{position:absolute;width:100%;top:0;bottom:0;margin:auto}</style><a href=https://www.youtube-nocookie.com/embed/H24rG_eNp5U?si=LYASN6GiTbAPQzqT&cc_load_policy=1&rel=0&autoplay=1><img src='/thumbnail.webp' alt='Choonify Demo'></a>"
             title="YouTube video player"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
