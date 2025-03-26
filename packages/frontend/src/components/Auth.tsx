@@ -69,6 +69,7 @@ function useProvideAuth() {
     });
     try {
       setLoading(true);
+      import("../containers/Upload.tsx"); // preload upload page
       await signInWithPopup(auth!, provider);
     } catch (err: any) {
       console.error(err);

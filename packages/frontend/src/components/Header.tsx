@@ -1,14 +1,15 @@
 import {
   Burger,
   Group,
+  Image,
   NavLink,
   Skeleton,
   Stack,
   Title,
-  Image,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import React from "react";
+import { preload } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
 import { useAuth } from "./Auth";
@@ -20,17 +21,49 @@ const HeaderLoggedIn = React.lazy(() => import("./HeaderLoggedIn.tsx"));
 export default function Header() {
   const [opened, { toggle }] = useDisclosure(false);
   const { user, loading, signIn } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const links = [
-    { link: "/", label: t("header.label.home") },
-    { link: "/support", label: t("header.label.support") },
-    { link: "/documentation", label: t("header.label.docs") },
-    { link: "/pricing", label: t("header.label.pricing") },
+    {
+      link: "/",
+      label: t("header.label.home"),
+      preloadTsx: [],
+      preloadHrefs: [],
+    },
+    {
+      link: "/support",
+      label: t("header.label.support"),
+      preloadTsx: ["Readme"],
+      preloadHrefs: [`/locales/${i18n.language}/support.json5`],
+    },
+    {
+      link: "/documentation",
+      label: t("header.label.docs"),
+      preloadTsx: ["Readme"],
+      preloadHrefs: [`/locales/${i18n.language}/documentation.json5`],
+    },
+    {
+      link: "/pricing",
+      label: t("header.label.pricing"),
+      preloadTsx: ["Pricing"],
+      preloadHrefs: [],
+    },
   ];
 
   const items = links.map((link) => (
-    <Link key={link.label} to={link.link} className={classes.link}>
+    <Link
+      key={link.label}
+      to={link.link}
+      className={classes.link}
+      onMouseOver={() => {
+        for (const path of link.preloadTsx) {
+          import(`../containers/${path}.tsx`);
+        }
+        for (const href of link.preloadHrefs) {
+          preload(href, { as: "fetch", crossOrigin: "anonymous" });
+        }
+      }}
+    >
       {link.label}
     </Link>
   ));
