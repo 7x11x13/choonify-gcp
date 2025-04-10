@@ -1,7 +1,7 @@
 # Choonify - a (dead) TunesToTube / Audioship clone
 
 Choonify allows users to convert audio files to videos and upload them directly to YouTube.
-Unfortunately my quota increase request and subsequent appeal were denied so I'm releasing the source.
+Unfortunately my quota increase request and subsequent appeal were denied so I'm releasing the source, however I learned a lot by working on this project.
 
 ## Technical details (kinda)
 
